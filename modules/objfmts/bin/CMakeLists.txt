@@ -3,4 +3,4 @@ YASM_ADD_MODULE(objfmt_bin
     )
 
 YASM_ADD_OUT_TEST(bin_test modules/objfmts/bin/tests "bin objfmt" "-f bin" "")
-#TODO: YASM_ADD_OUT_TEST(bin_multi_test modules/objfmts/bin/tests/multisect ...)
+YASM_ADD_OUT_TEST(bin_multi_test modules/objfmts/bin/tests/multisect "multisect bin objfmt" "-f bin" "")

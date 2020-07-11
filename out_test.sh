@@ -28,12 +28,18 @@ do
     og=`echo ${asm} | sed 's,.asm$,.hex,'`
     e=${a}.ew
     eg=`echo ${asm} | sed 's,.asm$,.errwarn,'`
+    m=${a}.map
+    mg=`echo ${asm} | sed 's,.asm$,.map,'`
+    mf=
+    if test -f ${mg}; then
+        mf=--mapfile=results/${m}
+    fi
     if test \! -f ${eg}; then
         eg=/dev/null
     fi
 
     # Run within a subshell to prevent signal messages from displaying.
-    sh -c "cat ${asm} | ${YASM:=./yasm} $4 -o results/${o} - 2>results/${e}" >/dev/null 2>/dev/null
+    sh -c "cat ${asm} | ${YASM:=./yasm} $4 ${mf} -o results/${o} - 2>results/${e}" >/dev/null 2>/dev/null
     status=$?
     if test $status -gt 128; then
         # We should never get a coredump!
@@ -71,9 +77,16 @@ do
             ${TEST_HD:=./test_hd} results/${o} > results/${oh}
             if diff -w ${og} results/${oh} >/dev/null; then
                 if diff -w ${eg} results/${e} >/dev/null; then
-                    # Both object file and error/warnings match, it passes!
-                    echo $ECHO_N ".$ECHO_C"
-                    passedct=`expr $passedct + 1`
+                    if test \! -f ${mg} || diff -w ${mg} results/${m} >/dev/null; then
+                        # All match, it passes!
+                        echo $ECHO_N ".$ECHO_C"
+                        passedct=`expr $passedct + 1`
+                    else
+                        # Map file doesn't match.
+                        echo $ECHO_N "M$ECHO_C"
+                        eval "failed$failedct='M: ${a} did not match map file!'"
+                        failedct=`expr $failedct + 1`
+                    fi
                 else
                     # Error/warnings don't match.
                     echo $ECHO_N "W$ECHO_C"
