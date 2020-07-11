@@ -26,3 +26,5 @@ YASM_ADD_MODULE(objfmt_coff
 list(APPEND YASM_MODULES objfmt_win32)
 list(APPEND YASM_MODULES objfmt_win64)
 list(APPEND YASM_MODULES objfmt_x64)
+
+YASM_ADD_OUT_TEST(coff_test modules/objfmts/coff/tests "coff objfmt" "-f coff" ".o")

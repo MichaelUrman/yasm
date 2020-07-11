@@ -87,3 +87,16 @@ macro (YASM_GENMACRO _in_NAME _out_NAME _var_NAME)
         )
 endmacro (YASM_GENMACRO)
 
+macro (YASM_ADD_OUT_TEST _test_NAME _dir_NAME _build_NAME _ext_NAME)
+    IF(YASM_BUILD_TESTS)
+    add_test(
+        NAME ${_test_NAME}
+        COMMAND /usr/bin/env
+            srcdir=${CMAKE_SOURCE_DIR}
+            YASM=$<TARGET_FILE:yasm>
+            TEST_HD=$<TARGET_FILE:test_hd>
+            ${CMAKE_SOURCE_DIR}/out_test.sh
+            ${_test_NAME} ${_dir_NAME} ${_desc_NAME} ${_build_NAME} ${_ext_NAME}
+        )
+    ENDIF()
+endmacro (YASM_ADD_OUT_TEST)

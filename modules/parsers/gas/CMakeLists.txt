@@ -10,3 +10,6 @@ YASM_ADD_MODULE(parser_gas
     parsers/gas/gas-parse-intel.c
     gas-token.c
     )
+
+YASM_ADD_OUT_TEST(gas_test modules/parsers/gas/tests "gas-compat parser" "-f elf -p gas" ".o")
+YASM_ADD_OUT_TEST(gas_bin_test modules/parsers/gas/tests/bin "gas-compat parser bin output" "-f bin -p gas" "")

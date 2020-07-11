@@ -23,3 +23,4 @@ YASM_ADD_MODULE(preproc_nasm
     preprocs/nasm/nasm-eval.c
     )
 
+YASM_ADD_OUT_TEST(nasmpp_test modules/preprocs/nasm/tests "nasm preproc" "-f bin" "")

@@ -19,3 +19,6 @@ YASM_ADD_MODULE(parser_nasm
     parsers/nasm/nasm-parse.c
     nasm-token.c
     )
+
+YASM_ADD_OUT_TEST(nasm_test modules/parsers/nasm/tests "nasm-compat parser" "-f bin" "")
+YASM_ADD_OUT_TEST(nasm_worphan_test modules/parsers/nasm/tests/worphan "nasm-compat parser" "-Worphan-labels -f bin" "")

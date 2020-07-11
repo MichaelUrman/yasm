@@ -14,10 +14,14 @@ INCLUDE(VersionGen)
 
 OPTION(ENABLE_NLS "Enable message translations" OFF)
 
+IF(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 OPTION(YASM_BUILD_TESTS "Enable building of tests" ON)
+ELSE()
+OPTION(YASM_BUILD_TESTS "Enable building of tests" OFF)
+ENDIF()
 
 IF(YASM_BUILD_TESTS)
-    ENABLE_TESTING()
+    INCLUDE(CTest)
 ENDIF(YASM_BUILD_TESTS)
 
 # Default build type to debug if not set
@@ -39,6 +43,10 @@ ADD_SUBDIRECTORY(tools)
 ADD_SUBDIRECTORY(libyasm)
 ADD_SUBDIRECTORY(modules)
 ADD_SUBDIRECTORY(frontends)
+
+IF(YASM_BUILD_TESTS)
+    ADD_EXECUTABLE(test_hd test_hd.c)
+ENDIF()
 
 INSTALL(FILES
     libyasm.h
