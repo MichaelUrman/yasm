@@ -49,6 +49,6 @@ SET_SOURCE_FILES_PROPERTIES(arch/x86/x86id.c PROPERTIES
     OBJECT_DEPENDS "${insn_DEPS}"
     )
 
-YASM_ADD_OUT_TEST(x86_test modules/arch/x86/tests "x86 arch" "-f bin" "")
+YASM_ADD_OUT_TEST(x86_test modules/arch/x86/tests "x86 arch" "-f bin -Wsegreg-in-64bit" "")
 YASM_ADD_OUT_TEST(x86_gas32_test modules/arch/x86/tests/gas32 "x86 gas format" "-f elf32 -p gas" ".o")
 YASM_ADD_OUT_TEST(x86_gas64_test modules/arch/x86/tests/gas64 "amd64 gas format" "-f elf -m amd64 -p gas" ".o")

@@ -19,6 +19,9 @@ mkdir results >/dev/null 2>&1
 passedct=0
 failedct=0
 
+# XXX: Temporary hack; needed for libyasm_test/incbin to pass in ctest
+echo "timestamp for config.h" > stamp-h1
+
 echo $ECHO_N "Test $1: $ECHO_C"
 for asm in ${srcdir}/$2/*.asm
 do
