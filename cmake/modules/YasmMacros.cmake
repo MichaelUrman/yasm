@@ -87,6 +87,16 @@ macro (YASM_GENMACRO _in_NAME _out_NAME _var_NAME)
         )
 endmacro (YASM_GENMACRO)
 
+macro (YASM_ADD_SRC_TEST _test_NAME _source_NAME)
+    ADD_EXECUTABLE(${_test_NAME} ${_source_NAME})
+    IF(BUILD_SHARED_LIBS)
+        TARGET_LINK_LIBRARIES(${_test_NAME} libyasm ${LIBDL})
+    ELSE()
+        TARGET_LINK_LIBRARIES(${_test_NAME} yasmstd libyasm)
+    ENDIF()
+    add_test(NAME ${_test_NAME} COMMAND ${_test_NAME})
+endmacro (YASM_ADD_SRC_TEST)
+
 macro (YASM_ADD_OUT_TEST _test_NAME _dir_NAME _build_NAME _ext_NAME)
     IF(YASM_BUILD_TESTS)
     add_test(
