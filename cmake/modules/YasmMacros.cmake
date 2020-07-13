@@ -105,7 +105,7 @@ macro (YASM_ADD_OUT_TEST _test_NAME _dir_NAME _build_NAME _ext_NAME)
             srcdir=${CMAKE_SOURCE_DIR}
             YASM=$<TARGET_FILE:yasm>
             TEST_HD=$<TARGET_FILE:test_hd>
-            ${CMAKE_SOURCE_DIR}/out_test.sh
+            ${CMAKE_SOURCE_DIR}/ci_testset.sh
             ${_test_NAME} ${_dir_NAME} ${_desc_NAME} ${_build_NAME} ${_ext_NAME}
         )
     ENDIF()

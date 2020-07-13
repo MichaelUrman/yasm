@@ -1,4 +1,4 @@
-# Thanks https://github.com/actions/starter-workflows/blob/c85b474fcccc5c2c2e43707be625cd8263bf8f60/ci/cmake.yml
+# Thanks https://github.com/jherico/starter-workflows/blob/master/ci/cmake.yml
 name: Integration Test
 on: [push, pull_request]
 
