@@ -433,6 +433,7 @@ int
 main(int argc, char *argv[])
 {
     size_t i;
+    const char *err = "";
 
     errfile = stderr;
 
@@ -463,8 +464,8 @@ main(int argc, char *argv[])
 #ifdef CMAKE_BUILD
     /* Load standard modules */
 #ifdef BUILD_SHARED_LIBS
-    if (!load_plugin("yasmstd")) {
-        print_error(_("%s: could not load standard modules"), _("FATAL"));
+    if (!load_plugin("yasmstd", &err)) {
+        print_error(_("%s: could not load standard modules: %s"), _("FATAL"), err);
         return EXIT_FAILURE;
     }
 #else

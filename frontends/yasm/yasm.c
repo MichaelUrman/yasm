@@ -590,6 +590,7 @@ int
 main(int argc, char *argv[])
 {
     size_t i;
+    const char *err = "";
 
     errfile = stderr;
 
@@ -620,8 +621,8 @@ main(int argc, char *argv[])
 #ifdef CMAKE_BUILD
     /* Load standard modules */
 #ifdef BUILD_SHARED_LIBS
-    if (!load_plugin("yasmstd")) {
-        print_error(_("%s: could not load standard modules"), _("FATAL"));
+    if (!load_plugin("yasmstd", &err)) {
+        print_error(_("%s: could not load standard modules: %s"), _("FATAL"), err);
         return EXIT_FAILURE;
     }
 #else
@@ -1211,8 +1212,9 @@ static int
 opt_plugin_handler(/*@unused@*/ char *cmd, char *param,
                    /*@unused@*/ int extra)
 {
-    if (!load_plugin(param))
-        print_error(_("warning: could not load plugin `%s'"), param);
+    const char *err = "";
+    if (!load_plugin(param, &err))
+        print_error(_("warning: could not load plugin `%s': %s"), param, err);
     return 0;
 }
 #endif

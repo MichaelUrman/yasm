@@ -41,23 +41,34 @@ static void **loaded_plugins = NULL;
 static int num_loaded_plugins = 0;
 
 static void *
-load_dll(const char *name)
+load_dll(const char *name, const char **perr)
 {
+    void *dll = NULL;
 #if defined(_MSC_VER)
-    return LoadLibrary(name);
+    static char message[512] = {0};
+    dll = LoadLibrary(name);
+    if (!dll) {
+        DWORD err = GetLastError();
+        if (err != 0 && FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, err, 0, message, 511, NULL)) {
+            *perr = message;
+        }
+    }
 #elif defined(__GNUC__)
-    return dlopen(name, RTLD_NOW);
-#else
-    return NULL;
+    dll = dlopen(name, RTLD_NOW);
+    if (!dll) {
+        *perr = dlerror();
+    }
 #endif
+    return dll;
 }
 
 int
-load_plugin(const char *name)
+load_plugin(const char *name, const char **perr)
 {
     char *path;
     void *lib = NULL;
     void (*init_plugin) (void) = NULL;
+    const char *err = "";
 
     /* Load library */
 
@@ -65,21 +76,23 @@ load_plugin(const char *name)
 #if defined(_MSC_VER)
     strcpy(path, name);
     strcat(path, ".dll");
-    lib = load_dll(path);
-#elif defined(__GNUC__)
+    lib = load_dll(path, perr);
+    perr = &err; /* prefer error from above */
+#elif defined(__GNUC__) || defined(__clang__)
     strcpy(path, "lib");
     strcat(path, name);
     strcat(path, ".so");
-    lib = load_dll(path);
+    lib = load_dll(path, perr);
     if (!lib) {
         strcpy(path, name);
         strcat(path, ".so");
-        lib = load_dll(path);
+        lib = load_dll(path, perr);
     }
+    perr = &err; /* prefer error from above */
 #endif
     yasm_xfree(path);
     if (!lib)
-        lib = load_dll(name);
+        lib = load_dll(name, perr);
 
     if (!lib)
         return 0;       /* Didn't load successfully */

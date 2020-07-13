@@ -28,7 +28,7 @@
 #define YASM_PLUGIN_H
 
 /* Load a plugin.  Returns 0 on failure. */
-int load_plugin(const char *name);
+int load_plugin(const char *name, const char **err);
 void unload_plugins(void);
 
 #endif
