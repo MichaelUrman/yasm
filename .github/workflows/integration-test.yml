@@ -10,6 +10,10 @@ jobs:
         os: [windows-latest, ubuntu-latest, macOS-latest]
         # Customize the CMake build types here (Release, Debug, RelWithDebInfo, etc.)
         build_type: [Debug]
+        shared_libs: [ON, OFF]
+
+    # shared_libs on mac fails to find libyasmstd; skip for now
+    if: ${{matrix.shared_libs}} != 'OFF' || ${{matrix.os}} != 'macOS-latest'
 
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +28,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+      run: cmake -DBUILD_SHARED_LIBS=${{matrix.shared_libs}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} $GITHUB_WORKSPACE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
