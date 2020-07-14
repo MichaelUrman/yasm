@@ -3,13 +3,14 @@
 YASM_TEST_SUITE=1
 export YASM_TEST_SUITE
 
+# args: test-set test-asm
+# env: YASM=./yasm YASM_ARGS YASM_OUT_SUFFIX TEST_HD
+testset="$1"
 asm="$2"
-args="$3"
-obj="$4"
 
 a=`echo ${asm} | sed 's,^.*/,,;s,.asm$,,'`
-test="$1/${a}"
-o=results/${a}${obj}
+test="${testset}/${a}"
+o=results/${a}${YASM_OUT_SUFFIX}
 oh=results/${a}.hx
 og=`echo ${asm} | sed 's,.asm$,.hex,'`
 e=results/${a}.ew
@@ -25,7 +26,7 @@ if test \! -f ${eg}; then
 fi
 
 # Run within a subshell to prevent signal messages from displaying.
-sh -c "cat ${asm} | ${YASM:=./yasm} ${args} ${mf} -o ${o} - 2>${e}" >/dev/null 2>/dev/null
+sh -c "cat ${asm} | ${YASM:=./yasm} ${YASM_ARGS} ${mf} -o ${o} - 2>${e}" >/dev/null 2>/dev/null
 status=$?
 if test $status -gt 128; then
     # We should never get a coredump!
@@ -38,7 +39,7 @@ elif test $status -gt 0; then
         exit 1
     elif ! diff -w ${eg} ${e} >/dev/null; then
         echo "  *** ${test}: errors and warnings did not match"
-        diff -u -w ${eg} ${e} --label="want: ${eg##${srcdir}/}" --label="got: ${e}" | head -n 30 | sed 's/^/    /'
+        diff -u -w ${eg} ${e} --label="want: ${eg##${SRCDIR}/}" --label="got: ${e}" | head -n 30 | sed 's/^/    /'
         exit 1
     else
         exit 0
@@ -57,7 +58,7 @@ status=0
 if ! diff -w ${eg} ${e} >/dev/null; then
     status=1
     echo "  *** ${test}: warnings did not match"
-    diff -u -w ${eg} ${e} --label="want: ${eg##${srcdir}/}" --label="got: ${e}" | head -n 30 | sed 's/^/    /'
+    diff -u -w ${eg} ${e} --label="want: ${eg##${SRCDIR}/}" --label="got: ${e}" | head -n 30 | sed 's/^/    /'
 fi
 
 # Verify object file
