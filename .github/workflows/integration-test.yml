@@ -8,17 +8,25 @@ jobs:
     strategy:
       matrix:
         build:
-        - { os: ubuntu-latest, type: Debug, shared_libs: OFF}
-        - { os: ubuntu-latest, type: Debug, shared_libs: ON}
-        - { os: macOS-latest, type: Debug, shared_libs: OFF}
+        - { os: ubuntu-latest, shared_libs: OFF, lint: ON}
+        - { os: ubuntu-latest, shared_libs: ON}
+        - { os: macOS-latest, shared_libs: OFF}
         # shared_libs on mac fails to find libyasmstd; skip for now
-        #- { os: macOS-latest, type: Debug, shared_libs: ON}
-        - { os: windows-latest, type: Debug, shared_libs: OFF}
+        #- { os: macOS-latest, shared_libs: ON}
+        - { os: windows-latest, shared_libs: OFF}
         # ytasm shared on windows fails to link; skip for now
-        # - { os: windows-latest, type: Debug, shared_libs: ON}
+        # - { os: windows-latest, shared_libs: ON}
+        build_type: ['Debug']
 
     steps:
     - uses: actions/checkout@v2
+
+    # https://github.com/marketplace/actions/clang-format-lint
+    - uses: DoozyX/clang-format-lint-action@v0.7
+      with:
+        source: '.'
+        style: LLVM
+      if: matrix.build.lint == 'ON'
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -30,16 +38,16 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake -DBUILD_SHARED_LIBS=${{matrix.build.shared_libs}} -DCMAKE_BUILD_TYPE=${{matrix.build.type}} $GITHUB_WORKSPACE
+      run: cmake -DBUILD_SHARED_LIBS=${{matrix.build.shared_libs}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} $GITHUB_WORKSPACE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config ${{matrix.build.type}}
+      run: cmake --build . --config ${{matrix.build_type}}
 
     - name: Test
       shell: bash
       working-directory: ${{runner.workspace}}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{matrix.build.type}} --output-on-failure
+      run: ctest -C ${{matrix.build_type}} --output-on-failure
