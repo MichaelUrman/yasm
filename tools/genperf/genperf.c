@@ -72,29 +72,30 @@ yasm__fatal(const char *message, ...)
 
 /* make the c output for the perfect hash tab array */
 static void
-make_c_tab(
-    FILE *f,
-    bstuff *tab,        /* table indexed by b */
-    ub4 smax,           /* range of scramble[] */
-    ub4 blen,           /* b in 0..blen-1, power of 2 */
-    ub4 *scramble)      /* used in final hash */
+make_c_tab(FILE *f, bstuff *tab, /* table indexed by b */
+           ub4 smax,             /* range of scramble[] */
+           ub4 blen,             /* b in 0..blen-1, power of 2 */
+           ub4 *scramble)        /* used in final hash */
 {
-    ub4   i;
+    ub4 i;
     /* table for the mapping for the perfect hash */
     if (blen >= USE_SCRAMBLE) {
         /* A way to make the 1-byte values in tab bigger */
-        if (smax > UB2MAXVAL+1) {
+        if (smax > UB2MAXVAL + 1) {
             fprintf(f, "  static const unsigned long scramble[] = {\n");
-            for (i=0; i<=UB1MAXVAL; i+=4)
+            for (i = 0; i <= UB1MAXVAL; i += 4)
                 fprintf(f, "    0x%.8lx, 0x%.8lx, 0x%.8lx, 0x%.8lx,\n",
-                    scramble[i+0], scramble[i+1], scramble[i+2], scramble[i+3]);
+                        scramble[i + 0], scramble[i + 1], scramble[i + 2],
+                        scramble[i + 3]);
         } else {
             fprintf(f, "  static const unsigned short scramble[] = {\n");
-            for (i=0; i<=UB1MAXVAL; i+=8)
-                fprintf(f, 
-"    0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx,\n",
-                    scramble[i+0], scramble[i+1], scramble[i+2], scramble[i+3],
-                    scramble[i+4], scramble[i+5], scramble[i+6], scramble[i+7]);
+            for (i = 0; i <= UB1MAXVAL; i += 8)
+                fprintf(f,
+                        "    0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, 0x%.4lx, "
+                        "0x%.4lx, 0x%.4lx, 0x%.4lx,\n",
+                        scramble[i + 0], scramble[i + 1], scramble[i + 2],
+                        scramble[i + 3], scramble[i + 4], scramble[i + 5],
+                        scramble[i + 6], scramble[i + 7]);
         }
         fprintf(f, "  };\n");
         fprintf(f, "\n");
@@ -102,44 +103,47 @@ make_c_tab(
 
     if (blen > 0) {
         /* small adjustments to _a_ to make values distinct */
-        if (smax <= UB1MAXVAL+1 || blen >= USE_SCRAMBLE)
+        if (smax <= UB1MAXVAL + 1 || blen >= USE_SCRAMBLE)
             fprintf(f, "  static const unsigned char ");
         else
             fprintf(f, "  static const unsigned short ");
         fprintf(f, "tab[] = {\n");
 
         if (blen < 16) {
-            for (i=0; i<blen; ++i)
+            for (i = 0; i < blen; ++i)
                 fprintf(f, "%3ld,", scramble[tab[i].val_b]);
         } else if (blen <= 1024) {
-            for (i=0; i<blen; i+=16)
-                fprintf(f, "    %ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,\n",
-                    scramble[tab[i+0].val_b], scramble[tab[i+1].val_b], 
-                    scramble[tab[i+2].val_b], scramble[tab[i+3].val_b], 
-                    scramble[tab[i+4].val_b], scramble[tab[i+5].val_b], 
-                    scramble[tab[i+6].val_b], scramble[tab[i+7].val_b], 
-                    scramble[tab[i+8].val_b], scramble[tab[i+9].val_b], 
-                    scramble[tab[i+10].val_b], scramble[tab[i+11].val_b], 
-                    scramble[tab[i+12].val_b], scramble[tab[i+13].val_b], 
-                    scramble[tab[i+14].val_b], scramble[tab[i+15].val_b]); 
+            for (i = 0; i < blen; i += 16)
+                fprintf(
+                    f,
+                    "    "
+                    "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%"
+                    "ld,%ld,\n",
+                    scramble[tab[i + 0].val_b], scramble[tab[i + 1].val_b],
+                    scramble[tab[i + 2].val_b], scramble[tab[i + 3].val_b],
+                    scramble[tab[i + 4].val_b], scramble[tab[i + 5].val_b],
+                    scramble[tab[i + 6].val_b], scramble[tab[i + 7].val_b],
+                    scramble[tab[i + 8].val_b], scramble[tab[i + 9].val_b],
+                    scramble[tab[i + 10].val_b], scramble[tab[i + 11].val_b],
+                    scramble[tab[i + 12].val_b], scramble[tab[i + 13].val_b],
+                    scramble[tab[i + 14].val_b], scramble[tab[i + 15].val_b]);
         } else if (blen < USE_SCRAMBLE) {
-            for (i=0; i<blen; i+=8)
+            for (i = 0; i < blen; i += 8)
                 fprintf(f, "    %ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,\n",
-                    scramble[tab[i+0].val_b], scramble[tab[i+1].val_b], 
-                    scramble[tab[i+2].val_b], scramble[tab[i+3].val_b], 
-                    scramble[tab[i+4].val_b], scramble[tab[i+5].val_b], 
-                    scramble[tab[i+6].val_b], scramble[tab[i+7].val_b]); 
+                        scramble[tab[i + 0].val_b], scramble[tab[i + 1].val_b],
+                        scramble[tab[i + 2].val_b], scramble[tab[i + 3].val_b],
+                        scramble[tab[i + 4].val_b], scramble[tab[i + 5].val_b],
+                        scramble[tab[i + 6].val_b], scramble[tab[i + 7].val_b]);
         } else {
-            for (i=0; i<blen; i+=16)
-                fprintf(f, "    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\n",
-                    tab[i+0].val_b, tab[i+1].val_b, 
-                    tab[i+2].val_b, tab[i+3].val_b, 
-                    tab[i+4].val_b, tab[i+5].val_b, 
-                    tab[i+6].val_b, tab[i+7].val_b, 
-                    tab[i+8].val_b, tab[i+9].val_b, 
-                    tab[i+10].val_b, tab[i+11].val_b, 
-                    tab[i+12].val_b, tab[i+13].val_b, 
-                    tab[i+14].val_b, tab[i+15].val_b); 
+            for (i = 0; i < blen; i += 16)
+                fprintf(
+                    f, "    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\n",
+                    tab[i + 0].val_b, tab[i + 1].val_b, tab[i + 2].val_b,
+                    tab[i + 3].val_b, tab[i + 4].val_b, tab[i + 5].val_b,
+                    tab[i + 6].val_b, tab[i + 7].val_b, tab[i + 8].val_b,
+                    tab[i + 9].val_b, tab[i + 10].val_b, tab[i + 11].val_b,
+                    tab[i + 12].val_b, tab[i + 13].val_b, tab[i + 14].val_b,
+                    tab[i + 15].val_b);
         }
         fprintf(f, "  };\n");
         fprintf(f, "\n");
@@ -148,19 +152,18 @@ make_c_tab(
 
 static void
 perfect_gen(FILE *out, const char *lookup_function_name,
-            const char *struct_name, keyword_list *kws,
-            const char *filename)
+            const char *struct_name, keyword_list *kws, const char *filename)
 {
     ub4 nkeys;
     key *keys;
     hashform form;
-    bstuff *tab;                /* table indexed by b */
-    hstuff *tabh;               /* table indexed by hash value */
-    ub4 smax;           /* scramble[] values in 0..smax-1, a power of 2 */
-    ub4 alen;                   /* a in 0..alen-1, a power of 2 */
-    ub4 blen;                   /* b in 0..blen-1, a power of 2 */
-    ub4 salt;                   /* a parameter to the hash function */
-    gencode final;              /* code for final hash */
+    bstuff *tab;   /* table indexed by b */
+    hstuff *tabh;  /* table indexed by hash value */
+    ub4 smax;      /* scramble[] values in 0..smax-1, a power of 2 */
+    ub4 alen;      /* a in 0..alen-1, a power of 2 */
+    ub4 blen;      /* b in 0..blen-1, a power of 2 */
+    ub4 salt;      /* a parameter to the hash function */
+    gencode final; /* code for final hash */
     ub4 i;
     ub4 scramble[SCRAMBLE_LEN]; /* used in final hash function */
     char buf[10][80];           /* buffer for generated code */
@@ -176,14 +179,14 @@ perfect_gen(FILE *out, const char *lookup_function_name,
     /* set up code for final hash */
     final.line = buf2;
     final.used = 0;
-    final.len  = 10;
-    for (i=0; i<10; i++)
+    final.len = 10;
+    for (i = 0; i < 10; i++)
         final.line[i] = buf[i];
 
     /* build list of keys */
     nkeys = 0;
     keys = NULL;
-    STAILQ_FOREACH(kw, kws, link) {
+    STAILQ_FOREACH (kw, kws, link) {
         key *k = yasm_xmalloc(sizeof(key));
 
         k->name_k = yasm__xstrdup(kw->name);
@@ -194,8 +197,8 @@ perfect_gen(FILE *out, const char *lookup_function_name,
     }
 
     /* find the hash */
-    findhash(&tab, &tabh, &alen, &blen, &salt, &final, 
-             scramble, &smax, keys, nkeys, &form);
+    findhash(&tab, &tabh, &alen, &blen, &salt, &final, scramble, &smax, keys,
+             nkeys, &form);
 
     /* The hash function beginning */
     fprintf(out, "static const struct %s *\n", struct_name);
@@ -206,9 +209,9 @@ perfect_gen(FILE *out, const char *lookup_function_name,
      * or up to pakd.nkeys for MINIMAL_HP.
      */
     fprintf(out, "  static const struct %s pd[%lu] = {\n", struct_name, nkeys);
-    for (i=0; i<nkeys; i++) {
+    for (i = 0; i < nkeys; i++) {
         if (tabh[i].key_h) {
-            STAILQ_FOREACH(kw, kws, link) {
+            STAILQ_FOREACH (kw, kws, link) {
                 if (strcmp(kw->name, tabh[i].key_h->name_k) == 0)
                     break;
             }
@@ -222,7 +225,7 @@ perfect_gen(FILE *out, const char *lookup_function_name,
         } else
             fprintf(out, "    { NULL }");
 
-        if (i < nkeys-1)
+        if (i < nkeys - 1)
             fprintf(out, ",");
         fprintf(out, "\n");
     }
@@ -233,7 +236,7 @@ perfect_gen(FILE *out, const char *lookup_function_name,
 
     /* The hash function body */
     fprintf(out, "  const struct %s *ret;\n", struct_name);
-    for (i=0; i<final.used; ++i)
+    for (i = 0; i < final.used; ++i)
         fprintf(out, "%s", final.line[i]);
     fprintf(out, "  if (rsl >= %lu) return NULL;\n", nkeys);
     fprintf(out, "  ret = &pd[rsl];\n");
@@ -371,7 +374,7 @@ main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
             go_keywords = 1;
-            break;      /* move on to keywords section */
+            break; /* move on to keywords section */
         }
 
         /* %{ begins a verbatim code section that ends with %} */
@@ -402,13 +405,13 @@ main(int argc, char *argv[])
         } else if (strncmp(&line[1], "language=", 9) == 0) {
             ch = &line[10];
             i = 0;
-            while (*ch != '\n' && i<15)
+            while (*ch != '\n' && i < 15)
                 language[i++] = *ch++;
             language[i] = '\0';
         } else if (strncmp(&line[1], "delimiters=", 11) == 0) {
             ch = &line[12];
             i = 0;
-            while (i<15)
+            while (i < 15)
                 delimiters[i++] = *ch++;
             delimiters[i] = '\0';
         } else if (strncmp(&line[1], "enum", 4) == 0) {
@@ -424,7 +427,7 @@ main(int argc, char *argv[])
             if (strncmp(ch, "hash-function-name", 18) == 0) {
                 /* unused */
             } else if (strncmp(ch, "lookup-function-name", 20) == 0) {
-                ch = &line[7+20+1];
+                ch = &line[7 + 20 + 1];
                 while (isspace(*ch))
                     ch++;
                 i = 0;
@@ -519,13 +522,13 @@ main(int argc, char *argv[])
     fprintf(out, "/* %s code produced by genperf */\n", language);
     fprintf(out, "/* Command-line: genperf %s %s */\n", argv[1], argv[2]);
 
-    STAILQ_FOREACH(sv, &usercode, link)
+    STAILQ_FOREACH (sv, &usercode, link)
         fprintf(out, "%s", sv->str);
 
     /* Get perfect hash */
     perfect_gen(out, lookup_function_name, struct_name, &keywords, filename);
 
-    STAILQ_FOREACH(sv, &usercode2, link)
+    STAILQ_FOREACH (sv, &usercode2, link)
         fprintf(out, "%s", sv->str);
 
     fclose(out);
@@ -537,4 +540,3 @@ main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-

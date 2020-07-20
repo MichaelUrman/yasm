@@ -1,0 +1,6 @@
+./cmake
+./libyasm/bitvect.c
+./libyasm/phash.c
+./modules/preprocs/nasm
+./tools/genperf/perfect.c
+./tools/re2c

@@ -30,12 +30,10 @@
 
 #include "lc3barch.h"
 
-
 /* Bytecode callback function prototypes */
 
 static void lc3b_bc_insn_destroy(void *contents);
-static void lc3b_bc_insn_print(const void *contents, FILE *f,
-                               int indent_level);
+static void lc3b_bc_insn_print(const void *contents, FILE *f, int indent_level);
 static int lc3b_bc_insn_calc_len(yasm_bytecode *bc,
                                  yasm_bc_add_span_func add_span,
                                  void *add_span_data);
@@ -43,23 +41,16 @@ static int lc3b_bc_insn_expand(yasm_bytecode *bc, int span, long old_val,
                                long new_val, /*@out@*/ long *neg_thres,
                                /*@out@*/ long *pos_thres);
 static int lc3b_bc_insn_tobytes(yasm_bytecode *bc, unsigned char **bufp,
-                                unsigned char *bufstart,
-                                void *d, yasm_output_value_func output_value,
+                                unsigned char *bufstart, void *d,
+                                yasm_output_value_func output_value,
                                 /*@null@*/ yasm_output_reloc_func output_reloc);
 
 /* Bytecode callback structures */
 
 static const yasm_bytecode_callback lc3b_bc_callback_insn = {
-    lc3b_bc_insn_destroy,
-    lc3b_bc_insn_print,
-    yasm_bc_finalize_common,
-    NULL,
-    lc3b_bc_insn_calc_len,
-    lc3b_bc_insn_expand,
-    lc3b_bc_insn_tobytes,
-    0
+    lc3b_bc_insn_destroy,  lc3b_bc_insn_print,  yasm_bc_finalize_common, NULL,
+    lc3b_bc_insn_calc_len, lc3b_bc_insn_expand, lc3b_bc_insn_tobytes,    0
 };
-
 
 void
 yasm_lc3b__bc_transform_insn(yasm_bytecode *bc, lc3b_insn *insn)
@@ -143,16 +134,16 @@ lc3b_bc_insn_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
     if (insn->imm_type != LC3B_IMM_9_PC)
         return 0;
 
-    if (insn->imm.rel
-        && (!yasm_symrec_get_label(insn->imm.rel, &target_prevbc)
-             || target_prevbc->section != bc->section)) {
+    if (insn->imm.rel &&
+        (!yasm_symrec_get_label(insn->imm.rel, &target_prevbc) ||
+         target_prevbc->section != bc->section)) {
         /* External or out of segment, so we can't check distance. */
         return 0;
     }
 
     /* 9-bit signed, word-multiple displacement */
-    add_span(add_span_data, bc, 1, &insn->imm, -512+(long)bc->len,
-             511+(long)bc->len);
+    add_span(add_span_data, bc, 1, &insn->imm, -512 + (long)bc->len,
+             511 + (long)bc->len);
     return 0;
 }
 
@@ -212,13 +203,12 @@ lc3b_bc_insn_tobytes(yasm_bytecode *bc, unsigned char **bufp,
             /* Adjust relative displacement to end of bytecode */
             delta = yasm_intnum_create_int(-1);
             if (!insn->imm.abs)
-                insn->imm.abs = yasm_expr_create_ident(yasm_expr_int(delta),
-                                                       bc->line);
-            else
                 insn->imm.abs =
-                    yasm_expr_create(YASM_EXPR_ADD,
-                                     yasm_expr_expr(insn->imm.abs),
-                                     yasm_expr_int(delta), bc->line);
+                    yasm_expr_create_ident(yasm_expr_int(delta), bc->line);
+            else
+                insn->imm.abs = yasm_expr_create(
+                    YASM_EXPR_ADD, yasm_expr_expr(insn->imm.abs),
+                    yasm_expr_int(delta), bc->line);
 
             insn->imm.size = 9;
             insn->imm.sign = 1;
@@ -234,7 +224,7 @@ lc3b_bc_insn_tobytes(yasm_bytecode *bc, unsigned char **bufp,
             yasm_internal_error(N_("Unrecognized immediate type"));
     }
 
-    *bufp += 2;     /* all instructions are 2 bytes in size */
+    *bufp += 2; /* all instructions are 2 bytes in size */
     return 0;
 }
 

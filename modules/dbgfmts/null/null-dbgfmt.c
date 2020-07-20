@@ -28,9 +28,7 @@
 
 #include <libyasm.h>
 
-
 yasm_dbgfmt_module yasm_null_LTX_dbgfmt;
-
 
 static /*@null@*/ /*@only@*/ yasm_dbgfmt *
 null_dbgfmt_create(yasm_object *object)
@@ -52,13 +50,10 @@ null_dbgfmt_generate(yasm_object *object, yasm_linemap *linemap,
 {
 }
 
-
 /* Define dbgfmt structure -- see dbgfmt.h for details */
-yasm_dbgfmt_module yasm_null_LTX_dbgfmt = {
-    "No debugging info",
-    "null",
-    NULL,       /* no directives */
-    null_dbgfmt_create,
-    null_dbgfmt_destroy,
-    null_dbgfmt_generate
-};
+yasm_dbgfmt_module yasm_null_LTX_dbgfmt = { "No debugging info",
+                                            "null",
+                                            NULL, /* no directives */
+                                            null_dbgfmt_create,
+                                            null_dbgfmt_destroy,
+                                            null_dbgfmt_generate };

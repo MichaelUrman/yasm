@@ -58,11 +58,13 @@ main(int argc, char *argv[])
 
     str = malloc(MAXLINE);
 
-    fprintf(out, "/* This file auto-generated from standard.mac by genmacro.c"
-                 " - don't edit it */\n\n#include <stddef.h>\n\n"
-                 "static const char *%s[] = {\n", argv[2]);
+    fprintf(out,
+            "/* This file auto-generated from standard.mac by genmacro.c"
+            " - don't edit it */\n\n#include <stddef.h>\n\n"
+            "static const char *%s[] = {\n",
+            argv[2]);
 
-    for (i=3; i<argc; i++) {
+    for (i = 3; i < argc; i++) {
         in = fopen(argv[i], "rt");
         if (!in) {
             fprintf(stderr, "Could not open `%s'.\n", argv[i]);
@@ -86,7 +88,7 @@ main(int argc, char *argv[])
                     *charp = '\0';
                     break;
                 }
-                if ((charp = strchr(charp+1, charp[0])) == NULL) {
+                if ((charp = strchr(charp + 1, charp[0])) == NULL) {
                     fprintf(stderr, "%s:%d: error: unterminated quote\n",
                             argv[i], fline);
                     fclose(out);
@@ -100,9 +102,10 @@ main(int argc, char *argv[])
             while (*strp == ' ' || *strp == '\t')
                 strp++;
             len = strlen(strp);
-            while (len > 0 && (strp[len-1] == ' ' || strp[len-1] == '\t' ||
-                               strp[len-1] == '\r' || strp[len-1] == '\n')) {
-                strp[len-1] = '\0';
+            while (len > 0 &&
+                   (strp[len - 1] == ' ' || strp[len - 1] == '\t' ||
+                    strp[len - 1] == '\r' || strp[len - 1] == '\n')) {
+                strp[len - 1] = '\0';
                 len--;
             }
 

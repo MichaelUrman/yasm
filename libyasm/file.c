@@ -49,8 +49,7 @@
 #include "errwarn.h"
 #include "file.h"
 
-#define BSIZE   8192        /* Fill block size */
-
+#define BSIZE 8192 /* Fill block size */
 
 void
 yasm_scanner_initialize(yasm_scanner *s)
@@ -75,8 +74,7 @@ yasm_scanner_delete(yasm_scanner *s)
 
 int
 yasm_fill_helper(yasm_scanner *s, unsigned char **cursor,
-                 size_t (*input_func) (void *d, unsigned char *buf,
-                                       size_t max),
+                 size_t (*input_func)(void *d, unsigned char *buf, size_t max),
                  void *input_func_data)
 {
     size_t cnt;
@@ -122,26 +120,41 @@ yasm_unescape_cstring(unsigned char *str, size_t *len)
     unsigned char *o = str;
     unsigned char t[4];
 
-    while ((size_t)(s-str)<*len) {
-        if (*s == '\\' && (size_t)(&s[1]-str)<*len) {
+    while ((size_t)(s - str) < *len) {
+        if (*s == '\\' && (size_t)(&s[1] - str) < *len) {
             s++;
             switch (*s) {
-                case 'b': *o = '\b'; s++; break;
-                case 'f': *o = '\f'; s++; break;
-                case 'n': *o = '\n'; s++; break;
-                case 'r': *o = '\r'; s++; break;
-                case 't': *o = '\t'; s++; break;
+                case 'b':
+                    *o = '\b';
+                    s++;
+                    break;
+                case 'f':
+                    *o = '\f';
+                    s++;
+                    break;
+                case 'n':
+                    *o = '\n';
+                    s++;
+                    break;
+                case 'r':
+                    *o = '\r';
+                    s++;
+                    break;
+                case 't':
+                    *o = '\t';
+                    s++;
+                    break;
                 case 'x':
                     /* hex escape; grab last two digits */
                     s++;
-                    while ((size_t)(&s[2]-str)<*len && isxdigit(s[0])
-                           && isxdigit(s[1]) && isxdigit(s[2]))
+                    while ((size_t)(&s[2] - str) < *len && isxdigit(s[0]) &&
+                           isxdigit(s[1]) && isxdigit(s[2]))
                         s++;
-                    if ((size_t)(s-str)<*len && isxdigit(*s)) {
+                    if ((size_t)(s - str) < *len && isxdigit(*s)) {
                         t[0] = *s++;
                         t[1] = '\0';
                         t[2] = '\0';
-                        if ((size_t)(s-str)<*len && isxdigit(*s))
+                        if ((size_t)(s - str) < *len && isxdigit(*s))
                             t[1] = *s++;
                         *o = (unsigned char)strtoul((char *)t, NULL, 16);
                     } else
@@ -154,12 +167,12 @@ yasm_unescape_cstring(unsigned char *str, size_t *len)
                         if (*s > '7')
                             warn = 1;
                         *o = *s++ - '0';
-                        if ((size_t)(s-str)<*len && isdigit(*s)) {
+                        if ((size_t)(s - str) < *len && isdigit(*s)) {
                             if (*s > '7')
                                 warn = 1;
                             *o <<= 3;
                             *o += *s++ - '0';
-                            if ((size_t)(s-str)<*len && isdigit(*s)) {
+                            if ((size_t)(s - str) < *len && isdigit(*s)) {
                                 if (*s > '7')
                                     warn = 1;
                                 *o <<= 3;
@@ -177,7 +190,7 @@ yasm_unescape_cstring(unsigned char *str, size_t *len)
         } else
             *o++ = *s++;
     }
-    *len = o-str;
+    *len = o - str;
 }
 
 size_t
@@ -190,16 +203,16 @@ yasm__splitpath_unix(const char *path, /*@out@*/ const char **tail)
         *tail = path;
         return 0;
     }
-    *tail = s+1;
+    *tail = s + 1;
     /* Strip trailing ./ on path */
-    while ((s-1)>=path && *(s-1) == '.' && *s == '/'
-           && !((s-2)>=path && *(s-2) == '.'))
+    while ((s - 1) >= path && *(s - 1) == '.' && *s == '/' &&
+           !((s - 2) >= path && *(s - 2) == '.'))
         s -= 2;
     /* Strip trailing slashes on path (except leading) */
-    while (s>path && *s == '/')
+    while (s > path && *s == '/')
         s--;
     /* Return length of head */
-    return s-path+1;
+    return s - path + 1;
 }
 
 size_t
@@ -220,20 +233,21 @@ yasm__splitpath_win(const char *path, /*@out@*/ const char **tail)
     if (s < basepath) {
         *tail = basepath;
         if (path == basepath)
-            return 0;   /* No head */
+            return 0; /* No head */
         else
-            return 2;   /* Drive letter is head */
+            return 2; /* Drive letter is head */
     }
-    *tail = s+1;
+    *tail = s + 1;
     /* Strip trailing .\ or ./ on path */
-    while ((s-1)>=basepath && *(s-1) == '.' && (*s == '/' || *s == '\\')
-           && !((s-2)>=basepath && *(s-2) == '.'))
+    while ((s - 1) >= basepath && *(s - 1) == '.' &&
+           (*s == '/' || *s == '\\') &&
+           !((s - 2) >= basepath && *(s - 2) == '.'))
         s -= 2;
     /* Strip trailing slashes on path (except leading) */
-    while (s>basepath && (*s == '/' || *s == '\\'))
+    while (s > basepath && (*s == '/' || *s == '\\'))
         s--;
     /* Return length of head */
-    return s-path+1;
+    return s - path + 1;
 }
 
 char *
@@ -250,7 +264,7 @@ yasm__getcwd(void)
         return buf;
     }
 
-    while (getcwd(buf, size-1) == NULL) {
+    while (getcwd(buf, size - 1) == NULL) {
         if (errno != ERANGE) {
             yasm__fatal(N_("could not determine current working directory"));
             yasm_xfree(buf);
@@ -262,9 +276,9 @@ yasm__getcwd(void)
 
     /* append a '/' if not already present */
     size = strlen(buf);
-    if (buf[size-1] != '\\' && buf[size-1] != '/') {
+    if (buf[size - 1] != '\\' && buf[size - 1] != '/') {
         buf[size] = '/';
-        buf[size+1] = '\0';
+        buf[size + 1] = '\0';
     }
     return buf;
 }
@@ -290,10 +304,10 @@ yasm__combpath_unix(const char *from, const char *to)
 
     if (to[0] == '/') {
         /* absolute "to" */
-        out = yasm_xmalloc(strlen(to)+1);
+        out = yasm_xmalloc(strlen(to) + 1);
         /* Combine any double slashes when copying */
-        for (j=0; *to; to++) {
-            if (*to == '/' && *(to+1) == '/')
+        for (j = 0; *to; to++) {
+            if (*to == '/' && *(to + 1) == '/')
                 continue;
             out[j++] = *to;
         }
@@ -304,18 +318,18 @@ yasm__combpath_unix(const char *from, const char *to)
     /* Get path component; note this strips trailing slash */
     pathlen = yasm__splitpath_unix(from, &tail);
 
-    out = yasm_xmalloc(pathlen+strlen(to)+2);   /* worst case maximum len */
+    out = yasm_xmalloc(pathlen + strlen(to) + 2); /* worst case maximum len */
 
     /* Combine any double slashes when copying */
-    for (i=0, j=0; i<pathlen; i++) {
-        if (i<pathlen-1 && from[i] == '/' && from[i+1] == '/')
+    for (i = 0, j = 0; i < pathlen; i++) {
+        if (i < pathlen - 1 && from[i] == '/' && from[i + 1] == '/')
             continue;
         out[j++] = from[i];
     }
     pathlen = j;
 
     /* Add trailing slash back in */
-    if (pathlen > 0 && out[pathlen-1] != '/')
+    if (pathlen > 0 && out[pathlen - 1] != '/')
         out[pathlen++] = '/';
 
     /* Now scan from left to right through "to", stripping off "." and "..";
@@ -328,26 +342,26 @@ yasm__combpath_unix(const char *from, const char *to)
      */
     for (;;) {
         if (to[0] == '.' && to[1] == '/') {
-            to += 2;        /* current directory */
+            to += 2; /* current directory */
             while (*to == '/')
-                to++;           /* strip off any additional slashes */
+                to++; /* strip off any additional slashes */
         } else if (pathlen == 0)
-            break;          /* no more "from" path left, we're done */
+            break; /* no more "from" path left, we're done */
         else if (to[0] == '.' && to[1] == '.' && to[2] == '/') {
-            if (pathlen >= 3 && out[pathlen-1] == '/' && out[pathlen-2] == '.'
-                && out[pathlen-3] == '.') {
+            if (pathlen >= 3 && out[pathlen - 1] == '/' &&
+                out[pathlen - 2] == '.' && out[pathlen - 3] == '.') {
                 /* can't ".." against a "..", so we're done. */
                 break;
             }
 
-            to += 3;    /* throw away "../" */
+            to += 3; /* throw away "../" */
             while (*to == '/')
-                to++;           /* strip off any additional slashes */
+                to++; /* strip off any additional slashes */
 
             /* and back out last directory in "out" if not already at root */
             if (pathlen > 1) {
-                pathlen--;      /* strip off trailing '/' */
-                while (pathlen > 0 && out[pathlen-1] != '/')
+                pathlen--; /* strip off trailing '/' */
+                while (pathlen > 0 && out[pathlen - 1] != '/')
                     pathlen--;
             }
         } else
@@ -356,8 +370,8 @@ yasm__combpath_unix(const char *from, const char *to)
 
     /* Copy "to" to tail of output, and we're done */
     /* Combine any double slashes when copying */
-    for (j=pathlen; *to; to++) {
-        if (*to == '/' && *(to+1) == '/')
+    for (j = pathlen; *to; to++) {
+        if (*to == '/' && *(to + 1) == '/')
             continue;
         out[j++] = *to;
     }
@@ -375,11 +389,11 @@ yasm__combpath_win(const char *from, const char *to)
 
     if ((isalpha(to[0]) && to[1] == ':') || (to[0] == '/' || to[0] == '\\')) {
         /* absolute or drive letter "to" */
-        out = yasm_xmalloc(strlen(to)+1);
+        out = yasm_xmalloc(strlen(to) + 1);
         /* Combine any double slashes when copying */
-        for (j=0; *to; to++) {
-            if ((*to == '/' || *to == '\\')
-                && (*(to+1) == '/' || *(to+1) == '\\'))
+        for (j = 0; *to; to++) {
+            if ((*to == '/' || *to == '\\') &&
+                (*(to + 1) == '/' || *(to + 1) == '\\'))
                 continue;
             if (*to == '/')
                 out[j++] = '\\';
@@ -393,12 +407,12 @@ yasm__combpath_win(const char *from, const char *to)
     /* Get path component; note this strips trailing slash */
     pathlen = yasm__splitpath_win(from, &tail);
 
-    out = yasm_xmalloc(pathlen+strlen(to)+2);   /* worst case maximum len */
+    out = yasm_xmalloc(pathlen + strlen(to) + 2); /* worst case maximum len */
 
     /* Combine any double slashes when copying */
-    for (i=0, j=0; i<pathlen; i++) {
-        if (i<pathlen-1 && (from[i] == '/' || from[i] == '\\')
-            && (from[i+1] == '/' || from[i+1] == '\\'))
+    for (i = 0, j = 0; i < pathlen; i++) {
+        if (i < pathlen - 1 && (from[i] == '/' || from[i] == '\\') &&
+            (from[i + 1] == '/' || from[i + 1] == '\\'))
             continue;
         if (from[i] == '/')
             out[j++] = '\\';
@@ -408,8 +422,8 @@ yasm__combpath_win(const char *from, const char *to)
     pathlen = j;
 
     /* Add trailing slash back in, unless it's only a raw drive letter */
-    if (pathlen > 0 && out[pathlen-1] != '\\'
-        && !(pathlen == 2 && isalpha(out[0]) && out[1] == ':'))
+    if (pathlen > 0 && out[pathlen - 1] != '\\' &&
+        !(pathlen == 2 && isalpha(out[0]) && out[1] == ':'))
         out[pathlen++] = '\\';
 
     /* Now scan from left to right through "to", stripping off "." and "..";
@@ -422,28 +436,28 @@ yasm__combpath_win(const char *from, const char *to)
      */
     for (;;) {
         if (to[0] == '.' && (to[1] == '/' || to[1] == '\\')) {
-            to += 2;        /* current directory */
+            to += 2; /* current directory */
             while (*to == '/' || *to == '\\')
-                to++;           /* strip off any additional slashes */
-        } else if (pathlen == 0
-                 || (pathlen == 2 && isalpha(out[0]) && out[1] == ':'))
-            break;          /* no more "from" path left, we're done */
-        else if (to[0] == '.' && to[1] == '.'
-                 && (to[2] == '/' || to[2] == '\\')) {
-            if (pathlen >= 3 && out[pathlen-1] == '\\'
-                && out[pathlen-2] == '.' && out[pathlen-3] == '.') {
+                to++; /* strip off any additional slashes */
+        } else if (pathlen == 0 ||
+                   (pathlen == 2 && isalpha(out[0]) && out[1] == ':'))
+            break; /* no more "from" path left, we're done */
+        else if (to[0] == '.' && to[1] == '.' &&
+                 (to[2] == '/' || to[2] == '\\')) {
+            if (pathlen >= 3 && out[pathlen - 1] == '\\' &&
+                out[pathlen - 2] == '.' && out[pathlen - 3] == '.') {
                 /* can't ".." against a "..", so we're done. */
                 break;
             }
 
-            to += 3;    /* throw away "../" (or "..\") */
+            to += 3; /* throw away "../" (or "..\") */
             while (*to == '/' || *to == '\\')
-                to++;           /* strip off any additional slashes */
+                to++; /* strip off any additional slashes */
 
             /* and back out last directory in "out" if not already at root */
             if (pathlen > 1) {
-                pathlen--;      /* strip off trailing '/' */
-                while (pathlen > 0 && out[pathlen-1] != '\\')
+                pathlen--; /* strip off trailing '/' */
+                while (pathlen > 0 && out[pathlen - 1] != '\\')
                     pathlen--;
             }
         } else
@@ -452,8 +466,9 @@ yasm__combpath_win(const char *from, const char *to)
 
     /* Copy "to" to tail of output, and we're done */
     /* Combine any double slashes when copying */
-    for (j=pathlen; *to; to++) {
-        if ((*to == '/' || *to == '\\') && (*(to+1) == '/' || *(to+1) == '\\'))
+    for (j = pathlen; *to; to++) {
+        if ((*to == '/' || *to == '\\') &&
+            (*(to + 1) == '/' || *(to + 1) == '\\'))
             continue;
         if (*to == '/')
             out[j++] = '\\';
@@ -473,7 +488,7 @@ yasm__createpath_common(const char *path, int win)
     size_t len, lth;
 
     lth = len = strlen(path);
-    ts = tp = (char *) malloc(len + 1);
+    ts = tp = (char *)malloc(len + 1);
     pe = pp + len;
     while (pe > pp) {
         if ((win && *pe == '\\') || *pe == '/')
@@ -485,9 +500,9 @@ yasm__createpath_common(const char *path, int win)
     while (pp <= pe) {
         if (pp == pe || (win && *pp == '\\') || *pp == '/') {
 #ifdef _WIN32
-            struct _finddata_t fi; 
+            struct _finddata_t fi;
             intptr_t h;
-#elif defined(HAVE_SYS_STAT_H) 
+#elif defined(HAVE_SYS_STAT_H)
             struct stat fi;
 #endif
             *tp = '\0';
@@ -556,7 +571,7 @@ yasm_fopen_include(const char *iname, const char *from, const char *mode,
         yasm_xfree(combine);
     }
 
-    STAILQ_FOREACH(np, &incpaths, link) {
+    STAILQ_FOREACH (np, &incpaths, link) {
         combine = yasm__combpath(np->path, iname);
         f = fopen(combine, mode);
         if (f) {
@@ -612,12 +627,12 @@ yasm_add_include_path(const char *path)
     incpath *np = yasm_xmalloc(sizeof(incpath));
     size_t len = strlen(path);
 
-    np->path = yasm_xmalloc(len+2);
-    memcpy(np->path, path, len+1);
+    np->path = yasm_xmalloc(len + 2);
+    memcpy(np->path, path, len + 1);
     /* Add trailing slash if it is missing */
-    if (path[len-1] != '\\' && path[len-1] != '/') {
+    if (path[len - 1] != '\\' && path[len - 1] != '/') {
         np->path[len] = '/';
-        np->path[len+1] = '\0';
+        np->path[len + 1] = '\0';
     }
 
     STAILQ_INSERT_TAIL(&incpaths, np, link);

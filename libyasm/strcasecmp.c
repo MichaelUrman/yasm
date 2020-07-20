@@ -54,14 +54,13 @@ yasm__strcasecmp(const char *s1, const char *s2)
 #elif HAVE_STRCMPI
     return strcmpi(s1, s2);
 #else
-        const unsigned char
-                        *us1 = (const unsigned char *)s1,
+    const unsigned char *us1 = (const unsigned char *)s1,
                         *us2 = (const unsigned char *)s2;
 
-        while (tolower(*us1) == tolower(*us2++))
-                if (*us1++ == '\0')
-                        return (0);
-        return (tolower(*us1) - tolower(*--us2));
+    while (tolower(*us1) == tolower(*us2++))
+        if (*us1++ == '\0')
+            return (0);
+    return (tolower(*us1) - tolower(*--us2));
 #endif
 }
 
@@ -77,18 +76,17 @@ yasm__strncasecmp(const char *s1, const char *s2, size_t n)
 #elif HAVE_STRCMPI
     return strncmpi(s1, s2, n);
 #else
-        const unsigned char
-                        *us1 = (const unsigned char *)s1,
+    const unsigned char *us1 = (const unsigned char *)s1,
                         *us2 = (const unsigned char *)s2;
 
-        if (n != 0) {
-                do {
-                        if (tolower(*us1) != tolower(*us2++))
-                                return (tolower(*us1) - tolower(*--us2));
-                        if (*us1++ == '\0')
-                                break;
-                } while (--n != 0);
-        }
-        return (0);
+    if (n != 0) {
+        do {
+            if (tolower(*us1) != tolower(*us2++))
+                return (tolower(*us1) - tolower(*--us2));
+            if (*us1++ == '\0')
+                break;
+        } while (--n != 0);
+    }
+    return (0);
 #endif
 }

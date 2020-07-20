@@ -37,7 +37,6 @@
 #include "errwarn.h"
 #include "floatnum.h"
 
-
 /* 97-bit internal floating point format:
  * 0000000s eeeeeeee eeeeeeee m.....................................m
  * Sign          exponent     mantissa (80 bits)
@@ -48,24 +47,24 @@
  * Mantissa does NOT have an implied one bit (it's explicit).
  */
 struct yasm_floatnum {
-    /*@only@*/ wordptr mantissa;        /* Allocated to MANT_BITS bits */
+    /*@only@*/ wordptr mantissa; /* Allocated to MANT_BITS bits */
     unsigned short exponent;
     unsigned char sign;
     unsigned char flags;
 };
 
 /* constants describing parameters of internal floating point format */
-#define MANT_BITS       80
-#define MANT_BYTES      10
-#define MANT_SIGDIGITS  24
-#define EXP_BIAS        0x7FFF
-#define EXP_INF         0xFFFF
-#define EXP_MAX         0xFFFE
-#define EXP_MIN         1
-#define EXP_ZERO        0
+#define MANT_BITS 80
+#define MANT_BYTES 10
+#define MANT_SIGDIGITS 24
+#define EXP_BIAS 0x7FFF
+#define EXP_INF 0xFFFF
+#define EXP_MAX 0xFFFE
+#define EXP_MIN 1
+#define EXP_ZERO 0
 
 /* Flag settings for flags field */
-#define FLAG_ISZERO     1<<0
+#define FLAG_ISZERO 1 << 0
 
 /* Note this structure integrates the floatnum structure */
 typedef struct POT_Entry_s {
@@ -75,8 +74,8 @@ typedef struct POT_Entry_s {
 
 /* "Source" for POT_Entry. */
 typedef struct POT_Entry_Source_s {
-    unsigned char mantissa[MANT_BYTES];     /* little endian mantissa */
-    unsigned short exponent;                /* Bias 32767 exponent */
+    unsigned char mantissa[MANT_BYTES]; /* little endian mantissa */
+    unsigned short exponent;            /* Bias 32767 exponent */
 } POT_Entry_Source;
 
 /* Power of ten tables used by the floating point I/O routines.
@@ -91,20 +90,34 @@ typedef struct POT_Entry_Source_s {
  */
 static /*@only@*/ POT_Entry *POT_TableN;
 static POT_Entry_Source POT_TableN_Source[] = {
-    {{0xe3,0x2d,0xde,0x9f,0xce,0xd2,0xc8,0x04,0xdd,0xa6},0x4ad8}, /* 1e-4096 */
-    {{0x25,0x49,0xe4,0x2d,0x36,0x34,0x4f,0x53,0xae,0xce},0x656b}, /* 1e-2048 */
-    {{0xa6,0x87,0xbd,0xc0,0x57,0xda,0xa5,0x82,0xa6,0xa2},0x72b5}, /* 1e-1024 */
-    {{0x33,0x71,0x1c,0xd2,0x23,0xdb,0x32,0xee,0x49,0x90},0x795a}, /* 1e-512 */
-    {{0x91,0xfa,0x39,0x19,0x7a,0x63,0x25,0x43,0x31,0xc0},0x7cac}, /* 1e-256 */
-    {{0x7d,0xac,0xa0,0xe4,0xbc,0x64,0x7c,0x46,0xd0,0xdd},0x7e55}, /* 1e-128 */
-    {{0x24,0x3f,0xa5,0xe9,0x39,0xa5,0x27,0xea,0x7f,0xa8},0x7f2a}, /* 1e-64 */
-    {{0xde,0x67,0xba,0x94,0x39,0x45,0xad,0x1e,0xb1,0xcf},0x7f94}, /* 1e-32 */
-    {{0x2f,0x4c,0x5b,0xe1,0x4d,0xc4,0xbe,0x94,0x95,0xe6},0x7fc9}, /* 1e-16 */
-    {{0xc2,0xfd,0xfc,0xce,0x61,0x84,0x11,0x77,0xcc,0xab},0x7fe4}, /* 1e-8 */
-    {{0xc3,0xd3,0x2b,0x65,0x19,0xe2,0x58,0x17,0xb7,0xd1},0x7ff1}, /* 1e-4 */
-    {{0x71,0x3d,0x0a,0xd7,0xa3,0x70,0x3d,0x0a,0xd7,0xa3},0x7ff8}, /* 1e-2 */
-    {{0xcd,0xcc,0xcc,0xcc,0xcc,0xcc,0xcc,0xcc,0xcc,0xcc},0x7ffb}, /* 1e-1 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80},0x7fff}, /* 1e-0 */
+    { { 0xe3, 0x2d, 0xde, 0x9f, 0xce, 0xd2, 0xc8, 0x04, 0xdd, 0xa6 },
+      0x4ad8 }, /* 1e-4096 */
+    { { 0x25, 0x49, 0xe4, 0x2d, 0x36, 0x34, 0x4f, 0x53, 0xae, 0xce },
+      0x656b }, /* 1e-2048 */
+    { { 0xa6, 0x87, 0xbd, 0xc0, 0x57, 0xda, 0xa5, 0x82, 0xa6, 0xa2 },
+      0x72b5 }, /* 1e-1024 */
+    { { 0x33, 0x71, 0x1c, 0xd2, 0x23, 0xdb, 0x32, 0xee, 0x49, 0x90 },
+      0x795a }, /* 1e-512 */
+    { { 0x91, 0xfa, 0x39, 0x19, 0x7a, 0x63, 0x25, 0x43, 0x31, 0xc0 },
+      0x7cac }, /* 1e-256 */
+    { { 0x7d, 0xac, 0xa0, 0xe4, 0xbc, 0x64, 0x7c, 0x46, 0xd0, 0xdd },
+      0x7e55 }, /* 1e-128 */
+    { { 0x24, 0x3f, 0xa5, 0xe9, 0x39, 0xa5, 0x27, 0xea, 0x7f, 0xa8 },
+      0x7f2a }, /* 1e-64 */
+    { { 0xde, 0x67, 0xba, 0x94, 0x39, 0x45, 0xad, 0x1e, 0xb1, 0xcf },
+      0x7f94 }, /* 1e-32 */
+    { { 0x2f, 0x4c, 0x5b, 0xe1, 0x4d, 0xc4, 0xbe, 0x94, 0x95, 0xe6 },
+      0x7fc9 }, /* 1e-16 */
+    { { 0xc2, 0xfd, 0xfc, 0xce, 0x61, 0x84, 0x11, 0x77, 0xcc, 0xab },
+      0x7fe4 }, /* 1e-8 */
+    { { 0xc3, 0xd3, 0x2b, 0x65, 0x19, 0xe2, 0x58, 0x17, 0xb7, 0xd1 },
+      0x7ff1 }, /* 1e-4 */
+    { { 0x71, 0x3d, 0x0a, 0xd7, 0xa3, 0x70, 0x3d, 0x0a, 0xd7, 0xa3 },
+      0x7ff8 }, /* 1e-2 */
+    { { 0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc },
+      0x7ffb }, /* 1e-1 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 },
+      0x7fff }, /* 1e-0 */
 };
 
 /* This table contains the powers of ten raised to positive powers of two:
@@ -119,22 +132,35 @@ static POT_Entry_Source POT_TableN_Source[] = {
  */
 static /*@only@*/ POT_Entry *POT_TableP;
 static POT_Entry_Source POT_TableP_Source[] = {
-    {{0x4c,0xc9,0x9a,0x97,0x20,0x8a,0x02,0x52,0x60,0xc4},0xb525}, /* 1e+4096 */
-    {{0x4d,0xa7,0xe4,0x5d,0x3d,0xc5,0x5d,0x3b,0x8b,0x9e},0x9a92}, /* 1e+2048 */
-    {{0x0d,0x65,0x17,0x0c,0x75,0x81,0x86,0x75,0x76,0xc9},0x8d48}, /* 1e+1024 */
-    {{0x65,0xcc,0xc6,0x91,0x0e,0xa6,0xae,0xa0,0x19,0xe3},0x86a3}, /* 1e+512 */
-    {{0xbc,0xdd,0x8d,0xde,0xf9,0x9d,0xfb,0xeb,0x7e,0xaa},0x8351}, /* 1e+256 */
-    {{0x6f,0xc6,0xdf,0x8c,0xe9,0x80,0xc9,0x47,0xba,0x93},0x81a8}, /* 1e+128 */
-    {{0xbf,0x3c,0xd5,0xa6,0xcf,0xff,0x49,0x1f,0x78,0xc2},0x80d3}, /* 1e+64 */
-    {{0x20,0xf0,0x9d,0xb5,0x70,0x2b,0xa8,0xad,0xc5,0x9d},0x8069}, /* 1e+32 */
-    {{0x00,0x00,0x00,0x00,0x00,0x04,0xbf,0xc9,0x1b,0x8e},0x8034}, /* 1e+16 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0xbc,0xbe},0x8019}, /* 1e+8 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x9c},0x800c}, /* 1e+4 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xc8},0x8005}, /* 1e+2 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xa0},0x8002}, /* 1e+1 */
-    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80},0x7fff}, /* 1e+0 */
+    { { 0x4c, 0xc9, 0x9a, 0x97, 0x20, 0x8a, 0x02, 0x52, 0x60, 0xc4 },
+      0xb525 }, /* 1e+4096 */
+    { { 0x4d, 0xa7, 0xe4, 0x5d, 0x3d, 0xc5, 0x5d, 0x3b, 0x8b, 0x9e },
+      0x9a92 }, /* 1e+2048 */
+    { { 0x0d, 0x65, 0x17, 0x0c, 0x75, 0x81, 0x86, 0x75, 0x76, 0xc9 },
+      0x8d48 }, /* 1e+1024 */
+    { { 0x65, 0xcc, 0xc6, 0x91, 0x0e, 0xa6, 0xae, 0xa0, 0x19, 0xe3 },
+      0x86a3 }, /* 1e+512 */
+    { { 0xbc, 0xdd, 0x8d, 0xde, 0xf9, 0x9d, 0xfb, 0xeb, 0x7e, 0xaa },
+      0x8351 }, /* 1e+256 */
+    { { 0x6f, 0xc6, 0xdf, 0x8c, 0xe9, 0x80, 0xc9, 0x47, 0xba, 0x93 },
+      0x81a8 }, /* 1e+128 */
+    { { 0xbf, 0x3c, 0xd5, 0xa6, 0xcf, 0xff, 0x49, 0x1f, 0x78, 0xc2 },
+      0x80d3 }, /* 1e+64 */
+    { { 0x20, 0xf0, 0x9d, 0xb5, 0x70, 0x2b, 0xa8, 0xad, 0xc5, 0x9d },
+      0x8069 }, /* 1e+32 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0xbf, 0xc9, 0x1b, 0x8e },
+      0x8034 }, /* 1e+16 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xbc, 0xbe },
+      0x8019 }, /* 1e+8 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x9c },
+      0x800c }, /* 1e+4 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc8 },
+      0x8005 }, /* 1e+2 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa0 },
+      0x8002 }, /* 1e+1 */
+    { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 },
+      0x7fff }, /* 1e+0 */
 };
-
 
 static void
 POT_Table_Init_Entry(/*@out@*/ POT_Entry *e, POT_Entry_Source *s, int dec_exp)
@@ -166,14 +192,16 @@ yasm_floatnum_initialize(void)
     int i;
 
     /* Allocate space for two POT tables */
-    POT_TableN = yasm_xmalloc(14*sizeof(POT_Entry));
-    POT_TableP = yasm_xmalloc(15*sizeof(POT_Entry)); /* note 1 extra for -1 */
+    POT_TableN = yasm_xmalloc(14 * sizeof(POT_Entry));
+    POT_TableP = yasm_xmalloc(15 * sizeof(POT_Entry)); /* note 1 extra for -1 */
 
     /* Initialize entry[0..12] */
-    for (i=12; i>=0; i--) {
-        POT_Table_Init_Entry(&POT_TableN[i], &POT_TableN_Source[i], 0-dec_exp);
-        POT_Table_Init_Entry(&POT_TableP[i+1], &POT_TableP_Source[i], dec_exp);
-        dec_exp *= 2;       /* Update decimal exponent */
+    for (i = 12; i >= 0; i--) {
+        POT_Table_Init_Entry(&POT_TableN[i], &POT_TableN_Source[i],
+                             0 - dec_exp);
+        POT_Table_Init_Entry(&POT_TableP[i + 1], &POT_TableP_Source[i],
+                             dec_exp);
+        dec_exp *= 2; /* Update decimal exponent */
     }
 
     /* Initialize entry[13] */
@@ -197,7 +225,7 @@ yasm_floatnum_cleanup(void)
     /* Un-offset POT_TableP */
     POT_TableP--;
 
-    for (i=0; i<14; i++) {
+    for (i = 0; i < 14; i++) {
         BitVector_Destroy(POT_TableN[i].f.mantissa);
         BitVector_Destroy(POT_TableP[i].f.mantissa);
     }
@@ -220,7 +248,7 @@ floatnum_normalize(yasm_floatnum *flt)
 
     /* Look for the highest set bit, shift to make it the MSB, and adjust
      * exponent.  Don't let exponent go negative. */
-    norm_amt = (MANT_BITS-1)-Set_Max(flt->mantissa);
+    norm_amt = (MANT_BITS - 1) - Set_Max(flt->mantissa);
     if (norm_amt > (long)flt->exponent)
         norm_amt = (long)flt->exponent;
     BitVector_Move_Left(flt->mantissa, (N_int)norm_amt);
@@ -246,7 +274,8 @@ floatnum_mul(yasm_floatnum *acc, const yasm_floatnum *op)
     }
 
     /* Add exponents, checking for overflow/underflow. */
-    expon = (((int)acc->exponent)-EXP_BIAS) + (((int)op->exponent)-EXP_BIAS);
+    expon =
+        (((int)acc->exponent) - EXP_BIAS) + (((int)op->exponent) - EXP_BIAS);
     expon += EXP_BIAS;
     if (expon > EXP_MAX) {
         /* Overflow; return infinity. */
@@ -261,14 +290,14 @@ floatnum_mul(yasm_floatnum *acc, const yasm_floatnum *op)
     }
 
     /* Add one to the final exponent, as the multiply shifts one extra time. */
-    acc->exponent = (unsigned short)(expon+1);
+    acc->exponent = (unsigned short)(expon + 1);
 
     /* Allocate space for the multiply result */
-    product = BitVector_Create((N_int)((MANT_BITS+1)*2), FALSE);
+    product = BitVector_Create((N_int)((MANT_BITS + 1) * 2), FALSE);
 
     /* Allocate 1-bit-longer fields to force the operands to be unsigned */
-    op1 = BitVector_Create((N_int)(MANT_BITS+1), FALSE);
-    op2 = BitVector_Create((N_int)(MANT_BITS+1), FALSE);
+    op1 = BitVector_Create((N_int)(MANT_BITS + 1), FALSE);
+    op2 = BitVector_Create((N_int)(MANT_BITS + 1), FALSE);
 
     /* Make the operands unsigned after copying from original operands */
     BitVector_Copy(op1, acc->mantissa);
@@ -285,7 +314,7 @@ floatnum_mul(yasm_floatnum *acc, const yasm_floatnum *op)
      * Look for the highest set bit, shift to make it the MSB, and adjust
      * exponent.  Don't let exponent go negative.
      */
-    norm_amt = (MANT_BITS*2-1)-Set_Max(product);
+    norm_amt = (MANT_BITS * 2 - 1) - Set_Max(product);
     if (norm_amt > (long)acc->exponent)
         norm_amt = (long)acc->exponent;
     BitVector_Move_Left(product, (N_int)norm_amt);
@@ -304,7 +333,7 @@ yasm_floatnum *
 yasm_floatnum_create(const char *str)
 {
     yasm_floatnum *flt;
-    int dec_exponent, dec_exp_add;      /* decimal (powers of 10) exponent */
+    int dec_exponent, dec_exp_add; /* decimal (powers of 10) exponent */
     int POT_index;
     wordptr operand[2];
     int sig_digits;
@@ -364,7 +393,7 @@ yasm_floatnum_create(const char *str)
 
                 /* Add in current digit */
                 BitVector_Empty(operand[0]);
-                BitVector_Chunk_Store(operand[0], 4, 0, (N_long)(*str-'0'));
+                BitVector_Chunk_Store(operand[0], 4, 0, (N_long)(*str - '0'));
                 carry = 0;
                 BitVector_add(flt->mantissa, operand[1], operand[0], &carry);
             } else {
@@ -400,7 +429,7 @@ yasm_floatnum_create(const char *str)
 
                 /* Add in current digit */
                 BitVector_Empty(operand[0]);
-                BitVector_Chunk_Store(operand[0], 4, 0, (N_long)(*str-'0'));
+                BitVector_Chunk_Store(operand[0], 4, 0, (N_long)(*str - '0'));
                 carry = 0;
                 BitVector_add(flt->mantissa, operand[1], operand[0], &carry);
             }
@@ -433,7 +462,7 @@ yasm_floatnum_create(const char *str)
         return flt;
     }
     /* Exponent if already norm. */
-    flt->exponent = (unsigned short)(0x7FFF+(MANT_BITS-1));
+    flt->exponent = (unsigned short)(0x7FFF + (MANT_BITS - 1));
     floatnum_normalize(flt);
 
     /* The number is normalized.  Now multiply by 10 the number of times
@@ -529,7 +558,7 @@ yasm_floatnum_get_int(const yasm_floatnum *flt, unsigned long *ret_val)
     unsigned char t[4];
 
     if (yasm_floatnum_get_sized(flt, t, 4, 32, 0, 0, 0)) {
-        *ret_val = 0xDEADBEEFUL;    /* Obviously incorrect return value */
+        *ret_val = 0xDEADBEEFUL; /* Obviously incorrect return value */
         return 1;
     }
 
@@ -559,33 +588,34 @@ floatnum_get_common(const yasm_floatnum *flt, /*@out@*/ unsigned char *ptr,
     unsigned int len;
     unsigned int overflow = 0, underflow = 0;
     int retval = 0;
-    long exp_bias = (1<<(exp_bits-1))-1;
-    long exp_inf = (1<<exp_bits)-1;
+    long exp_bias = (1 << (exp_bits - 1)) - 1;
+    long exp_inf = (1 << exp_bits) - 1;
 
-    output = BitVector_Create(byte_size*8, TRUE);
+    output = BitVector_Create(byte_size * 8, TRUE);
 
     /* copy mantissa */
     BitVector_Interval_Copy(output, flt->mantissa, 0,
-                            (N_int)((MANT_BITS-implicit1)-mant_bits),
+                            (N_int)((MANT_BITS - implicit1) - mant_bits),
                             mant_bits);
 
     /* round mantissa */
-    if (BitVector_bit_test(flt->mantissa, (MANT_BITS-implicit1)-(mant_bits+1)))
+    if (BitVector_bit_test(flt->mantissa,
+                           (MANT_BITS - implicit1) - (mant_bits + 1)))
         BitVector_increment(output);
 
     if (BitVector_bit_test(output, mant_bits)) {
         /* overflowed, so zero mantissa (and set explicit bit if necessary) */
         BitVector_Empty(output);
-        BitVector_Bit_Copy(output, mant_bits-1, !implicit1);
+        BitVector_Bit_Copy(output, mant_bits - 1, !implicit1);
         /* and up the exponent (checking for overflow) */
-        if (exponent+1 >= EXP_INF)
+        if (exponent + 1 >= EXP_INF)
             overflow = 1;
         else
             exponent++;
     }
 
     /* adjust the exponent to the output bias, checking for overflow */
-    exponent -= EXP_BIAS-exp_bias;
+    exponent -= EXP_BIAS - exp_bias;
     if (exponent >= exp_inf)
         overflow = 1;
     else if (exponent <= 0)
@@ -611,7 +641,7 @@ floatnum_get_common(const yasm_floatnum *flt, /*@out@*/ unsigned char *ptr,
     BitVector_Chunk_Store(output, exp_bits, mant_bits, (N_long)exponent);
 
     /* merge in sign bit */
-    BitVector_Bit_Copy(output, byte_size*8-1, flt->sign);
+    BitVector_Bit_Copy(output, byte_size * 8 - 1, flt->sign);
 
     /* get little-endian bytes */
     buf = BitVector_Block_Read(output, &len);
@@ -620,7 +650,7 @@ floatnum_get_common(const yasm_floatnum *flt, /*@out@*/ unsigned char *ptr,
             N_("Byte length of BitVector does not match bit length"));
 
     /* copy to output */
-    memcpy(ptr, buf, byte_size*sizeof(unsigned char));
+    memcpy(ptr, buf, byte_size * sizeof(unsigned char));
 
     /* free allocated resources */
     yasm_xfree(buf);
@@ -676,7 +706,7 @@ yasm_floatnum_get_sized(const yasm_floatnum *flt, unsigned char *ptr,
                         int bigendian, int warn)
 {
     int retval;
-    if (destsize*8 != valsize || shift>0 || bigendian) {
+    if (destsize * 8 != valsize || shift > 0 || bigendian) {
         /* TODO */
         yasm_internal_error(N_("unsupported floatnum functionality"));
     }
@@ -733,28 +763,28 @@ yasm_floatnum_print(const yasm_floatnum *flt, FILE *f)
 
     /* Internal format */
     str = BitVector_to_Hex(flt->mantissa);
-    fprintf(f, "%c %s *2^%04x\n", flt->sign?'-':'+', (char *)str,
+    fprintf(f, "%c %s *2^%04x\n", flt->sign ? '-' : '+', (char *)str,
             flt->exponent);
     yasm_xfree(str);
 
     /* 32-bit (single precision) format */
-    fprintf(f, "32-bit: %d: ",
-            yasm_floatnum_get_sized(flt, out, 4, 32, 0, 0, 0));
-    for (i=0; i<4; i++)
+    fprintf(f,
+            "32-bit: %d: ", yasm_floatnum_get_sized(flt, out, 4, 32, 0, 0, 0));
+    for (i = 0; i < 4; i++)
         fprintf(f, "%02x ", out[i]);
     fprintf(f, "\n");
 
     /* 64-bit (double precision) format */
-    fprintf(f, "64-bit: %d: ",
-            yasm_floatnum_get_sized(flt, out, 8, 64, 0, 0, 0));
-    for (i=0; i<8; i++)
+    fprintf(f,
+            "64-bit: %d: ", yasm_floatnum_get_sized(flt, out, 8, 64, 0, 0, 0));
+    for (i = 0; i < 8; i++)
         fprintf(f, "%02x ", out[i]);
     fprintf(f, "\n");
 
     /* 80-bit (extended precision) format */
-    fprintf(f, "80-bit: %d: ",
-            yasm_floatnum_get_sized(flt, out, 10, 80, 0, 0, 0));
-    for (i=0; i<10; i++)
+    fprintf(f,
+            "80-bit: %d: ", yasm_floatnum_get_sized(flt, out, 10, 80, 0, 0, 0));
+    for (i = 0; i < 10; i++)
         fprintf(f, "%02x ", out[i]);
     fprintf(f, "\n");
 }

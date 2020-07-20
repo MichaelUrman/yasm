@@ -31,7 +31,7 @@
 
 typedef struct Test_Entry {
     /* splitpath function to test */
-    size_t (*splitpath) (const char *path, const char **tail);
+    size_t (*splitpath)(const char *path, const char **tail);
 
     /* input path */
     const char *input;
@@ -45,55 +45,55 @@ typedef struct Test_Entry {
 
 static Test_Entry tests[] = {
     /* UNIX split */
-    {yasm__splitpath_unix, "", 0, ""},
-    {yasm__splitpath_unix, "./file.ext", 0, "file.ext"},
-    {yasm__splitpath_unix, "../../file.ext", 5, "file.ext"},
-    {yasm__splitpath_unix, "file.ext", 0, "file.ext"},
-    {yasm__splitpath_unix, "/file.ext", 1, "file.ext"},
-    {yasm__splitpath_unix, "/foo/file.ext", 4, "file.ext"},
-    {yasm__splitpath_unix, "/foo/bar/file.ext", 8, "file.ext"},
-    {yasm__splitpath_unix, "foo/file.ext", 3, "file.ext"},
-    {yasm__splitpath_unix, "foo/bar/file.ext", 7, "file.ext"},
-    {yasm__splitpath_unix, "foo/bar//file.ext", 7, "file.ext"},
-    {yasm__splitpath_unix, "/", 1, ""},
-    {yasm__splitpath_unix, "/foo/", 4, ""},
-    {yasm__splitpath_unix, "/foo/bar/", 8, ""},
-    {yasm__splitpath_unix, "foo/", 3, ""},
-    {yasm__splitpath_unix, "foo/bar/", 7, ""},
-    {yasm__splitpath_unix, "foo/bar//", 7, ""},
+    { yasm__splitpath_unix, "", 0, "" },
+    { yasm__splitpath_unix, "./file.ext", 0, "file.ext" },
+    { yasm__splitpath_unix, "../../file.ext", 5, "file.ext" },
+    { yasm__splitpath_unix, "file.ext", 0, "file.ext" },
+    { yasm__splitpath_unix, "/file.ext", 1, "file.ext" },
+    { yasm__splitpath_unix, "/foo/file.ext", 4, "file.ext" },
+    { yasm__splitpath_unix, "/foo/bar/file.ext", 8, "file.ext" },
+    { yasm__splitpath_unix, "foo/file.ext", 3, "file.ext" },
+    { yasm__splitpath_unix, "foo/bar/file.ext", 7, "file.ext" },
+    { yasm__splitpath_unix, "foo/bar//file.ext", 7, "file.ext" },
+    { yasm__splitpath_unix, "/", 1, "" },
+    { yasm__splitpath_unix, "/foo/", 4, "" },
+    { yasm__splitpath_unix, "/foo/bar/", 8, "" },
+    { yasm__splitpath_unix, "foo/", 3, "" },
+    { yasm__splitpath_unix, "foo/bar/", 7, "" },
+    { yasm__splitpath_unix, "foo/bar//", 7, "" },
     /* Windows split */
-    {yasm__splitpath_win, "", 0, ""},
-    {yasm__splitpath_win, "file.ext", 0, "file.ext"},
-    {yasm__splitpath_win, "./file.ext", 0, "file.ext"},
-    {yasm__splitpath_win, "/file.ext", 1, "file.ext"},
-    {yasm__splitpath_win, "/foo/file.ext", 4, "file.ext"},
-    {yasm__splitpath_win, "/foo/bar/file.ext", 8, "file.ext"},
-    {yasm__splitpath_win, "foo/file.ext", 3, "file.ext"},
-    {yasm__splitpath_win, "foo/bar/file.ext", 7, "file.ext"},
-    {yasm__splitpath_win, "foo/bar//file.ext", 7, "file.ext"},
-    {yasm__splitpath_win, "..\\..\\file.ext", 5, "file.ext"},
-    {yasm__splitpath_win, "c:file.ext", 2, "file.ext"},
-    {yasm__splitpath_win, "c:.\\file.ext", 2, "file.ext"},
-    {yasm__splitpath_win, "d:/file.ext", 3, "file.ext"},
-    {yasm__splitpath_win, "e:/foo/file.ext", 6, "file.ext"},
-    {yasm__splitpath_win, "f:/foo/bar/file.ext", 10, "file.ext"},
-    {yasm__splitpath_win, "g:foo/file.ext", 5, "file.ext"},
-    {yasm__splitpath_win, "h:foo/bar/file.ext", 9, "file.ext"},
-    {yasm__splitpath_win, "i:foo/bar//file.ext", 9, "file.ext"},
-    {yasm__splitpath_win, "d:\\file.ext", 3, "file.ext"},
-    {yasm__splitpath_win, "e:\\foo/file.ext", 6, "file.ext"},
-    {yasm__splitpath_win, "f:/foo\\bar\\file.ext", 10, "file.ext"},
-    {yasm__splitpath_win, "g:foo\\file.ext", 5, "file.ext"},
-    {yasm__splitpath_win, "h:foo/bar\\file.ext", 9, "file.ext"},
-    {yasm__splitpath_win, "i:foo\\bar//\\file.ext", 9, "file.ext"},
-    {yasm__splitpath_win, "\\", 1, ""},
-    {yasm__splitpath_win, "c:", 2, ""},
-    {yasm__splitpath_win, "d:\\", 3, ""},
-    {yasm__splitpath_win, "e:\\foo/", 6, ""},
-    {yasm__splitpath_win, "f:/foo\\bar\\", 10, ""},
-    {yasm__splitpath_win, "g:foo\\", 5, ""},
-    {yasm__splitpath_win, "h:foo/bar\\", 9, ""},
-    {yasm__splitpath_win, "i:foo\\bar//\\", 9, ""},
+    { yasm__splitpath_win, "", 0, "" },
+    { yasm__splitpath_win, "file.ext", 0, "file.ext" },
+    { yasm__splitpath_win, "./file.ext", 0, "file.ext" },
+    { yasm__splitpath_win, "/file.ext", 1, "file.ext" },
+    { yasm__splitpath_win, "/foo/file.ext", 4, "file.ext" },
+    { yasm__splitpath_win, "/foo/bar/file.ext", 8, "file.ext" },
+    { yasm__splitpath_win, "foo/file.ext", 3, "file.ext" },
+    { yasm__splitpath_win, "foo/bar/file.ext", 7, "file.ext" },
+    { yasm__splitpath_win, "foo/bar//file.ext", 7, "file.ext" },
+    { yasm__splitpath_win, "..\\..\\file.ext", 5, "file.ext" },
+    { yasm__splitpath_win, "c:file.ext", 2, "file.ext" },
+    { yasm__splitpath_win, "c:.\\file.ext", 2, "file.ext" },
+    { yasm__splitpath_win, "d:/file.ext", 3, "file.ext" },
+    { yasm__splitpath_win, "e:/foo/file.ext", 6, "file.ext" },
+    { yasm__splitpath_win, "f:/foo/bar/file.ext", 10, "file.ext" },
+    { yasm__splitpath_win, "g:foo/file.ext", 5, "file.ext" },
+    { yasm__splitpath_win, "h:foo/bar/file.ext", 9, "file.ext" },
+    { yasm__splitpath_win, "i:foo/bar//file.ext", 9, "file.ext" },
+    { yasm__splitpath_win, "d:\\file.ext", 3, "file.ext" },
+    { yasm__splitpath_win, "e:\\foo/file.ext", 6, "file.ext" },
+    { yasm__splitpath_win, "f:/foo\\bar\\file.ext", 10, "file.ext" },
+    { yasm__splitpath_win, "g:foo\\file.ext", 5, "file.ext" },
+    { yasm__splitpath_win, "h:foo/bar\\file.ext", 9, "file.ext" },
+    { yasm__splitpath_win, "i:foo\\bar//\\file.ext", 9, "file.ext" },
+    { yasm__splitpath_win, "\\", 1, "" },
+    { yasm__splitpath_win, "c:", 2, "" },
+    { yasm__splitpath_win, "d:\\", 3, "" },
+    { yasm__splitpath_win, "e:\\foo/", 6, "" },
+    { yasm__splitpath_win, "f:/foo\\bar\\", 10, "" },
+    { yasm__splitpath_win, "g:foo\\", 5, "" },
+    { yasm__splitpath_win, "h:foo/bar\\", 9, "" },
+    { yasm__splitpath_win, "i:foo\\bar//\\", 9, "" },
 };
 
 static char failed[1000];
@@ -134,21 +134,21 @@ int
 main(void)
 {
     int nf = 0;
-    int numtests = sizeof(tests)/sizeof(Test_Entry);
+    int numtests = sizeof(tests) / sizeof(Test_Entry);
     int i;
 
     failed[0] = '\0';
     printf("Test splitpath_test: ");
-    for (i=0; i<numtests; i++) {
+    for (i = 0; i < numtests; i++) {
         int fail = run_test(&tests[i]);
-        printf("%c", fail>0 ? 'F':'.');
+        printf("%c", fail > 0 ? 'F' : '.');
         fflush(stdout);
         if (fail)
             sprintf(failed, "%s ** F: %s\n", failed, failmsg);
         nf += fail;
     }
 
-    printf(" +%d-%d/%d %d%%\n%s",
-           numtests-nf, nf, numtests, 100*(numtests-nf)/numtests, failed);
+    printf(" +%d-%d/%d %d%%\n%s", numtests - nf, nf, numtests,
+           100 * (numtests - nf) / numtests, failed);
     return (nf == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

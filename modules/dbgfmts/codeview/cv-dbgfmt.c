@@ -32,7 +32,6 @@
 
 yasm_dbgfmt_module yasm_cv8_LTX_dbgfmt;
 
-
 static /*@null@*/ /*@only@*/ yasm_dbgfmt *
 cv_dbgfmt_create(yasm_object *object, yasm_dbgfmt_module *module, int version)
 {
@@ -44,8 +43,8 @@ cv_dbgfmt_create(yasm_object *object, yasm_dbgfmt_module *module, int version)
     dbgfmt_cv->filenames_allocated = 32;
     dbgfmt_cv->filenames_size = 0;
     dbgfmt_cv->filenames =
-        yasm_xmalloc(sizeof(cv_filename)*dbgfmt_cv->filenames_allocated);
-    for (i=0; i<dbgfmt_cv->filenames_allocated; i++) {
+        yasm_xmalloc(sizeof(cv_filename) * dbgfmt_cv->filenames_allocated);
+    for (i = 0; i < dbgfmt_cv->filenames_allocated; i++) {
         dbgfmt_cv->filenames[i].pathname = NULL;
         dbgfmt_cv->filenames[i].filename = NULL;
         dbgfmt_cv->filenames[i].str_off = 0;
@@ -68,7 +67,7 @@ cv_dbgfmt_destroy(/*@only@*/ yasm_dbgfmt *dbgfmt)
 {
     yasm_dbgfmt_cv *dbgfmt_cv = (yasm_dbgfmt_cv *)dbgfmt;
     size_t i;
-    for (i=0; i<dbgfmt_cv->filenames_size; i++) {
+    for (i = 0; i < dbgfmt_cv->filenames_size; i++) {
         if (dbgfmt_cv->filenames[i].pathname)
             yasm_xfree(dbgfmt_cv->filenames[i].pathname);
         if (dbgfmt_cv->filenames[i].filename)
@@ -99,11 +98,9 @@ cv_dbgfmt_generate(yasm_object *object, yasm_linemap *linemap,
 }
 
 /* Define dbgfmt structure -- see dbgfmt.h for details */
-yasm_dbgfmt_module yasm_cv8_LTX_dbgfmt = {
-    "CodeView debugging format for VC8",
-    "cv8",
-    NULL,   /* no directives */
-    cv8_dbgfmt_create,
-    cv_dbgfmt_destroy,
-    cv_dbgfmt_generate
-};
+yasm_dbgfmt_module yasm_cv8_LTX_dbgfmt = { "CodeView debugging format for VC8",
+                                           "cv8",
+                                           NULL, /* no directives */
+                                           cv8_dbgfmt_create,
+                                           cv_dbgfmt_destroy,
+                                           cv_dbgfmt_generate };

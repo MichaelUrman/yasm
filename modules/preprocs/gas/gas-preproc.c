@@ -31,7 +31,7 @@
 #include "modules/preprocs/gas/gas-eval.h"
 
 #define FALSE 0
-#define TRUE  1
+#define TRUE 1
 #define BSIZE 512
 
 #ifndef MAXPATHLEN
@@ -72,7 +72,7 @@ typedef struct expr_state {
 } expr_state;
 
 typedef struct yasm_preproc_gas {
-    yasm_preproc_base preproc;   /* base structure */
+    yasm_preproc_base preproc; /* base structure */
 
     FILE *in;
     char *in_filename;
@@ -109,7 +109,8 @@ static int substitute_values(yasm_preproc_gas *pp, char **line_ptr);
 
 /* String helpers. */
 
-static const char *starts_with(const char *big, const char *little)
+static const char *
+starts_with(const char *big, const char *little)
 {
     while (*little) {
         if (*little++ != *big++) {
@@ -119,21 +120,24 @@ static const char *starts_with(const char *big, const char *little)
     return big;
 }
 
-static void skip_whitespace(const char **line)
+static void
+skip_whitespace(const char **line)
 {
     while (isspace(**line)) {
         (*line)++;
     }
 }
 
-static void skip_whitespace2(char **line)
+static void
+skip_whitespace2(char **line)
 {
     while (isspace(**line)) {
         (*line)++;
     }
 }
 
-static const char *matches(const char *line, const char *directive)
+static const char *
+matches(const char *line, const char *directive)
 {
     skip_whitespace(&line);
 
@@ -148,7 +152,9 @@ static const char *matches(const char *line, const char *directive)
     return NULL;
 }
 
-static int unquote(const char *arg, char *to, size_t to_size, char q, char expected, const char **remainder)
+static int
+unquote(const char *arg, char *to, size_t to_size, char q, char expected,
+        const char **remainder)
 {
     const char *quote;
     const char *end;
@@ -178,8 +184,8 @@ static int unquote(const char *arg, char *to, size_t to_size, char q, char expec
     if (remainder) {
         *remainder = end + 1;
     }
-    
-    len = (size_t) (quote - arg);
+
+    len = (size_t)(quote - arg);
     if (len >= to_size) {
         return -4;
     }
@@ -187,12 +193,13 @@ static int unquote(const char *arg, char *to, size_t to_size, char q, char expec
     strncpy(to, arg, len);
     to[len] = '\0';
 
-    return (int) len;
+    return (int)len;
 }
 
 /* Line-reading. */
 
-static char *read_line_from_file(yasm_preproc_gas *pp, FILE *file)
+static char *
+read_line_from_file(yasm_preproc_gas *pp, FILE *file)
 {
     int bufsize = BSIZE;
     char *buf;
@@ -205,7 +212,8 @@ static char *read_line_from_file(yasm_preproc_gas *pp, FILE *file)
     for (;;) {
         if (!fgets(p, bufsize - (p - buf), file)) {
             if (ferror(file)) {
-                yasm_error_set(YASM_ERROR_IO, N_("error when reading from file"));
+                yasm_error_set(YASM_ERROR_IO,
+                               N_("error when reading from file"));
                 yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
             }
             break;
@@ -218,7 +226,7 @@ static char *read_line_from_file(yasm_preproc_gas *pp, FILE *file)
             /* Increase size of buffer */
             char *oldbuf = buf;
             bufsize *= 2;
-            buf = yasm_xrealloc(buf, (size_t) bufsize);
+            buf = yasm_xrealloc(buf, (size_t)bufsize);
             p = buf + (p - oldbuf);
         }
     }
@@ -234,7 +242,8 @@ static char *read_line_from_file(yasm_preproc_gas *pp, FILE *file)
     return buf;
 }
 
-static char *read_line(yasm_preproc_gas *pp)
+static char *
+read_line(yasm_preproc_gas *pp)
 {
     char *line;
 
@@ -270,18 +279,19 @@ static char *read_line(yasm_preproc_gas *pp)
     return line;
 }
 
-static const char *get_arg(yasm_preproc_gas *pp, const char *src, char *dest, size_t dest_size)
+static const char *
+get_arg(yasm_preproc_gas *pp, const char *src, char *dest, size_t dest_size)
 {
     const char *comma = strchr(src, ',');
     if (comma) {
-        size_t len = (size_t) (comma - src);
+        size_t len = (size_t)(comma - src);
         if (len >= dest_size) {
             len = dest_size - 1;
         }
         strncpy(dest, src, len);
         dest[len] = '\0';
         comma++;
-        skip_whitespace(&comma);        
+        skip_whitespace(&comma);
     } else {
         yasm_error_set(YASM_ERROR_SYNTAX, N_("expected comma"));
         yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
@@ -291,28 +301,33 @@ static const char *get_arg(yasm_preproc_gas *pp, const char *src, char *dest, si
 
 /* GAS expression evaluation. */
 
-static char get_char(yasm_preproc_gas *pp)
+static char
+get_char(yasm_preproc_gas *pp)
 {
     return pp->expr.string[pp->expr.string_cursor];
 }
 
-static const char *get_str(yasm_preproc_gas *pp)
+static const char *
+get_str(yasm_preproc_gas *pp)
 {
     return pp->expr.string + pp->expr.string_cursor;
 }
 
-static void next_char(yasm_preproc_gas *pp)
+static void
+next_char(yasm_preproc_gas *pp)
 {
     pp->expr.string_cursor++;
 }
 
-static int ishex(char c)
+static int
+ishex(char c)
 {
     c = tolower(c);
     return isdigit(c) || (c >= 'a' && c <= 'f');
 }
 
-static void gas_scan_init(yasm_preproc_gas *pp, struct tokenval *tokval, const char *arg1)
+static void
+gas_scan_init(yasm_preproc_gas *pp, struct tokenval *tokval, const char *arg1)
 {
     pp->expr.symbol = NULL;
     pp->expr.string = arg1;
@@ -321,7 +336,8 @@ static void gas_scan_init(yasm_preproc_gas *pp, struct tokenval *tokval, const c
     tokval->t_type = TOKEN_INVALID;
 }
 
-static void gas_scan_cleanup(yasm_preproc_gas *pp, struct tokenval *tokval)
+static void
+gas_scan_cleanup(yasm_preproc_gas *pp, struct tokenval *tokval)
 {
     if (tokval->t_integer) {
         yasm_intnum_destroy(tokval->t_integer);
@@ -333,9 +349,10 @@ static void gas_scan_cleanup(yasm_preproc_gas *pp, struct tokenval *tokval)
     }
 }
 
-static int gas_scan(void *preproc, struct tokenval *tokval)
+static int
+gas_scan(void *preproc, struct tokenval *tokval)
 {
-    yasm_preproc_gas *pp = (yasm_preproc_gas *) preproc;
+    yasm_preproc_gas *pp = (yasm_preproc_gas *)preproc;
     char c = get_char(pp);
     const char *str;
 
@@ -357,7 +374,7 @@ static int gas_scan(void *preproc, struct tokenval *tokval)
         int value = 0;
 
         do {
-            value = value*10 + (c - '0');
+            value = value * 10 + (c - '0');
             char_index++;
             next_char(pp);
             c = get_char(pp);
@@ -389,34 +406,27 @@ static int gas_scan(void *preproc, struct tokenval *tokval)
     str = get_str(pp);
 
     {
-        /* It should be tested whether GAS supports all of these or if there are missing ones. */
+        /* It should be tested whether GAS supports all of these or if there are
+         * missing ones. */
         unsigned i;
         struct {
             const char *op;
             int token;
-        } ops[] = {
-            { "<<", TOKEN_SHL },
-            { ">>", TOKEN_SHR },
-            { "//", TOKEN_SDIV },
-            { "%%", TOKEN_SMOD },
-            { "==", TOKEN_EQ },
-            { "!=", TOKEN_NE },
-            { "<>", TOKEN_NE },
-            { "<>", TOKEN_NE },
-            { "<=", TOKEN_LE },
-            { ">=", TOKEN_GE },
-            { "&&", TOKEN_DBL_AND },
-            { "^^", TOKEN_DBL_XOR },
-            { "||", TOKEN_DBL_OR }
-        };
-       if (strlen(str) > 1) {
-            for (i = 0; i < sizeof(ops)/sizeof(ops[0]); i++) {
+        } ops[] = { { "<<", TOKEN_SHL },     { ">>", TOKEN_SHR },
+                    { "//", TOKEN_SDIV },    { "%%", TOKEN_SMOD },
+                    { "==", TOKEN_EQ },      { "!=", TOKEN_NE },
+                    { "<>", TOKEN_NE },      { "<>", TOKEN_NE },
+                    { "<=", TOKEN_LE },      { ">=", TOKEN_GE },
+                    { "&&", TOKEN_DBL_AND }, { "^^", TOKEN_DBL_XOR },
+                    { "||", TOKEN_DBL_OR } };
+        if (strlen(str) > 1) {
+            for (i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
                 if (!strncmp(str, ops[i].op, 2)) {
                     tokval->t_type = ops[i].token;
                     break;
                 }
             }
-       }
+        }
     }
 
     if (tokval->t_type != TOKEN_INVALID) {
@@ -447,11 +457,12 @@ static int gas_scan(void *preproc, struct tokenval *tokval)
             tokval->t_charptr = pp->expr.symbol;
         }
     }
-    
+
     return tokval->t_type;
 }
 
-static void gas_err(void *private_data, int severity, const char *fmt, ...)
+static void
+gas_err(void *private_data, int severity, const char *fmt, ...)
 {
     va_list args;
     yasm_preproc_gas *pp = private_data;
@@ -466,7 +477,8 @@ static void gas_err(void *private_data, int severity, const char *fmt, ...)
     pp->fatal_error = 1;
 }
 
-static long eval_expr(yasm_preproc_gas *pp, const char *arg1)
+static long
+eval_expr(yasm_preproc_gas *pp, const char *arg1)
 {
     struct tokenval tv;
     yasm_expr *expr;
@@ -492,7 +504,8 @@ static long eval_expr(yasm_preproc_gas *pp, const char *arg1)
 
 /* If-directive helpers. */
 
-static int handle_if(yasm_preproc_gas *pp, int is_true)
+static int
+handle_if(yasm_preproc_gas *pp, int is_true)
 {
     assert(pp->depth >= 0);
     assert(pp->skip_depth == 0);
@@ -504,7 +517,8 @@ static int handle_if(yasm_preproc_gas *pp, int is_true)
     return 1;
 }
 
-static int handle_endif(yasm_preproc_gas *pp)
+static int
+handle_endif(yasm_preproc_gas *pp)
 {
     if (pp->depth) {
         pp->depth--;
@@ -516,10 +530,12 @@ static int handle_endif(yasm_preproc_gas *pp)
     return 1;
 }
 
-static int handle_else(yasm_preproc_gas *pp, int is_elseif)
+static int
+handle_else(yasm_preproc_gas *pp, int is_elseif)
 {
     if (!pp->depth) {
-        yasm_error_set(YASM_ERROR_SYNTAX, N_("\".%s\" without \".if\""), is_elseif ? "elseif" : "else");
+        yasm_error_set(YASM_ERROR_SYNTAX, N_("\".%s\" without \".if\""),
+                       is_elseif ? "elseif" : "else");
         yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
         return 0;
     } else {
@@ -530,11 +546,13 @@ static int handle_else(yasm_preproc_gas *pp, int is_elseif)
 
 /* Directive-handling functions. */
 
-static int eval_if(yasm_preproc_gas *pp, int negate, const char *arg1)
+static int
+eval_if(yasm_preproc_gas *pp, int negate, const char *arg1)
 {
     long value;
     if (!*arg1) {
-        yasm_error_set(YASM_ERROR_SYNTAX, N_("expression is required in \".if\" statement"));
+        yasm_error_set(YASM_ERROR_SYNTAX,
+                       N_("expression is required in \".if\" statement"));
         yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
         return 0;
     }
@@ -543,20 +561,24 @@ static int eval_if(yasm_preproc_gas *pp, int negate, const char *arg1)
     return 1;
 }
 
-static int eval_else(yasm_preproc_gas *pp, int unused)
+static int
+eval_else(yasm_preproc_gas *pp, int unused)
 {
     return handle_else(pp, 0);
 }
 
-static int eval_endif(yasm_preproc_gas *pp, int unused)
+static int
+eval_endif(yasm_preproc_gas *pp, int unused)
 {
     return handle_endif(pp);
 }
 
-static int eval_elseif(yasm_preproc_gas *pp, int unused, const char *arg1)
+static int
+eval_elseif(yasm_preproc_gas *pp, int unused, const char *arg1)
 {
     if (!*arg1) {
-        yasm_error_set(YASM_ERROR_SYNTAX, N_("expression is required in \".elseif\" statement"));
+        yasm_error_set(YASM_ERROR_SYNTAX,
+                       N_("expression is required in \".elseif\" statement"));
         yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
         return 0;
     }
@@ -566,13 +588,15 @@ static int eval_elseif(yasm_preproc_gas *pp, int unused, const char *arg1)
     return eval_if(pp, 0, arg1);
 }
 
-static int eval_ifb(yasm_preproc_gas *pp, int negate, const char *arg1)
+static int
+eval_ifb(yasm_preproc_gas *pp, int negate, const char *arg1)
 {
     int is_blank = !*arg1;
     return handle_if(pp, (negate ? !is_blank : is_blank));
 }
 
-static int eval_ifc(yasm_preproc_gas *pp, int negate, const char *args)
+static int
+eval_ifc(yasm_preproc_gas *pp, int negate, const char *args)
 {
     char arg1[512], arg2[512];
     const char *remainder;
@@ -591,12 +615,15 @@ static int eval_ifc(yasm_preproc_gas *pp, int negate, const char *args)
             return handle_if(pp, (negate ? !result : result));
         }
     }
-    yasm_error_set(YASM_ERROR_SYNTAX, N_("\"%s\" expects two single-quoted or unquoted arguments"), negate ? ".ifnc" : ".ifc");
+    yasm_error_set(YASM_ERROR_SYNTAX,
+                   N_("\"%s\" expects two single-quoted or unquoted arguments"),
+                   negate ? ".ifnc" : ".ifc");
     yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
     return 0;
 }
 
-static int eval_ifeqs(yasm_preproc_gas *pp, int negate, const char *args)
+static int
+eval_ifeqs(yasm_preproc_gas *pp, int negate, const char *args)
 {
     char arg1[512], arg2[512];
     const char *remainder;
@@ -608,33 +635,39 @@ static int eval_ifeqs(yasm_preproc_gas *pp, int negate, const char *args)
             return handle_if(pp, (negate ? !result : result));
         }
     }
-    yasm_error_set(YASM_ERROR_SYNTAX, N_("\"%s\" expects two double-quoted arguments"), negate ? ".ifnes" : ".ifeqs");
+    yasm_error_set(YASM_ERROR_SYNTAX,
+                   N_("\"%s\" expects two double-quoted arguments"),
+                   negate ? ".ifnes" : ".ifeqs");
     yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
     return 1;
 }
 
-static int eval_ifdef(yasm_preproc_gas *pp, int negate, const char *name)
+static int
+eval_ifdef(yasm_preproc_gas *pp, int negate, const char *name)
 {
     yasm_symrec *rec = yasm_symtab_get(pp->defines, name);
     int result = (rec != NULL);
     return handle_if(pp, (negate ? !result : result));
 }
 
-static int eval_ifge(yasm_preproc_gas *pp, int negate, const char *arg1)
+static int
+eval_ifge(yasm_preproc_gas *pp, int negate, const char *arg1)
 {
     long value = eval_expr(pp, arg1);
     int result = (value >= 0);
     return handle_if(pp, (negate ? !result : result));
 }
 
-static int eval_ifgt(yasm_preproc_gas *pp, int negate, const char *arg1)
+static int
+eval_ifgt(yasm_preproc_gas *pp, int negate, const char *arg1)
 {
     long value = eval_expr(pp, arg1);
     int result = (value > 0);
     return handle_if(pp, (negate ? !result : result));
 }
 
-static int eval_include(yasm_preproc_gas *pp, int unused, const char *arg1)
+static int
+eval_include(yasm_preproc_gas *pp, int unused, const char *arg1)
 {
     char *current_filename;
     char filename[MAXPATHLEN];
@@ -657,7 +690,8 @@ static int eval_include(yasm_preproc_gas *pp, int unused, const char *arg1)
     }
     file = yasm_fopen_include(filename, current_filename, "r", NULL);
     if (!file) {
-        yasm_error_set(YASM_ERROR_SYNTAX, N_("unable to open included file \"%s\""), filename);
+        yasm_error_set(YASM_ERROR_SYNTAX,
+                       N_("unable to open included file \"%s\""), filename);
         yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
         return 0;
     }
@@ -686,7 +720,8 @@ static int eval_include(yasm_preproc_gas *pp, int unused, const char *arg1)
     return 1;
 }
 
-static int try_eval_expr(yasm_preproc_gas *pp, const char *value, long *result)
+static int
+try_eval_expr(yasm_preproc_gas *pp, const char *value, long *result)
 {
     int success;
 
@@ -699,7 +734,8 @@ static int try_eval_expr(yasm_preproc_gas *pp, const char *value, long *result)
     return success;
 }
 
-static int remove_define(yasm_preproc_gas *pp, const char *name, int allow_redefine)
+static int
+remove_define(yasm_preproc_gas *pp, const char *name, int allow_redefine)
 {
     yasm_symrec *rec = yasm_symtab_get(pp->defines, name);
     if (rec) {
@@ -707,21 +743,24 @@ static int remove_define(yasm_preproc_gas *pp, const char *name, int allow_redef
         yasm_symtab *new_defines;
 
         if (!allow_redefine) {
-            yasm_error_set(YASM_ERROR_SYNTAX, N_("symbol \"%s\" is already defined"), name);
+            yasm_error_set(YASM_ERROR_SYNTAX,
+                           N_("symbol \"%s\" is already defined"), name);
             yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
             return 0;
         }
 
         new_defines = yasm_symtab_create();
 
-        for (entry = yasm_symtab_first(pp->defines); entry; entry = yasm_symtab_next(entry)) {
+        for (entry = yasm_symtab_first(pp->defines); entry;
+             entry = yasm_symtab_next(entry)) {
             yasm_symrec *entry_rec = yasm_symtab_iter_value(entry);
             const char *rec_name = yasm_symrec_get_name(entry_rec);
             if (strcmp(rec_name, name)) {
-                yasm_intnum *num = yasm_intnum_create_int(eval_expr(pp, rec_name));
+                yasm_intnum *num =
+                    yasm_intnum_create_int(eval_expr(pp, rec_name));
                 yasm_expr *expr = yasm_expr_create_ident(yasm_expr_int(num), 0);
                 yasm_symtab_define_equ(new_defines, rec_name, expr, 0);
-            } 
+            }
         }
 
         yasm_symtab_destroy(pp->defines);
@@ -730,7 +769,9 @@ static int remove_define(yasm_preproc_gas *pp, const char *name, int allow_redef
     return (rec != NULL);
 }
 
-static void add_define(yasm_preproc_gas *pp, const char *name, long value, int allow_redefine, int substitute)
+static void
+add_define(yasm_preproc_gas *pp, const char *name, long value,
+           int allow_redefine, int substitute)
 {
     deferred_define *def, *prev_def, *temp_def;
     yasm_intnum *num;
@@ -747,15 +788,18 @@ static void add_define(yasm_preproc_gas *pp, const char *name, long value, int a
     if (substitute) {
         prev_def = NULL;
         temp_def = NULL;
-        SLIST_FOREACH_SAFE(def, &pp->deferred_defines, next, temp_def) {
+        SLIST_FOREACH_SAFE(def, &pp->deferred_defines, next, temp_def)
+        {
             if (substitute_values(pp, &def->value)) {
-                /* Value was updated - check if it can be added to the symtab. */
+                /* Value was updated - check if it can be added to the symtab.
+                 */
                 if (try_eval_expr(pp, def->value, &value)) {
                     add_define(pp, def->name, value, FALSE, FALSE);
                     if (prev_def) {
                         SLIST_NEXT(prev_def, next) = SLIST_NEXT(def, next);
                     } else {
-                        SLIST_FIRST(&pp->deferred_defines) = SLIST_NEXT(def, next);
+                        SLIST_FIRST(&pp->deferred_defines) =
+                            SLIST_NEXT(def, next);
                     }
                     yasm_xfree(def->name);
                     yasm_xfree(def->value);
@@ -768,7 +812,9 @@ static void add_define(yasm_preproc_gas *pp, const char *name, long value, int a
     }
 }
 
-static int eval_set(yasm_preproc_gas *pp, int allow_redefine, const char *name, const char *value)
+static int
+eval_set(yasm_preproc_gas *pp, int allow_redefine, const char *name,
+         const char *value)
 {
     if (!pp->skip_depth) {
         long result;
@@ -788,7 +834,8 @@ static int eval_set(yasm_preproc_gas *pp, int allow_redefine, const char *name, 
     return 1;
 }
 
-static int eval_macro(yasm_preproc_gas *pp, int unused, char *args)
+static int
+eval_macro(yasm_preproc_gas *pp, int unused, char *args)
 {
     char *end;
     char *line;
@@ -812,7 +859,8 @@ static int eval_macro(yasm_preproc_gas *pp, int unused, char *args)
             end++;
         }
         macro->num_params++;
-        macro->params = yasm_xrealloc(macro->params, macro->num_params*sizeof(char *));
+        macro->params =
+            yasm_xrealloc(macro->params, macro->num_params * sizeof(char *));
         macro->params[macro->num_params - 1] = yasm_xmalloc(end - args + 1);
         memcpy(macro->params[macro->num_params - 1], args, end - args);
         macro->params[macro->num_params - 1][end - args] = '\0';
@@ -835,7 +883,8 @@ static int eval_macro(yasm_preproc_gas *pp, int unused, char *args)
             return 1;
         }
         macro->num_lines++;
-        macro->lines = yasm_xrealloc(macro->lines, macro->num_lines*sizeof(char *));
+        macro->lines =
+            yasm_xrealloc(macro->lines, macro->num_lines * sizeof(char *));
         macro->lines[macro->num_lines - 1] = line;
         line = read_line(pp);
     }
@@ -845,14 +894,17 @@ static int eval_macro(yasm_preproc_gas *pp, int unused, char *args)
     return 0;
 }
 
-static int eval_endm(yasm_preproc_gas *pp, int unused)
+static int
+eval_endm(yasm_preproc_gas *pp, int unused)
 {
     yasm_error_set(YASM_ERROR_SYNTAX, N_("\".endm\" without \".macro\""));
     yasm_errwarn_propagate(pp->errwarns, yasm_linemap_get_current(pp->cur_lm));
     return 0;
 }
 
-static void get_param_value(macro_entry *macro, int param_index, const char *args, const char **value, int *length)
+static void
+get_param_value(macro_entry *macro, int param_index, const char *args,
+                const char **value, int *length)
 {
     int arg_index = 0;
     const char *default_value = NULL;
@@ -891,7 +943,8 @@ static void get_param_value(macro_entry *macro, int param_index, const char *arg
     *length = (default_value ? strlen(default_value) : 0);
 }
 
-static void expand_macro(yasm_preproc_gas *pp, macro_entry *macro, const char *args)
+static void
+expand_macro(yasm_preproc_gas *pp, macro_entry *macro, const char *args)
 {
     int i, j;
     buffered_line *prev_bline = NULL;
@@ -912,15 +965,16 @@ static void expand_macro(yasm_preproc_gas *pp, macro_entry *macro, const char *a
                         char *end = strstr(macro->params[j], "=");
                         int len = (end ? (size_t)(end - macro->params[j])
                                        : strlen(macro->params[j]));
-                        if (!strncmp(tokval.t_charptr, macro->params[j], len)
-                            && tokval.t_charptr[len] == '\0') {
+                        if (!strncmp(tokval.t_charptr, macro->params[j], len) &&
+                            tokval.t_charptr[len] == '\0') {
                             /* now, find matching argument. */
                             const char *value;
                             char *line = work + (pp->expr.string - work);
                             int cursor = pp->expr.string_cursor;
                             int value_length, delta;
 
-                            get_param_value(macro, j, args, &value, &value_length);
+                            get_param_value(macro, j, args, &value,
+                                            &value_length);
 
                             len++; /* leading slash */
                             delta = value_length - len;
@@ -928,7 +982,8 @@ static void expand_macro(yasm_preproc_gas *pp, macro_entry *macro, const char *a
                             if (delta > 0) {
                                 line = yasm_xrealloc(line, line_length + 1);
                             }
-                            memmove(line + cursor - len + value_length, line + cursor, strlen(line + cursor) + 1);
+                            memmove(line + cursor - len + value_length,
+                                    line + cursor, strlen(line + cursor) + 1);
                             memcpy(line + cursor - len, value, value_length);
                             pp->expr.string = work = line;
                             pp->expr.string_cursor += delta;
@@ -959,7 +1014,8 @@ static void expand_macro(yasm_preproc_gas *pp, macro_entry *macro, const char *a
     }
 }
 
-static int eval_rept(yasm_preproc_gas *pp, int unused, const char *arg1)
+static int
+eval_rept(yasm_preproc_gas *pp, int unused, const char *arg1)
 {
     long i, n = eval_expr(pp, arg1);
     long num_lines = 0;
@@ -980,7 +1036,7 @@ static int eval_rept(yasm_preproc_gas *pp, int unused, const char *arg1)
             for (i = 0; i < n; i++) {
                 buffered_line *current_line;
                 prev_bline = NULL;
-                SLIST_FOREACH(current_line, &lines, next) {
+                SLIST_FOREACH (current_line, &lines, next) {
                     buffered_line *bline = yasm_xmalloc(sizeof(buffered_line));
                     bline->line = yasm__xstrdup(current_line->line);
                     bline->line_number = current_line->line_number;
@@ -1021,13 +1077,15 @@ static int eval_rept(yasm_preproc_gas *pp, int unused, const char *arg1)
         line = read_line(pp);
         num_lines++;
     }
-    yasm_linemap_set(pp->cur_lm, pp->in_filename, rept_start_output_line_number, rept_start_file_line_number, 0);
+    yasm_linemap_set(pp->cur_lm, pp->in_filename, rept_start_output_line_number,
+                     rept_start_file_line_number, 0);
     yasm_error_set(YASM_ERROR_SYNTAX, N_("rept without matching endr"));
     yasm_errwarn_propagate(pp->errwarns, rept_start_output_line_number);
     return 0;
 }
 
-static int eval_endr(yasm_preproc_gas *pp, int unused)
+static int
+eval_endr(yasm_preproc_gas *pp, int unused)
 {
     yasm_error_set(YASM_ERROR_SYNTAX, N_("\".endr\" without \".rept\""));
     yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
@@ -1038,11 +1096,13 @@ static int eval_endr(yasm_preproc_gas *pp, int unused)
 
 typedef int (*pp_fn0_t)(yasm_preproc_gas *pp, int param);
 typedef int (*pp_fn1_t)(yasm_preproc_gas *pp, int param, const char *arg1);
-typedef int (*pp_fn2_t)(yasm_preproc_gas *pp, int param, const char *arg1, const char *arg2);
+typedef int (*pp_fn2_t)(yasm_preproc_gas *pp, int param, const char *arg1,
+                        const char *arg2);
 
-#define FN(f) ((pp_fn0_t) &(f))
+#define FN(f) ((pp_fn0_t) & (f))
 
-static void kill_comments(yasm_preproc_gas *pp, char *line)
+static void
+kill_comments(yasm_preproc_gas *pp, char *line)
 {
     int next = 2;
     char *cstart;
@@ -1074,10 +1134,11 @@ static void kill_comments(yasm_preproc_gas *pp, char *line)
         pp->in_comment = FALSE;
         cstart = strstr(cstart, "/*");
         next = 2;
-   }
+    }
 }
 
-static int substitute_values(yasm_preproc_gas *pp, char **line_ptr)
+static int
+substitute_values(yasm_preproc_gas *pp, char **line_ptr)
 {
     int changed = 0;
     char *line = *line_ptr;
@@ -1093,14 +1154,16 @@ static int substitute_values(yasm_preproc_gas *pp, char **line_ptr)
                 int cursor = pp->expr.string_cursor;
                 int len = strlen(tokval.t_charptr);
                 char value[64];
-                int value_length = sprintf(value, "%ld", eval_expr(pp, tokval.t_charptr));
+                int value_length =
+                    sprintf(value, "%ld", eval_expr(pp, tokval.t_charptr));
                 int delta = value_length - len;
 
                 line_length += delta;
                 if (delta > 0) {
                     line = yasm_xrealloc(line, line_length + 1);
                 }
-                memmove(line + cursor - len + value_length, line + cursor, strlen(line + cursor) + 1);
+                memmove(line + cursor - len + value_length, line + cursor,
+                        strlen(line + cursor) + 1);
                 memcpy(line + cursor - len, value, value_length);
                 pp->expr.string = line;
                 pp->expr.string_cursor = cursor + delta;
@@ -1120,7 +1183,8 @@ static int substitute_values(yasm_preproc_gas *pp, char **line_ptr)
     return changed;
 }
 
-static int process_line(yasm_preproc_gas *pp, char **line_ptr)
+static int
+process_line(yasm_preproc_gas *pp, char **line_ptr)
 {
     macro_entry *macro;
     size_t i;
@@ -1131,33 +1195,33 @@ static int process_line(yasm_preproc_gas *pp, char **line_ptr)
         pp_fn0_t fn;
         int param;
     } directives[] = {
-        {"else", 0, FN(eval_else), 0},
-        {"elseif", 1, FN(eval_elseif), 0},
-        {"endif", 0, FN(eval_endif), 0},
-        {"if", 1, FN(eval_if), 0},
-        {"ifb", 1, FN(eval_ifb), 0},
-        {"ifc", 1, FN(eval_ifc), 0},
-        {"ifdef", 1, FN(eval_ifdef), 0},
-        {"ifeq", 1, FN(eval_if), 1},
-        {"ifeqs", 1, FN(eval_ifeqs), 0},
-        {"ifge", 1, FN(eval_ifge), 0},
-        {"ifgt", 1, FN(eval_ifgt), 0},
-        {"ifle", 1, FN(eval_ifgt), 1},
-        {"iflt", 1, FN(eval_ifge), 1},
-        {"ifnb", 1, FN(eval_ifb), 1},
-        {"ifnc", 1, FN(eval_ifc), 1},
-        {"ifndef", 1, FN(eval_ifdef), 1},
-        {"ifnotdef", 1, FN(eval_ifdef), 1},
-        {"ifne", 1, FN(eval_if), 0},
-        {"ifnes", 1, FN(eval_ifeqs), 1},
-        {"include", 1, FN(eval_include), 0},
-        {"set", 2, FN(eval_set), 1},
-        {"equ", 2, FN(eval_set), 1},
-        {"equiv", 2, FN(eval_set), 0},
-        {"macro", 1, FN(eval_macro), 0},
-        {"endm", 0, FN(eval_endm), 0},
-        {"rept", 1, FN(eval_rept), 0},
-        {"endr", 1, FN(eval_endr), 0},
+        { "else", 0, FN(eval_else), 0 },
+        { "elseif", 1, FN(eval_elseif), 0 },
+        { "endif", 0, FN(eval_endif), 0 },
+        { "if", 1, FN(eval_if), 0 },
+        { "ifb", 1, FN(eval_ifb), 0 },
+        { "ifc", 1, FN(eval_ifc), 0 },
+        { "ifdef", 1, FN(eval_ifdef), 0 },
+        { "ifeq", 1, FN(eval_if), 1 },
+        { "ifeqs", 1, FN(eval_ifeqs), 0 },
+        { "ifge", 1, FN(eval_ifge), 0 },
+        { "ifgt", 1, FN(eval_ifgt), 0 },
+        { "ifle", 1, FN(eval_ifgt), 1 },
+        { "iflt", 1, FN(eval_ifge), 1 },
+        { "ifnb", 1, FN(eval_ifb), 1 },
+        { "ifnc", 1, FN(eval_ifc), 1 },
+        { "ifndef", 1, FN(eval_ifdef), 1 },
+        { "ifnotdef", 1, FN(eval_ifdef), 1 },
+        { "ifne", 1, FN(eval_if), 0 },
+        { "ifnes", 1, FN(eval_ifeqs), 1 },
+        { "include", 1, FN(eval_include), 0 },
+        { "set", 2, FN(eval_set), 1 },
+        { "equ", 2, FN(eval_set), 1 },
+        { "equiv", 2, FN(eval_set), 0 },
+        { "macro", 1, FN(eval_macro), 0 },
+        { "endm", 0, FN(eval_endm), 0 },
+        { "rept", 1, FN(eval_rept), 0 },
+        { "endr", 1, FN(eval_endr), 0 },
     };
 
     kill_comments(pp, line);
@@ -1167,7 +1231,7 @@ static int process_line(yasm_preproc_gas *pp, char **line_ptr)
     }
 
     /* See if this is a macro call. */
-    STAILQ_FOREACH(macro, &pp->macros, next) {
+    STAILQ_FOREACH (macro, &pp->macros, next) {
         const char *remainder = starts_with(line, macro->name);
         if (remainder && (!*remainder || isspace(*remainder))) {
             skip_whitespace2(&line);
@@ -1176,10 +1240,10 @@ static int process_line(yasm_preproc_gas *pp, char **line_ptr)
         }
     }
 
-    for (i = 0; i < sizeof(directives)/sizeof(directives[0]); i++) {
+    for (i = 0; i < sizeof(directives) / sizeof(directives[0]); i++) {
         char buf1[1024];
         const char *remainder = matches(line, directives[i].name);
-        
+
         if (remainder) {
             if (pp->skip_depth) {
                 if (!strncmp("if", directives[i].name, 2)) {
@@ -1194,23 +1258,27 @@ static int process_line(yasm_preproc_gas *pp, char **line_ptr)
                 }
                 return FALSE;
             } else if (directives[i].nargs == 0) {
-                pp_fn0_t fn = (pp_fn0_t) directives[i].fn;
+                pp_fn0_t fn = (pp_fn0_t)directives[i].fn;
                 pp->fatal_error = !fn(pp, directives[i].param);
                 return FALSE;
             } else if (directives[i].nargs == 1) {
-                pp_fn1_t fn = (pp_fn1_t) directives[i].fn;
+                pp_fn1_t fn = (pp_fn1_t)directives[i].fn;
                 skip_whitespace(&remainder);
                 pp->fatal_error = !fn(pp, directives[i].param, remainder);
                 return FALSE;
             } else if (directives[i].nargs == 2) {
                 remainder = get_arg(pp, remainder, buf1, sizeof(buf1));
                 if (!remainder || !*remainder || !*buf1) {
-                    yasm_error_set(YASM_ERROR_SYNTAX, N_("\".%s\" expects two arguments"), directives[i].name);
-                    yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
+                    yasm_error_set(YASM_ERROR_SYNTAX,
+                                   N_("\".%s\" expects two arguments"),
+                                   directives[i].name);
+                    yasm_errwarn_propagate(pp->errwarns,
+                                           pp->current_line_number);
                     pp->fatal_error = 1;
                 } else {
-                    pp_fn2_t fn = (pp_fn2_t) directives[i].fn;
-                    pp->fatal_error = !fn(pp, directives[i].param, buf1, remainder);
+                    pp_fn2_t fn = (pp_fn2_t)directives[i].fn;
+                    pp->fatal_error =
+                        !fn(pp, directives[i].param, buf1, remainder);
                 }
                 return FALSE;
             }
@@ -1263,13 +1331,13 @@ gas_preproc_create(const char *in_filename, yasm_symtab *symtab,
     pp->fatal_error = 0;
     pp->detect_errors_only = 0;
 
-    return (yasm_preproc *) pp;
+    return (yasm_preproc *)pp;
 }
 
 static void
 gas_preproc_destroy(yasm_preproc *preproc)
 {
-    yasm_preproc_gas *pp = (yasm_preproc_gas *) preproc;
+    yasm_preproc_gas *pp = (yasm_preproc_gas *)preproc;
     yasm_xfree(pp->in_filename);
     yasm_symtab_destroy(pp->defines);
     while (!SLIST_EMPTY(&pp->deferred_defines)) {
@@ -1326,7 +1394,9 @@ gas_preproc_get_line(yasm_preproc *preproc)
         line = read_line(pp);
         if (line == NULL) {
             if (pp->in_comment) {
-                yasm_linemap_set(pp->cur_lm, pp->in_filename, pp->current_line_number, pp->next_line_number, 0);
+                yasm_linemap_set(pp->cur_lm, pp->in_filename,
+                                 pp->current_line_number, pp->next_line_number,
+                                 0);
                 yasm_warn_set(YASM_WARN_GENERAL, N_("end of file in comment"));
                 yasm_errwarn_propagate(pp->errwarns, pp->current_line_number);
                 pp->in_comment = FALSE;
@@ -1336,14 +1406,14 @@ gas_preproc_get_line(yasm_preproc *preproc)
         done = process_line(pp, &line);
     } while (!done);
 
-    yasm_linemap_set(pp->cur_lm, pp->in_filename, pp->current_line_number, pp->next_line_number, 0);
+    yasm_linemap_set(pp->cur_lm, pp->in_filename, pp->current_line_number,
+                     pp->next_line_number, 0);
 
     return line;
 }
 
 static size_t
-gas_preproc_get_included_file(yasm_preproc *preproc, char *buf,
-                              size_t max_size)
+gas_preproc_get_included_file(yasm_preproc *preproc, char *buf, size_t max_size)
 {
     /* TODO */
     return 0;
@@ -1352,14 +1422,14 @@ gas_preproc_get_included_file(yasm_preproc *preproc, char *buf,
 static void
 gas_preproc_add_include_file(yasm_preproc *preproc, const char *filename)
 {
-    yasm_preproc_gas *pp = (yasm_preproc_gas *) preproc;
+    yasm_preproc_gas *pp = (yasm_preproc_gas *)preproc;
     eval_include(pp, 0, filename);
 }
 
 static void
 gas_preproc_predefine_macro(yasm_preproc *preproc, const char *macronameval)
 {
-    yasm_preproc_gas *pp = (yasm_preproc_gas *) preproc;
+    yasm_preproc_gas *pp = (yasm_preproc_gas *)preproc;
     const char *eq = strstr(macronameval, "=");
     char *name, *value;
     if (eq) {
@@ -1393,7 +1463,6 @@ gas_preproc_add_standard(yasm_preproc *preproc, const char **macros)
 {
     /* TODO */
 }
-
 
 /* Define preproc structure -- see preproc.h for details */
 yasm_preproc_module yasm_gas_LTX_preproc = {

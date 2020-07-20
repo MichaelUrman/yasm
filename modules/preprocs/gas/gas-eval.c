@@ -20,11 +20,11 @@
 /* The assembler symbol table. */
 static yasm_symtab *symtab;
 
-static scanner scan;    /* Address of scanner routine */
-static efunc error;     /* Address of error reporting routine */
+static scanner scan; /* Address of scanner routine */
+static efunc error;  /* Address of error reporting routine */
 
-static struct tokenval *tokval;   /* The current token */
-static int i;                     /* The t_type of tokval */
+static struct tokenval *tokval; /* The current token */
+static int i;                   /* The t_type of tokval */
 
 static void *scpriv;
 static void *epriv;
@@ -69,7 +69,8 @@ static yasm_expr *expr4(void), *expr5(void), *expr6(void);
 
 static yasm_expr *(*bexpr)(void);
 
-static yasm_expr *rexp0(void) 
+static yasm_expr *
+rexp0(void)
 {
     yasm_expr *e, *f;
 
@@ -77,8 +78,7 @@ static yasm_expr *rexp0(void)
     if (!e)
         return NULL;
 
-    while (i == TOKEN_DBL_OR) 
-    {   
+    while (i == TOKEN_DBL_OR) {
         i = scan(scpriv, tokval);
         f = rexp1();
         if (!f) {
@@ -91,16 +91,16 @@ static yasm_expr *rexp0(void)
     return e;
 }
 
-static yasm_expr *rexp1(void)
+static yasm_expr *
+rexp1(void)
 {
     yasm_expr *e, *f;
 
     e = rexp2();
     if (!e)
         return NULL;
-    
-    while (i == TOKEN_DBL_XOR) 
-    {
+
+    while (i == TOKEN_DBL_XOR) {
         i = scan(scpriv, tokval);
         f = rexp2();
         if (!f) {
@@ -113,15 +113,15 @@ static yasm_expr *rexp1(void)
     return e;
 }
 
-static yasm_expr *rexp2(void) 
+static yasm_expr *
+rexp2(void)
 {
     yasm_expr *e, *f;
 
     e = rexp3();
     if (!e)
         return NULL;
-    while (i == TOKEN_DBL_AND) 
-    {
+    while (i == TOKEN_DBL_AND) {
         i = scan(scpriv, tokval);
         f = rexp3();
         if (!f) {
@@ -134,7 +134,8 @@ static yasm_expr *rexp2(void)
     return e;
 }
 
-static yasm_expr *rexp3(void) 
+static yasm_expr *
+rexp3(void)
 {
     yasm_expr *e, *f;
 
@@ -142,9 +143,8 @@ static yasm_expr *rexp3(void)
     if (!e)
         return NULL;
 
-    while (i == TOKEN_EQ || i == TOKEN_LT || i == TOKEN_GT ||
-           i == TOKEN_NE || i == TOKEN_LE || i == TOKEN_GE) 
-    {
+    while (i == TOKEN_EQ || i == TOKEN_LT || i == TOKEN_GT || i == TOKEN_NE ||
+           i == TOKEN_LE || i == TOKEN_GE) {
         int j = i;
         i = scan(scpriv, tokval);
         f = expr0();
@@ -153,8 +153,7 @@ static yasm_expr *rexp3(void)
             return NULL;
         }
 
-        switch (j) 
-        {
+        switch (j) {
             case TOKEN_EQ:
                 e = yasm_expr_create_tree(e, YASM_EXPR_EQ, f, 0);
                 break;
@@ -178,7 +177,8 @@ static yasm_expr *rexp3(void)
     return e;
 }
 
-static yasm_expr *expr0(void) 
+static yasm_expr *
+expr0(void)
 {
     yasm_expr *e, *f;
 
@@ -186,8 +186,7 @@ static yasm_expr *expr0(void)
     if (!e)
         return NULL;
 
-    while (i == '|') 
-    {
+    while (i == '|') {
         i = scan(scpriv, tokval);
         f = expr1();
         if (!f) {
@@ -200,7 +199,8 @@ static yasm_expr *expr0(void)
     return e;
 }
 
-static yasm_expr *expr1(void) 
+static yasm_expr *
+expr1(void)
 {
     yasm_expr *e, *f;
 
@@ -221,7 +221,8 @@ static yasm_expr *expr1(void)
     return e;
 }
 
-static yasm_expr *expr2(void) 
+static yasm_expr *
+expr2(void)
 {
     yasm_expr *e, *f;
 
@@ -242,7 +243,8 @@ static yasm_expr *expr2(void)
     return e;
 }
 
-static yasm_expr *expr3(void) 
+static yasm_expr *
+expr3(void)
 {
     yasm_expr *e, *f;
 
@@ -250,8 +252,7 @@ static yasm_expr *expr3(void)
     if (!e)
         return NULL;
 
-    while (i == TOKEN_SHL || i == TOKEN_SHR) 
-    {
+    while (i == TOKEN_SHL || i == TOKEN_SHR) {
         int j = i;
         i = scan(scpriv, tokval);
         f = expr4();
@@ -272,15 +273,15 @@ static yasm_expr *expr3(void)
     return e;
 }
 
-static yasm_expr *expr4(void)
+static yasm_expr *
+expr4(void)
 {
     yasm_expr *e, *f;
 
     e = expr5();
     if (!e)
         return NULL;
-    while (i == '+' || i == '-') 
-    {
+    while (i == '+' || i == '-') {
         int j = i;
         i = scan(scpriv, tokval);
         f = expr5();
@@ -289,27 +290,27 @@ static yasm_expr *expr4(void)
             return NULL;
         }
         switch (j) {
-          case '+':
-            e = yasm_expr_create_tree(e, YASM_EXPR_ADD, f, 0);
-            break;
-          case '-':
-            e = yasm_expr_create_tree(e, YASM_EXPR_SUB, f, 0);
-            break;
+            case '+':
+                e = yasm_expr_create_tree(e, YASM_EXPR_ADD, f, 0);
+                break;
+            case '-':
+                e = yasm_expr_create_tree(e, YASM_EXPR_SUB, f, 0);
+                break;
         }
     }
     return e;
 }
 
-static yasm_expr *expr5(void)
+static yasm_expr *
+expr5(void)
 {
     yasm_expr *e, *f;
 
     e = expr6();
     if (!e)
         return NULL;
-    while (i == '*' || i == '/' || i == '%' ||
-           i == TOKEN_SDIV || i == TOKEN_SMOD) 
-    {
+    while (i == '*' || i == '/' || i == '%' || i == TOKEN_SDIV ||
+           i == TOKEN_SMOD) {
         int j = i;
         i = scan(scpriv, tokval);
         f = expr6();
@@ -318,27 +319,28 @@ static yasm_expr *expr5(void)
             return NULL;
         }
         switch (j) {
-          case '*':
-            e = yasm_expr_create_tree(e, YASM_EXPR_MUL, f, 0);
-            break;
-          case '/':
-            e = yasm_expr_create_tree(e, YASM_EXPR_DIV, f, 0);
-            break;
-          case '%':
-            e = yasm_expr_create_tree(e, YASM_EXPR_MOD, f, 0);
-            break;
-          case TOKEN_SDIV:
-            e = yasm_expr_create_tree(e, YASM_EXPR_SIGNDIV, f, 0);
-            break;
-          case TOKEN_SMOD:
-            e = yasm_expr_create_tree(e, YASM_EXPR_SIGNMOD, f, 0);
-            break;
+            case '*':
+                e = yasm_expr_create_tree(e, YASM_EXPR_MUL, f, 0);
+                break;
+            case '/':
+                e = yasm_expr_create_tree(e, YASM_EXPR_DIV, f, 0);
+                break;
+            case '%':
+                e = yasm_expr_create_tree(e, YASM_EXPR_MOD, f, 0);
+                break;
+            case TOKEN_SDIV:
+                e = yasm_expr_create_tree(e, YASM_EXPR_SIGNDIV, f, 0);
+                break;
+            case TOKEN_SMOD:
+                e = yasm_expr_create_tree(e, YASM_EXPR_SIGNMOD, f, 0);
+                break;
         }
     }
     return e;
 }
 
-static yasm_expr *expr6(void)
+static yasm_expr *
+expr6(void)
 {
     yasm_expr *e = NULL;
 
@@ -375,40 +377,38 @@ static yasm_expr *expr6(void)
         }
         i = scan(scpriv, tokval);
         return e;
-    } 
-    else if (i == TOKEN_NUM || i == TOKEN_ID ||
-             i == TOKEN_HERE || i == TOKEN_BASE) 
-    {
+    } else if (i == TOKEN_NUM || i == TOKEN_ID || i == TOKEN_HERE ||
+               i == TOKEN_BASE) {
         switch (i) {
-          case TOKEN_NUM:
-            e = yasm_expr_create_ident(yasm_expr_int(tokval->t_integer), 0);
-            tokval->t_integer = NULL;
-            break;
-          case TOKEN_ID:
-            if (symtab) {
-                yasm_symrec *sym =
-                    yasm_symtab_get(symtab, tokval->t_charptr);
-                if (sym) {
-                    e = yasm_expr_create_ident(yasm_expr_sym(sym), 0);
-                } else {
-                    error(epriv, ERR_NONFATAL,
-                          "undefined symbol `%s' in preprocessor",
-                          tokval->t_charptr);
-                    e = yasm_expr_create_ident(yasm_expr_int(
-                        yasm_intnum_create_int(1)), 0);
-                }
+            case TOKEN_NUM:
+                e = yasm_expr_create_ident(yasm_expr_int(tokval->t_integer), 0);
+                tokval->t_integer = NULL;
                 break;
-            }
-            /*fallthrough*/
-          case TOKEN_HERE:
-          case TOKEN_BASE:
-            error(epriv, ERR_NONFATAL,
-                  "cannot reference symbol `%s' in preprocessor",
-                  (i == TOKEN_ID ? tokval->t_charptr :
-                   i == TOKEN_HERE ? "$" : "$$"));
-            e = yasm_expr_create_ident(yasm_expr_int(yasm_intnum_create_int(1)),
-                                       0);
-            break;
+            case TOKEN_ID:
+                if (symtab) {
+                    yasm_symrec *sym =
+                        yasm_symtab_get(symtab, tokval->t_charptr);
+                    if (sym) {
+                        e = yasm_expr_create_ident(yasm_expr_sym(sym), 0);
+                    } else {
+                        error(epriv, ERR_NONFATAL,
+                              "undefined symbol `%s' in preprocessor",
+                              tokval->t_charptr);
+                        e = yasm_expr_create_ident(
+                            yasm_expr_int(yasm_intnum_create_int(1)), 0);
+                    }
+                    break;
+                }
+                /*fallthrough*/
+            case TOKEN_HERE:
+            case TOKEN_BASE:
+                error(epriv, ERR_NONFATAL,
+                      "cannot reference symbol `%s' in preprocessor",
+                      (i == TOKEN_ID ? tokval->t_charptr
+                                     : i == TOKEN_HERE ? "$" : "$$"));
+                e = yasm_expr_create_ident(
+                    yasm_expr_int(yasm_intnum_create_int(1)), 0);
+                break;
         }
         i = scan(scpriv, tokval);
         return e;
@@ -418,9 +418,9 @@ static yasm_expr *expr6(void)
     }
 }
 
-yasm_expr *evaluate (scanner sc, void *scprivate, struct tokenval *tv,
-                     void *eprivate, int critical, efunc report_error,
-                     yasm_symtab *st)
+yasm_expr *
+evaluate(scanner sc, void *scprivate, struct tokenval *tv, void *eprivate,
+         int critical, efunc report_error, yasm_symtab *st)
 {
     if (critical & CRITICAL) {
         critical &= ~CRITICAL;
@@ -440,5 +440,5 @@ yasm_expr *evaluate (scanner sc, void *scprivate, struct tokenval *tv,
     else
         i = tokval->t_type;
 
-    return bexpr ();
+    return bexpr();
 }

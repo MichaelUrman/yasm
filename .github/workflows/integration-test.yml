@@ -25,7 +25,7 @@ jobs:
     - uses: DoozyX/clang-format-lint-action@v0.7
       with:
         source: '.'
-        style: LLVM
+        clangFormatVersion: 10
       if: matrix.build.lint == 'ON'
 
     - name: Create Build Environment

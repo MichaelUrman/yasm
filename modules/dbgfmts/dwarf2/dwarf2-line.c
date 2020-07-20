@@ -55,20 +55,20 @@ typedef enum {
 } dwarf_line_number_op;
 
 /* # of LEB128 operands needed for each of the above opcodes */
-static unsigned char line_opcode_num_operands[DWARF2_LINE_OPCODE_BASE-1] = {
-    0,  /* DW_LNS_copy */
-    1,  /* DW_LNS_advance_pc */
-    1,  /* DW_LNS_advance_line */
-    1,  /* DW_LNS_set_file */
-    1,  /* DW_LNS_set_column */
-    0,  /* DW_LNS_negate_stmt */
-    0,  /* DW_LNS_set_basic_block */
-    0,  /* DW_LNS_const_add_pc */
-    1,  /* DW_LNS_fixed_advance_pc */
+static unsigned char line_opcode_num_operands[DWARF2_LINE_OPCODE_BASE - 1] = {
+    0, /* DW_LNS_copy */
+    1, /* DW_LNS_advance_pc */
+    1, /* DW_LNS_advance_line */
+    1, /* DW_LNS_set_file */
+    1, /* DW_LNS_set_column */
+    0, /* DW_LNS_negate_stmt */
+    0, /* DW_LNS_set_basic_block */
+    0, /* DW_LNS_const_add_pc */
+    1, /* DW_LNS_fixed_advance_pc */
 #ifdef WITH_DWARF3
-    0,  /* DW_LNS_set_prologue_end */
-    0,  /* DW_LNS_set_epilogue_begin */
-    1   /* DW_LNS_set_isa */
+    0, /* DW_LNS_set_prologue_end */
+    0, /* DW_LNS_set_epilogue_begin */
+    1  /* DW_LNS_set_isa */
 #endif
 };
 
@@ -81,15 +81,15 @@ typedef enum {
 } dwarf_line_number_ext_op;
 
 /* Base and range for line offsets in special opcodes */
-#define DWARF2_LINE_BASE                -5
-#define DWARF2_LINE_RANGE               14
+#define DWARF2_LINE_BASE -5
+#define DWARF2_LINE_RANGE 14
 
-#define DWARF2_MAX_SPECIAL_ADDR_DELTA   \
-    (((255-DWARF2_LINE_OPCODE_BASE)/DWARF2_LINE_RANGE)*\
+#define DWARF2_MAX_SPECIAL_ADDR_DELTA                                          \
+    (((255 - DWARF2_LINE_OPCODE_BASE) / DWARF2_LINE_RANGE) *                   \
      dbgfmt_dwarf2->min_insn_len)
 
 /* Initial value of is_stmt register */
-#define DWARF2_LINE_DEFAULT_IS_STMT     1
+#define DWARF2_LINE_DEFAULT_IS_STMT 1
 
 /* Line number state machine register state */
 typedef struct dwarf2_line_state {
@@ -119,7 +119,7 @@ typedef struct dwarf2_line_op {
 
     /* extended opcode */
     dwarf_line_number_ext_op ext_opcode;
-    /*@null@*/ /*@dependent@*/ yasm_symrec *ext_operand;  /* unsigned */
+    /*@null@*/ /*@dependent@*/ yasm_symrec *ext_operand;     /* unsigned */
     /*@null@*/ /*@dependent@*/ yasm_intnum *ext_operand_int; /* unsigned */
     unsigned long ext_operandsize;
 } dwarf2_line_op;
@@ -128,46 +128,41 @@ typedef struct dwarf2_line_op {
 static void dwarf2_spp_bc_destroy(void *contents);
 static void dwarf2_spp_bc_print(const void *contents, FILE *f,
                                 int indent_level);
-static int dwarf2_spp_bc_calc_len
-    (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
-static int dwarf2_spp_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
-     yasm_output_value_func output_value,
-     /*@null@*/ yasm_output_reloc_func output_reloc);
+static int dwarf2_spp_bc_calc_len(yasm_bytecode *bc,
+                                  yasm_bc_add_span_func add_span,
+                                  void *add_span_data);
+static int
+dwarf2_spp_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                      unsigned char *bufstart, void *d,
+                      yasm_output_value_func output_value,
+                      /*@null@*/ yasm_output_reloc_func output_reloc);
 
 static void dwarf2_line_op_bc_destroy(void *contents);
 static void dwarf2_line_op_bc_print(const void *contents, FILE *f,
                                     int indent_level);
-static int dwarf2_line_op_bc_calc_len
-    (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
-static int dwarf2_line_op_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
-     yasm_output_value_func output_value,
-     /*@null@*/ yasm_output_reloc_func output_reloc);
+static int dwarf2_line_op_bc_calc_len(yasm_bytecode *bc,
+                                      yasm_bc_add_span_func add_span,
+                                      void *add_span_data);
+static int
+dwarf2_line_op_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                          unsigned char *bufstart, void *d,
+                          yasm_output_value_func output_value,
+                          /*@null@*/ yasm_output_reloc_func output_reloc);
 
 /* Bytecode callback structures */
 static const yasm_bytecode_callback dwarf2_spp_bc_callback = {
-    dwarf2_spp_bc_destroy,
-    dwarf2_spp_bc_print,
-    yasm_bc_finalize_common,
-    NULL,
-    dwarf2_spp_bc_calc_len,
-    yasm_bc_expand_common,
-    dwarf2_spp_bc_tobytes,
-    0
+    dwarf2_spp_bc_destroy,   dwarf2_spp_bc_print,
+    yasm_bc_finalize_common, NULL,
+    dwarf2_spp_bc_calc_len,  yasm_bc_expand_common,
+    dwarf2_spp_bc_tobytes,   0
 };
 
 static const yasm_bytecode_callback dwarf2_line_op_bc_callback = {
-    dwarf2_line_op_bc_destroy,
-    dwarf2_line_op_bc_print,
-    yasm_bc_finalize_common,
-    NULL,
-    dwarf2_line_op_bc_calc_len,
-    yasm_bc_expand_common,
-    dwarf2_line_op_bc_tobytes,
-    0
+    dwarf2_line_op_bc_destroy,  dwarf2_line_op_bc_print,
+    yasm_bc_finalize_common,    NULL,
+    dwarf2_line_op_bc_calc_len, yasm_bc_expand_common,
+    dwarf2_line_op_bc_tobytes,  0
 };
-
 
 static size_t
 dwarf2_dbgfmt_add_file(yasm_dbgfmt_dwarf2 *dbgfmt_dwarf2, unsigned long filenum,
@@ -182,19 +177,20 @@ dwarf2_dbgfmt_add_file(yasm_dbgfmt_dwarf2 *dbgfmt_dwarf2, unsigned long filenum,
     dirlen = yasm__splitpath(pathname, &filename);
     if (dirlen > 0) {
         /* Look to see if we already have that dir in the table */
-        for (dir=1; dir<dbgfmt_dwarf2->dirs_size+1; dir++) {
-            if (strncmp(dbgfmt_dwarf2->dirs[dir-1], pathname, dirlen) == 0
-                && dbgfmt_dwarf2->dirs[dir-1][dirlen] == '\0')
+        for (dir = 1; dir < dbgfmt_dwarf2->dirs_size + 1; dir++) {
+            if (strncmp(dbgfmt_dwarf2->dirs[dir - 1], pathname, dirlen) == 0 &&
+                dbgfmt_dwarf2->dirs[dir - 1][dirlen] == '\0')
                 break;
         }
-        if (dir >= dbgfmt_dwarf2->dirs_size+1) {
+        if (dir >= dbgfmt_dwarf2->dirs_size + 1) {
             /* Not found in table, add to end, reallocing if necessary */
-            if (dir >= dbgfmt_dwarf2->dirs_allocated+1) {
-                dbgfmt_dwarf2->dirs_allocated = dir+32;
-                dbgfmt_dwarf2->dirs = yasm_xrealloc(dbgfmt_dwarf2->dirs,
-                    sizeof(char *)*dbgfmt_dwarf2->dirs_allocated);
+            if (dir >= dbgfmt_dwarf2->dirs_allocated + 1) {
+                dbgfmt_dwarf2->dirs_allocated = dir + 32;
+                dbgfmt_dwarf2->dirs = yasm_xrealloc(
+                    dbgfmt_dwarf2->dirs,
+                    sizeof(char *) * dbgfmt_dwarf2->dirs_allocated);
             }
-            dbgfmt_dwarf2->dirs[dir-1] = yasm__xstrndup(pathname, dirlen);
+            dbgfmt_dwarf2->dirs[dir - 1] = yasm__xstrndup(pathname, dirlen);
             dbgfmt_dwarf2->dirs_size = dir;
         }
     }
@@ -202,23 +198,24 @@ dwarf2_dbgfmt_add_file(yasm_dbgfmt_dwarf2 *dbgfmt_dwarf2, unsigned long filenum,
     /* Put the filename into the filename table */
     if (filenum == 0) {
         /* Look to see if we already have that filename in the table */
-        for (; filenum<dbgfmt_dwarf2->filenames_size; filenum++) {
+        for (; filenum < dbgfmt_dwarf2->filenames_size; filenum++) {
             if (!dbgfmt_dwarf2->filenames[filenum].filename ||
-                (dbgfmt_dwarf2->filenames[filenum].dir == dir
-                 && strcmp(dbgfmt_dwarf2->filenames[filenum].filename,
-                           filename) == 0))
+                (dbgfmt_dwarf2->filenames[filenum].dir == dir &&
+                 strcmp(dbgfmt_dwarf2->filenames[filenum].filename, filename) ==
+                     0))
                 break;
         }
     } else
-        filenum--;      /* array index is 0-based */
+        filenum--; /* array index is 0-based */
 
     /* Realloc table if necessary */
     if (filenum >= dbgfmt_dwarf2->filenames_allocated) {
         unsigned long old_allocated = dbgfmt_dwarf2->filenames_allocated;
-        dbgfmt_dwarf2->filenames_allocated = filenum+32;
-        dbgfmt_dwarf2->filenames = yasm_xrealloc(dbgfmt_dwarf2->filenames,
-            sizeof(dwarf2_filename)*dbgfmt_dwarf2->filenames_allocated);
-        for (i=old_allocated; i<dbgfmt_dwarf2->filenames_allocated; i++) {
+        dbgfmt_dwarf2->filenames_allocated = filenum + 32;
+        dbgfmt_dwarf2->filenames = yasm_xrealloc(
+            dbgfmt_dwarf2->filenames,
+            sizeof(dwarf2_filename) * dbgfmt_dwarf2->filenames_allocated);
+        for (i = old_allocated; i < dbgfmt_dwarf2->filenames_allocated; i++) {
             dbgfmt_dwarf2->filenames[i].pathname = NULL;
             dbgfmt_dwarf2->filenames[i].filename = NULL;
             dbgfmt_dwarf2->filenames[i].dir = 0;
@@ -261,8 +258,8 @@ dwarf2_dbgfmt_append_line_op(yasm_section *sect, dwarf_line_number_op opcode,
     bc = yasm_bc_create_common(&dwarf2_line_op_bc_callback, line_op, 0);
     bc->len = 1;
     if (operand)
-        bc->len += yasm_intnum_size_leb128(operand,
-                                           opcode == DW_LNS_advance_line);
+        bc->len +=
+            yasm_intnum_size_leb128(operand, opcode == DW_LNS_advance_line);
 
     yasm_dwarf2__append_bc(sect, bc);
     return bc;
@@ -281,15 +278,15 @@ dwarf2_dbgfmt_append_line_ext_op(yasm_section *sect,
     yasm_bytecode *bc;
 
     line_op->opcode = DW_LNS_extended_op;
-    line_op->operand = yasm_intnum_create_uint(ext_operandsize+1);
+    line_op->operand = yasm_intnum_create_uint(ext_operandsize + 1);
     line_op->ext_opcode = ext_opcode;
     line_op->ext_operand = ext_operand;
     line_op->ext_operand_int = NULL;
     line_op->ext_operandsize = ext_operandsize;
 
     bc = yasm_bc_create_common(&dwarf2_line_op_bc_callback, line_op, 0);
-    bc->len = 2 + yasm_intnum_size_leb128(line_op->operand, 0) +
-        ext_operandsize;
+    bc->len =
+        2 + yasm_intnum_size_leb128(line_op->operand, 0) + ext_operandsize;
 
     yasm_dwarf2__append_bc(sect, bc);
     return bc;
@@ -305,15 +302,15 @@ dwarf2_dbgfmt_append_line_ext_op_int(yasm_section *sect,
     yasm_bytecode *bc;
 
     line_op->opcode = DW_LNS_extended_op;
-    line_op->operand = yasm_intnum_create_uint(ext_operandsize+1);
+    line_op->operand = yasm_intnum_create_uint(ext_operandsize + 1);
     line_op->ext_opcode = ext_opcode;
     line_op->ext_operand = NULL;
     line_op->ext_operand_int = ext_operand;
     line_op->ext_operandsize = ext_operandsize;
 
     bc = yasm_bc_create_common(&dwarf2_line_op_bc_callback, line_op, 0);
-    bc->len = 2 + yasm_intnum_size_leb128(line_op->operand, 0) +
-        ext_operandsize;
+    bc->len =
+        2 + yasm_intnum_size_leb128(line_op->operand, 0) + ext_operandsize;
 
     yasm_dwarf2__append_bc(sect, bc);
     return bc;
@@ -327,7 +324,7 @@ dwarf2_dbgfmt_finalize_locs(yasm_section *sect, dwarf2_section_data *dsd)
     /*@null@*/ dwarf2_loc *loc;
 
     bc = yasm_section_bcs_first(sect);
-    STAILQ_FOREACH(loc, &dsd->locs, link) {
+    STAILQ_FOREACH (loc, &dsd->locs, link) {
         /* Find the first bytecode following this loc by looking at
          * the virtual line numbers.  XXX: this assumes the source file
          * order will be the same as the actual section order.  If we ever
@@ -372,8 +369,8 @@ dwarf2_dbgfmt_gen_line_op(yasm_section *debug_line, dwarf2_line_state *state,
                                      yasm_intnum_create_uint(state->column));
     }
     if (loc->discriminator != 0) {
-        dwarf2_dbgfmt_append_line_ext_op_int(debug_line,
-            DW_LNE_set_discriminator,
+        dwarf2_dbgfmt_append_line_ext_op_int(
+            debug_line, DW_LNE_set_discriminator,
             yasm_intnum_create_uint(loc->discriminator));
     }
 #ifdef WITH_DWARF3
@@ -416,14 +413,15 @@ dwarf2_dbgfmt_gen_line_op(yasm_section *debug_line, dwarf2_line_state *state,
             return 1;
         }
         dwarf2_dbgfmt_append_line_ext_op(debug_line, DW_LNE_set_address,
-            dbgfmt_dwarf2->sizeof_address, loc->sym);
+                                         dbgfmt_dwarf2->sizeof_address,
+                                         loc->sym);
         addr_delta = 0;
     } else if (loc->bc) {
         if (state->precbc->offset > loc->bc->offset)
             yasm_internal_error(N_("dwarf2 address went backwards?"));
         addr_delta = loc->bc->offset - state->precbc->offset;
     } else
-        return 0;       /* ran out of bytecodes!  XXX: do something? */
+        return 0; /* ran out of bytecodes!  XXX: do something? */
 
     /* Generate appropriate opcode(s).  Address can only increment,
      * whereas line number can go backwards.
@@ -432,8 +430,8 @@ dwarf2_dbgfmt_gen_line_op(yasm_section *debug_line, dwarf2_line_state *state,
     state->line = loc->line;
 
     /* First handle the line delta */
-    if (line_delta < DWARF2_LINE_BASE
-        || line_delta >= DWARF2_LINE_BASE+DWARF2_LINE_RANGE) {
+    if (line_delta < DWARF2_LINE_BASE ||
+        line_delta >= DWARF2_LINE_BASE + DWARF2_LINE_RANGE) {
         /* Won't fit in special opcode, use (signed) line advance */
         dwarf2_dbgfmt_append_line_op(debug_line, DW_LNS_advance_line,
                                      yasm_intnum_create_int(line_delta));
@@ -442,8 +440,9 @@ dwarf2_dbgfmt_gen_line_op(yasm_section *debug_line, dwarf2_line_state *state,
 
     /* Next handle the address delta */
     opcode1 = DWARF2_LINE_OPCODE_BASE + line_delta - DWARF2_LINE_BASE +
-        DWARF2_LINE_RANGE * (addr_delta / dbgfmt_dwarf2->min_insn_len);
-    opcode2 = DWARF2_LINE_OPCODE_BASE + line_delta - DWARF2_LINE_BASE +
+              DWARF2_LINE_RANGE * (addr_delta / dbgfmt_dwarf2->min_insn_len);
+    opcode2 =
+        DWARF2_LINE_OPCODE_BASE + line_delta - DWARF2_LINE_BASE +
         DWARF2_LINE_RANGE * ((addr_delta - DWARF2_MAX_SPECIAL_ADDR_DELTA) /
                              dbgfmt_dwarf2->min_insn_len);
     if (line_delta == 0 && addr_delta == 0) {
@@ -452,8 +451,8 @@ dwarf2_dbgfmt_gen_line_op(yasm_section *debug_line, dwarf2_line_state *state,
     } else if (addr_delta <= DWARF2_MAX_SPECIAL_ADDR_DELTA && opcode1 <= 255) {
         /* Addr delta in range of special opcode */
         dwarf2_dbgfmt_append_line_op(debug_line, opcode1, NULL);
-    } else if (addr_delta <= 2*DWARF2_MAX_SPECIAL_ADDR_DELTA
-               && opcode2 <= 255) {
+    } else if (addr_delta <= 2 * DWARF2_MAX_SPECIAL_ADDR_DELTA &&
+               opcode2 <= 255) {
         /* Addr delta in range of const_add_pc + special */
         dwarf2_dbgfmt_append_line_op(debug_line, DW_LNS_const_add_pc, NULL);
         dwarf2_dbgfmt_append_line_op(debug_line, opcode2, NULL);
@@ -485,10 +484,8 @@ typedef struct dwarf2_line_bc_info {
 } dwarf2_line_bc_info;
 
 static int
-dwarf2_filename_equals(const dwarf2_filename *fn,
-                       char **dirs,
-                       const char *pathname,
-                       unsigned long dirlen,
+dwarf2_filename_equals(const dwarf2_filename *fn, char **dirs,
+                       const char *pathname, unsigned long dirlen,
                        const char *filename)
 {
     /* check directory */
@@ -496,8 +493,8 @@ dwarf2_filename_equals(const dwarf2_filename *fn,
         if (dirlen != 0)
             return 0;
     } else {
-        if (strncmp(dirs[fn->dir-1], pathname, dirlen) != 0 ||
-            dirs[fn->dir-1][dirlen] != '\0')
+        if (strncmp(dirs[fn->dir - 1], pathname, dirlen) != 0 ||
+            dirs[fn->dir - 1][dirlen] != '\0')
             return 0;
     }
 
@@ -534,13 +531,12 @@ dwarf2_generate_line_bc(yasm_bytecode *bc, /*@null@*/ void *d)
     dirlen = yasm__splitpath(pathname, &filename);
 
     /* Find file index; just linear search it unless it was the last used */
-    if (info->lastfile > 0
-        && dwarf2_filename_equals(&dbgfmt_dwarf2->filenames[info->lastfile-1],
-                                  dbgfmt_dwarf2->dirs, pathname, dirlen,
-                                  filename))
+    if (info->lastfile > 0 &&
+        dwarf2_filename_equals(&dbgfmt_dwarf2->filenames[info->lastfile - 1],
+                               dbgfmt_dwarf2->dirs, pathname, dirlen, filename))
         info->loc.file = info->lastfile;
     else {
-        for (i=0; i<dbgfmt_dwarf2->filenames_size; i++) {
+        for (i = 0; i < dbgfmt_dwarf2->filenames_size; i++) {
             if (dwarf2_filename_equals(&dbgfmt_dwarf2->filenames[i],
                                        dbgfmt_dwarf2->dirs, pathname, dirlen,
                                        filename))
@@ -548,8 +544,8 @@ dwarf2_generate_line_bc(yasm_bytecode *bc, /*@null@*/ void *d)
         }
         if (i >= dbgfmt_dwarf2->filenames_size)
             yasm_internal_error(N_("could not find filename in table"));
-        info->loc.file = i+1;
-        info->lastfile = i+1;
+        info->loc.file = i + 1;
+        info->lastfile = i + 1;
     }
     if (dwarf2_dbgfmt_gen_line_op(info->debug_line, info->state, &info->loc,
                                   NULL))
@@ -558,7 +554,7 @@ dwarf2_generate_line_bc(yasm_bytecode *bc, /*@null@*/ void *d)
 }
 
 typedef struct dwarf2_line_info {
-    yasm_section *debug_line;   /* section to which line number info goes */
+    yasm_section *debug_line; /* section to which line number info goes */
     yasm_object *object;
     yasm_linemap *linemap;
     yasm_dbgfmt_dwarf2 *dbgfmt_dwarf2;
@@ -593,7 +589,7 @@ dwarf2_generate_line_section(yasm_section *sect, /*@null@*/ void *d)
             STAILQ_INIT(&dsd->locs);
             yasm_section_add_data(sect, &yasm_dwarf2__section_data_cb, dsd);
         } else
-            return 0;   /* no line data for this section */
+            return 0; /* no line data for this section */
     }
 
     info->num_sections++;
@@ -646,7 +642,7 @@ dwarf2_generate_line_section(yasm_section *sect, /*@null@*/ void *d)
 
         dwarf2_dbgfmt_finalize_locs(sect, dsd);
 
-        STAILQ_FOREACH(loc, &dsd->locs, link) {
+        STAILQ_FOREACH (loc, &dsd->locs, link) {
             if (dwarf2_dbgfmt_gen_line_op(info->debug_line, &state, loc,
                                           STAILQ_NEXT(loc, link)))
                 return 1;
@@ -707,8 +703,8 @@ yasm_dwarf2__generate_line(yasm_object *object, yasm_linemap *linemap,
     info.object = object;
     info.linemap = linemap;
     info.dbgfmt_dwarf2 = dbgfmt_dwarf2;
-    info.debug_line = yasm_object_get_general(object, ".debug_line", 1, 0, 0,
-                                              &new, 0);
+    info.debug_line =
+        yasm_object_get_general(object, ".debug_line", 1, 0, 0, &new, 0);
 
     /* header */
     head = yasm_dwarf2__add_head(dbgfmt_dwarf2, info.debug_line, NULL, 0, 0);
@@ -716,19 +712,19 @@ yasm_dwarf2__generate_line(yasm_object *object, yasm_linemap *linemap,
     /* statement program prologue */
     spp = yasm_xmalloc(sizeof(dwarf2_spp));
     sppbc = yasm_bc_create_common(&dwarf2_spp_bc_callback, spp, 0);
-    sppbc->len = dbgfmt_dwarf2->sizeof_offset + 5 +
-        NELEMS(line_opcode_num_operands);
+    sppbc->len =
+        dbgfmt_dwarf2->sizeof_offset + 5 + NELEMS(line_opcode_num_operands);
 
     /* directory list */
-    for (i=0; i<dbgfmt_dwarf2->dirs_size; i++)
-        sppbc->len += (unsigned long)strlen(dbgfmt_dwarf2->dirs[i])+1;
+    for (i = 0; i < dbgfmt_dwarf2->dirs_size; i++)
+        sppbc->len += (unsigned long)strlen(dbgfmt_dwarf2->dirs[i]) + 1;
     sppbc->len++;
 
     /* filename list */
-    for (i=0; i<dbgfmt_dwarf2->filenames_size; i++) {
+    for (i = 0; i < dbgfmt_dwarf2->filenames_size; i++) {
         if (!dbgfmt_dwarf2->filenames[i].filename) {
             yasm_error_set(YASM_ERROR_GENERAL,
-                           N_("dwarf2 file number %d unassigned"), i+1);
+                           N_("dwarf2 file number %d unassigned"), i + 1);
             yasm_errwarn_propagate(errwarns, 0);
             continue;
         }
@@ -788,26 +784,26 @@ dwarf2_spp_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
     size_t i, len;
 
     /* Prologue length (following this field) */
-    cval = yasm_intnum_create_uint(bc->len - (unsigned long)(buf-*bufp) -
+    cval = yasm_intnum_create_uint(bc->len - (unsigned long)(buf - *bufp) -
                                    dbgfmt_dwarf2->sizeof_offset);
     yasm_arch_intnum_tobytes(object->arch, cval, buf,
                              dbgfmt_dwarf2->sizeof_offset,
-                             dbgfmt_dwarf2->sizeof_offset*8, 0, bc, 0);
+                             dbgfmt_dwarf2->sizeof_offset * 8, 0, bc, 0);
     buf += dbgfmt_dwarf2->sizeof_offset;
 
-    YASM_WRITE_8(buf, dbgfmt_dwarf2->min_insn_len);     /* minimum_instr_len */
-    YASM_WRITE_8(buf, DWARF2_LINE_DEFAULT_IS_STMT);     /* default_is_stmt */
-    YASM_WRITE_8(buf, DWARF2_LINE_BASE);                /* line_base */
-    YASM_WRITE_8(buf, DWARF2_LINE_RANGE);               /* line_range */
-    YASM_WRITE_8(buf, DWARF2_LINE_OPCODE_BASE);         /* opcode_base */
+    YASM_WRITE_8(buf, dbgfmt_dwarf2->min_insn_len); /* minimum_instr_len */
+    YASM_WRITE_8(buf, DWARF2_LINE_DEFAULT_IS_STMT); /* default_is_stmt */
+    YASM_WRITE_8(buf, DWARF2_LINE_BASE);            /* line_base */
+    YASM_WRITE_8(buf, DWARF2_LINE_RANGE);           /* line_range */
+    YASM_WRITE_8(buf, DWARF2_LINE_OPCODE_BASE);     /* opcode_base */
 
     /* Standard opcode # operands array */
-    for (i=0; i<NELEMS(line_opcode_num_operands); i++)
+    for (i = 0; i < NELEMS(line_opcode_num_operands); i++)
         YASM_WRITE_8(buf, line_opcode_num_operands[i]);
 
     /* directory list */
-    for (i=0; i<dbgfmt_dwarf2->dirs_size; i++) {
-        len = strlen(dbgfmt_dwarf2->dirs[i])+1;
+    for (i = 0; i < dbgfmt_dwarf2->dirs_size; i++) {
+        len = strlen(dbgfmt_dwarf2->dirs[i]) + 1;
         memcpy(buf, dbgfmt_dwarf2->dirs[i], len);
         buf += len;
     }
@@ -815,15 +811,15 @@ dwarf2_spp_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
     YASM_WRITE_8(buf, 0);
 
     /* filename list */
-    for (i=0; i<dbgfmt_dwarf2->filenames_size; i++) {
-        len = strlen(dbgfmt_dwarf2->filenames[i].filename)+1;
+    for (i = 0; i < dbgfmt_dwarf2->filenames_size; i++) {
+        len = strlen(dbgfmt_dwarf2->filenames[i].filename) + 1;
         memcpy(buf, dbgfmt_dwarf2->filenames[i].filename, len);
         buf += len;
 
         /* dir */
         buf += yasm_get_uleb128(dbgfmt_dwarf2->filenames[i].dir, buf);
-        YASM_WRITE_8(buf, 0);   /* time */
-        YASM_WRITE_8(buf, 0);   /* length */
+        YASM_WRITE_8(buf, 0); /* time */
+        YASM_WRITE_8(buf, 0); /* length */
     }
     /* finish with single 0 byte */
     YASM_WRITE_8(buf, 0);
@@ -878,9 +874,9 @@ dwarf2_line_op_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
         if (line_op->ext_operand) {
             yasm_value value;
             yasm_value_init_sym(&value, line_op->ext_operand,
-                                line_op->ext_operandsize*8);
+                                line_op->ext_operandsize * 8);
             output_value(&value, buf, line_op->ext_operandsize,
-                         (unsigned long)(buf-bufstart), bc, 0, d);
+                         (unsigned long)(buf - bufstart), bc, 0, d);
             buf += line_op->ext_operandsize;
         }
         if (line_op->ext_operand_int) {
@@ -904,8 +900,8 @@ yasm_dwarf2__dir_loc(yasm_object *object, yasm_valparamhead *valparams,
     dwarf2_loc *loc = yasm_xmalloc(sizeof(dwarf2_loc));
 
     /* File number (required) */
-    if (!valparams || !(vp = yasm_vps_first(valparams)) ||
-        vp->val || vp->type != YASM_PARAM_EXPR) {
+    if (!valparams || !(vp = yasm_vps_first(valparams)) || vp->val ||
+        vp->type != YASM_PARAM_EXPR) {
         yasm_error_set(YASM_ERROR_SYNTAX, N_("file number required"));
         yasm_xfree(loc);
         return;
@@ -988,7 +984,7 @@ yasm_dwarf2__dir_loc(yasm_object *object, yasm_valparamhead *valparams,
         /*@null@*/ /*@dependent@*/ const char *s;
         /*@null@*/ /*@only@*/ yasm_expr *e;
 
-restart:
+    restart:
         if (in_is_stmt) {
             in_is_stmt = 0;
             if (!(e = yasm_vp_expr(vp, object->symtab, line)) ||
@@ -1082,15 +1078,15 @@ restart:
             in_discriminator = 1;
             goto restart; /* don't go to the next valparam */
         } else
-            yasm_warn_set(YASM_WARN_GENERAL,
-                          N_("unrecognized loc option `%s'"), vp->val);
+            yasm_warn_set(YASM_WARN_GENERAL, N_("unrecognized loc option `%s'"),
+                          vp->val);
         vp = yasm_vps_next(vp);
     }
 
     if (in_is_stmt || in_isa || in_discriminator) {
         yasm_error_set(YASM_ERROR_SYNTAX, N_("%s requires value"),
-                       in_is_stmt ? "is_stmt" :
-                       (in_isa ? "isa" : "discriminator"));
+                       in_is_stmt ? "is_stmt"
+                                  : (in_isa ? "isa" : "discriminator"));
         yasm_xfree(loc);
         return;
     }

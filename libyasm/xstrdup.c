@@ -36,7 +36,6 @@
 static char sccsid[] = "@(#)strdup.c    8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
 
-
 #ifdef WITH_DMALLOC
 #undef yasm__xstrdup
 #endif
@@ -44,25 +43,25 @@ static char sccsid[] = "@(#)strdup.c    8.1 (Berkeley) 6/4/93";
 char *
 yasm__xstrdup(const char *str)
 {
-        size_t len;
-        char *copy;
+    size_t len;
+    char *copy;
 
-        len = strlen(str) + 1;
-        copy = yasm_xmalloc(len);
-        memcpy(copy, str, len);
-        return (copy);
+    len = strlen(str) + 1;
+    copy = yasm_xmalloc(len);
+    memcpy(copy, str, len);
+    return (copy);
 }
 
 char *
 yasm__xstrndup(const char *str, size_t max)
 {
-        size_t len = 0;
-        char *copy;
+    size_t len = 0;
+    char *copy;
 
-        while (len < max && str[len] != '\0')
-            len++;
-        copy = yasm_xmalloc(len+1);
-        memcpy(copy, str, len);
-        copy[len] = '\0';
-        return (copy);
+    while (len < max && str[len] != '\0')
+        len++;
+    copy = yasm_xmalloc(len + 1);
+    memcpy(copy, str, len);
+    copy[len] = '\0';
+    return (copy);
 }

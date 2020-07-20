@@ -36,10 +36,9 @@
 
 #include "bytecode.h"
 
-
 typedef struct bytecode_reserve {
     /*@only@*/ /*@null@*/ yasm_expr *numitems; /* number of items to reserve */
-    unsigned int itemsize;          /* size of each item (in bytes) */
+    unsigned int itemsize; /* size of each item (in bytes) */
 } bytecode_reserve;
 
 static void bc_reserve_destroy(void *contents);
@@ -55,16 +54,10 @@ static int bc_reserve_tobytes(yasm_bytecode *bc, unsigned char **bufp,
                               /*@null@*/ yasm_output_reloc_func output_reloc);
 
 static const yasm_bytecode_callback bc_reserve_callback = {
-    bc_reserve_destroy,
-    bc_reserve_print,
-    bc_reserve_finalize,
-    bc_reserve_elem_size,
-    bc_reserve_calc_len,
-    yasm_bc_expand_common,
-    bc_reserve_tobytes,
-    YASM_BC_SPECIAL_RESERVE
+    bc_reserve_destroy,   bc_reserve_print,       bc_reserve_finalize,
+    bc_reserve_elem_size, bc_reserve_calc_len,    yasm_bc_expand_common,
+    bc_reserve_tobytes,   YASM_BC_SPECIAL_RESERVE
 };
-
 
 static void
 bc_reserve_destroy(void *contents)

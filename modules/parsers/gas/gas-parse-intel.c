@@ -34,18 +34,21 @@
 #include "modules/parsers/gas/gas-parser.h"
 #include "modules/parsers/nasm/nasm-parser-struct.h"
 
-extern yasm_bytecode *gas_intel_syntax_parse_instr(yasm_parser_nasm *parser_nasm, unsigned char *instr);
+extern yasm_bytecode *
+gas_intel_syntax_parse_instr(yasm_parser_nasm *parser_nasm,
+                             unsigned char *instr);
 
-#define SET_FIELDS(to, from) \
-    (to)->object = (from)->object; \
-    (to)->locallabel_base = (from)->locallabel_base; \
-    (to)->locallabel_base_len = (from)->locallabel_base_len; \
-    (to)->preproc = (from)->preproc; \
-    (to)->errwarns = (from)->errwarns; \
-    (to)->linemap = (from)->linemap; \
+#define SET_FIELDS(to, from)                                                   \
+    (to)->object = (from)->object;                                             \
+    (to)->locallabel_base = (from)->locallabel_base;                           \
+    (to)->locallabel_base_len = (from)->locallabel_base_len;                   \
+    (to)->preproc = (from)->preproc;                                           \
+    (to)->errwarns = (from)->errwarns;                                         \
+    (to)->linemap = (from)->linemap;                                           \
     (to)->prev_bc = (from)->prev_bc;
 
-yasm_bytecode *parse_instr_intel(yasm_parser_gas *parser_gas)
+yasm_bytecode *
+parse_instr_intel(yasm_parser_gas *parser_gas)
 {
     char *stok, *slim;
     unsigned char *line;
@@ -60,8 +63,8 @@ yasm_bytecode *parse_instr_intel(yasm_parser_gas *parser_gas)
     SET_FIELDS(&parser_nasm, parser_gas);
     parser_nasm.masm = 1;
 
-    stok = (char *) parser_gas->s.tok;
-    slim = (char *) parser_gas->s.lim;
+    stok = (char *)parser_gas->s.tok;
+    slim = (char *)parser_gas->s.lim;
     length = 0;
     while (&stok[length] < slim && stok[length] != '\n') {
         length++;
@@ -72,7 +75,8 @@ yasm_bytecode *parse_instr_intel(yasm_parser_gas *parser_gas)
         memcpy(line, parser_gas->s.tok, length);
         memcpy(line + length, parser_gas->linepos, parser_gas->lineleft);
         length += parser_gas->lineleft;
-        if (line[length - 1] == '\n') length--;
+        if (line[length - 1] == '\n')
+            length--;
     } else {
         line = yasm_xmalloc(length + 1);
         memcpy(line, parser_gas->s.tok, length);

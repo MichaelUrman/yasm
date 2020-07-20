@@ -30,9 +30,8 @@
 
 #include "x86arch.h"
 
-
 typedef struct x86_checkea_reg3264_data {
-    int *regs;          /* total multiplier for each reg */
+    int *regs; /* total multiplier for each reg */
     unsigned char vsib_mode;
     unsigned char bits;
     unsigned char addrsize;
@@ -63,14 +62,14 @@ x86_expr_checkea_get_reg3264(yasm_expr__item *ei, int *regnum,
                 return 0;
             if (data->bits != 64 && (ei->data.reg & 0x8) == 0x8)
                 return 0;
-            *regnum = 17+(unsigned int)(ei->data.reg & 0xF);
+            *regnum = 17 + (unsigned int)(ei->data.reg & 0xF);
             break;
         case X86_YMMREG:
             if (data->vsib_mode != 2)
                 return 0;
             if (data->bits != 64 && (ei->data.reg & 0x8) == 0x8)
                 return 0;
-            *regnum = 17+(unsigned int)(ei->data.reg & 0xF);
+            *regnum = 17 + (unsigned int)(ei->data.reg & 0xF);
             break;
         case X86_RIP:
             if (data->bits != 64)
@@ -90,7 +89,7 @@ x86_expr_checkea_get_reg3264(yasm_expr__item *ei, int *regnum,
 }
 
 typedef struct x86_checkea_reg16_data {
-    int bx, si, di, bp;         /* total multiplier for each reg */
+    int bx, si, di, bp; /* total multiplier for each reg */
 } x86_checkea_reg16_data;
 
 /* Only works if ei->type == EXPR_REG (doesn't check).
@@ -102,7 +101,7 @@ x86_expr_checkea_get_reg16(yasm_expr__item *ei, int *regnum, void *d)
     x86_checkea_reg16_data *data = d;
     /* in order: ax,cx,dx,bx,sp,bp,si,di */
     /*@-nullassign@*/
-    static int *reg16[8] = {0,0,0,0,0,0,0,0};
+    static int *reg16[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
     /*@=nullassign@*/
 
     reg16[3] = &data->bx;
@@ -154,9 +153,9 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
     yasm_expr *e = *ep;
     int i;
     int havereg = -1, havereg_expr = -1;
-    int retval = 1;     /* default to legal, no changes */
+    int retval = 1; /* default to legal, no changes */
 
-    for (i=0; i<e->numterms; i++) {
+    for (i = 0; i < e->numterms; i++) {
         switch (e->terms[i].type) {
             case YASM_EXPR_REG:
                 /* Check op to make sure it's valid to use w/register. */
@@ -178,8 +177,7 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
                 /* Floats not allowed. */
                 return 0;
             case YASM_EXPR_EXPR:
-                if (yasm_expr__contains(e->terms[i].data.expn,
-                                        YASM_EXPR_REG)) {
+                if (yasm_expr__contains(e->terms[i].data.expn, YASM_EXPR_REG)) {
                     int ret2;
 
                     /* Check op to make sure it's valid to use w/register. */
@@ -191,16 +189,15 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
                     havereg = i;
                     havereg_expr = i;
                     /* Recurse to check lower levels */
-                    ret2 =
-                        x86_expr_checkea_distcheck_reg(&e->terms[i].data.expn,
-                                                       bits);
+                    ret2 = x86_expr_checkea_distcheck_reg(
+                        &e->terms[i].data.expn, bits);
                     if (ret2 == 0)
                         return 0;
                     if (ret2 == 2)
                         retval = 2;
                 } else if (yasm_expr__contains(e->terms[i].data.expn,
                                                YASM_EXPR_FLOAT))
-                    return 0;   /* Disallow floats */
+                    return 0; /* Disallow floats */
                 break;
             default:
                 break;
@@ -215,7 +212,7 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
     if (e->op == YASM_EXPR_MUL && havereg_expr != -1) {
         yasm_expr *ne;
 
-        retval = 2;     /* we're going to change it */
+        retval = 2; /* we're going to change it */
 
         /* The reg expn *must* be EXPR_ADD at this point.  Sanity check. */
         if (e->terms[havereg_expr].type != YASM_EXPR_EXPR ||
@@ -223,7 +220,7 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
             yasm_internal_error(N_("Register expression not ADD or EXPN"));
 
         /* Iterate over each term in reg expn */
-        for (i=0; i<e->terms[havereg_expr].data.expn->numterms; i++) {
+        for (i = 0; i < e->terms[havereg_expr].data.expn->numterms; i++) {
             /* Copy everything EXCEPT havereg_expr term into new expression */
             ne = yasm_expr__copy_except(e, havereg_expr);
             assert(ne != NULL);
@@ -237,8 +234,8 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
 
         /* Replace e with expanded reg expn */
         ne = e->terms[havereg_expr].data.expn;
-        e->terms[havereg_expr].type = YASM_EXPR_NONE;   /* don't delete it! */
-        yasm_expr_destroy(e);                       /* but everything else */
+        e->terms[havereg_expr].type = YASM_EXPR_NONE; /* don't delete it! */
+        yasm_expr_destroy(e);                         /* but everything else */
         e = ne;
         /*@-onlytrans@*/
         *ep = ne;
@@ -260,8 +257,9 @@ x86_expr_checkea_distcheck_reg(yasm_expr **ep, unsigned int bits)
  */
 static int
 x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
-    int *pcrel, unsigned int bits, void *data,
-    int *(*get_reg)(yasm_expr__item *ei, int *regnum, void *d))
+                             int *pcrel, unsigned int bits, void *data,
+                             int *(*get_reg)(yasm_expr__item *ei, int *regnum,
+                                             void *d))
 {
     int i;
     int *reg;
@@ -277,7 +275,7 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
     wrt = yasm_expr_extract_wrt(ep);
     if (wrt && wrt->op == YASM_EXPR_IDENT &&
         wrt->terms[0].type == YASM_EXPR_REG) {
-        if (bits != 64) {   /* only valid in 64-bit mode */
+        if (bits != 64) { /* only valid in 64-bit mode */
             yasm_expr_destroy(wrt);
             return 1;
         }
@@ -306,8 +304,8 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
             return 1;
         case 2:
             /* Need to simplify again */
-            *ep = yasm_expr__level_tree(*ep, 1, 1, indexreg == 0, 0, NULL,
-                                        NULL);
+            *ep =
+                yasm_expr__level_tree(*ep, 1, 1, indexreg == 0, 0, NULL, NULL);
             e = *ep;
             break;
         default:
@@ -319,11 +317,10 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
             /* Prescan for non-int multipliers against a reg.
              * This is invalid due to the optimizer structure.
              */
-            for (i=0; i<e->numterms; i++)
+            for (i = 0; i < e->numterms; i++)
                 if (e->terms[i].type == YASM_EXPR_EXPR) {
                     yasm_expr__order_terms(e->terms[i].data.expn);
-                    if (e->terms[i].data.expn->terms[0].type ==
-                        YASM_EXPR_REG) {
+                    if (e->terms[i].data.expn->terms[0].type == YASM_EXPR_REG) {
                         if (e->terms[i].data.expn->numterms > 2)
                             return 1;
                         if (e->terms[i].data.expn->terms[1].type !=
@@ -335,7 +332,7 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
             /*@fallthrough@*/
         case YASM_EXPR_IDENT:
             /* Check each term for register (and possible multiplier). */
-            for (i=0; i<e->numterms; i++) {
+            for (i = 0; i < e->numterms; i++) {
                 if (e->terms[i].type == YASM_EXPR_REG) {
                     reg = get_reg(&e->terms[i], &regnum, data);
                     if (!reg)
@@ -351,15 +348,14 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
                     /* Already ordered from ADD above, just grab the value.
                      * Sanity check for EXPR_INT.
                      */
-                    if (e->terms[i].data.expn->terms[0].type ==
-                        YASM_EXPR_REG) {
+                    if (e->terms[i].data.expn->terms[0].type == YASM_EXPR_REG) {
                         long delta;
                         if (e->terms[i].data.expn->terms[1].type !=
                             YASM_EXPR_INT)
                             yasm_internal_error(
                                 N_("Non-integer value in reg expn"));
-                        reg = get_reg(&e->terms[i].data.expn->terms[0],
-                                      &regnum, data);
+                        reg = get_reg(&e->terms[i].data.expn->terms[0], &regnum,
+                                      data);
                         if (!reg)
                             return 1;
                         delta = yasm_intnum_get_int(
@@ -394,15 +390,12 @@ x86_expr_checkea_getregusage(yasm_expr **ep, /*@null@*/ int *indexreg,
                     return 1;
                 delta = yasm_intnum_get_int(e->terms[1].data.intn);
                 (*reg) += delta;
-                if (indexreg)
-                {
-                    if (delta < 0 && *reg <= 1)
-                    {
+                if (indexreg) {
+                    if (delta < 0 && *reg <= 1) {
                         *indexreg = -1;
                         indexval = 0;
                         indexmult = 0;
-                    }
-                    else
+                    } else
                         *indexreg = regnum;
                 }
             }
@@ -441,7 +434,7 @@ x86_checkea_calc_displen(x86_effaddr *x86_ea, unsigned int wordsize, int noreg,
 {
     /*@null@*/ /*@only@*/ yasm_intnum *num;
 
-    x86_ea->valid_modrm = 0;    /* default to not yet valid */
+    x86_ea->valid_modrm = 0; /* default to not yet valid */
 
     switch (x86_ea->ea.disp.size) {
         case 0:
@@ -467,7 +460,8 @@ x86_checkea_calc_displen(x86_effaddr *x86_ea, unsigned int wordsize, int noreg,
              * directly; require an address-size override to change it.
              */
             if (wordsize != x86_ea->ea.disp.size) {
-                yasm_error_set(YASM_ERROR_VALUE,
+                yasm_error_set(
+                    YASM_ERROR_VALUE,
                     N_("invalid effective address (displacement size)"));
                 return 1;
             }
@@ -548,7 +542,7 @@ x86_checkea_calc_displen(x86_effaddr *x86_ea, unsigned int wordsize, int noreg,
         x86_ea->ea.disp.size = wordsize;
         x86_ea->modrm |= 0200;
     }
-    x86_ea->valid_modrm = 1;    /* We're done with ModRM */
+    x86_ea->valid_modrm = 1; /* We're done with ModRM */
 
     yasm_intnum_destroy(num);
     return 0;
@@ -603,7 +597,8 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
                  * otherwise illegal.  It's also illegal in non-64-bit mode.
                  */
                 if (x86_ea->need_modrm || x86_ea->need_sib) {
-                    yasm_error_set(YASM_ERROR_VALUE,
+                    yasm_error_set(
+                        YASM_ERROR_VALUE,
                         N_("invalid effective address (displacement size)"));
                     return 1;
                 }
@@ -629,8 +624,9 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
                  * default to bits setting.
                  */
                 if (!x86_ea->ea.disp.abs ||
-                    !yasm_expr__traverse_leaves_in(x86_ea->ea.disp.abs,
-                        addrsize, x86_expr_checkea_getregsize_callback))
+                    !yasm_expr__traverse_leaves_in(
+                        x86_ea->ea.disp.abs, addrsize,
+                        x86_expr_checkea_getregsize_callback))
                     *addrsize = bits;
                 /* TODO: Add optional warning here if switched address size
                  * from bits setting just by register use.. eg [ax] in
@@ -665,26 +661,28 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
             REG64_RIP,
             SIMDREGS
         };
-        int reg3264mult[33] =
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int reg3264mult[33] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         x86_checkea_reg3264_data reg3264_data;
-        int basereg = REG3264_NONE;     /* "base" register (for SIB) */
-        int indexreg = REG3264_NONE;    /* "index" register (for SIB) */
-        int regcount = 17;              /* normally don't check SIMD regs */
+        int basereg = REG3264_NONE;  /* "base" register (for SIB) */
+        int indexreg = REG3264_NONE; /* "index" register (for SIB) */
+        int regcount = 17;           /* normally don't check SIMD regs */
 
         if (x86_ea->vsib_mode != 0)
             regcount = 33;
 
         /* We can only do 64-bit addresses in 64-bit mode. */
         if (*addrsize == 64 && bits != 64) {
-            yasm_error_set(YASM_ERROR_TYPE,
+            yasm_error_set(
+                YASM_ERROR_TYPE,
                 N_("invalid effective address (64-bit in non-64-bit mode)"));
             return 1;
         }
 
         if (x86_ea->ea.pc_rel && bits != 64) {
-            yasm_warn_set(YASM_WARN_GENERAL,
+            yasm_warn_set(
+                YASM_WARN_GENERAL,
                 N_("RIP-relative directive ignored in non-64-bit mode"));
             x86_ea->ea.pc_rel = 0;
         }
@@ -695,9 +693,9 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
         reg3264_data.addrsize = *addrsize;
         if (x86_ea->ea.disp.abs) {
             int pcrel = 0;
-            switch (x86_expr_checkea_getregusage
-                    (&x86_ea->ea.disp.abs, &indexreg, &pcrel, bits,
-                     &reg3264_data, x86_expr_checkea_get_reg3264)) {
+            switch (x86_expr_checkea_getregusage(
+                &x86_ea->ea.disp.abs, &indexreg, &pcrel, bits, &reg3264_data,
+                x86_expr_checkea_get_reg3264)) {
                 case 1:
                     yasm_error_set(YASM_ERROR_VALUE,
                                    N_("invalid effective address"));
@@ -724,14 +722,13 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
          * Also, if an indexreg hasn't been assigned, try to find one.
          * Meanwhile, check to make sure there's no negative register mults.
          */
-        for (i=0; i<regcount; i++) {
+        for (i = 0; i < regcount; i++) {
             if (reg3264mult[i] < 0) {
                 yasm_error_set(YASM_ERROR_VALUE,
                                N_("invalid effective address"));
                 return 1;
             }
-            if (i != indexreg && reg3264mult[i] == 1 &&
-                basereg == REG3264_NONE)
+            if (i != indexreg && reg3264mult[i] == 1 && basereg == REG3264_NONE)
                 basereg = i;
             else if (indexreg == REG3264_NONE && reg3264mult[i] > 0)
                 indexreg = i;
@@ -783,7 +780,7 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
         /* Make sure there's no other registers than the basereg and indexreg
          * we just found.
          */
-        for (i=0; i<regcount; i++)
+        for (i = 0; i < regcount; i++)
             if (i != basereg && i != indexreg && reg3264mult[i] != 0) {
                 yasm_error_set(YASM_ERROR_VALUE,
                                N_("invalid effective address"));
@@ -885,32 +882,33 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
 
         /* Determine SIB if needed */
         if (x86_ea->need_sib == 1) {
-            x86_ea->sib = 0;    /* start with 0 */
+            x86_ea->sib = 0; /* start with 0 */
 
             /* Special case: no basereg */
             if (basereg == REG3264_NONE)
                 x86_ea->sib |= 5;
             else {
-                if (yasm_x86__set_rex_from_reg(rex, &low3, (unsigned int)
-                                               (X86_REG64 | basereg), bits,
-                                               X86_REX_B))
+                if (yasm_x86__set_rex_from_reg(
+                        rex, &low3, (unsigned int)(X86_REG64 | basereg), bits,
+                        X86_REX_B))
                     return 1;
                 x86_ea->sib |= low3;
             }
-            
+
             /* Put in indexreg, checking for none case */
             if (indexreg == REG3264_NONE)
                 x86_ea->sib |= 040;
-                /* Any scale field is valid, just leave at 0. */
+            /* Any scale field is valid, just leave at 0. */
             else {
                 if (indexreg >= SIMDREGS) {
-                    if (yasm_x86__set_rex_from_reg(rex, &low3,
-                            (unsigned int)(X86_XMMREG | (indexreg-SIMDREGS)),
+                    if (yasm_x86__set_rex_from_reg(
+                            rex, &low3,
+                            (unsigned int)(X86_XMMREG | (indexreg - SIMDREGS)),
                             bits, X86_REX_X))
                         return 1;
                 } else {
-                    if (yasm_x86__set_rex_from_reg(rex, &low3,
-                            (unsigned int)(X86_REG64 | indexreg),
+                    if (yasm_x86__set_rex_from_reg(
+                            rex, &low3, (unsigned int)(X86_REG64 | indexreg),
                             bits, X86_REX_X))
                         return 1;
                 }
@@ -929,36 +927,38 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
                 }
             }
 
-            x86_ea->valid_sib = 1;      /* Done with SIB */
+            x86_ea->valid_sib = 1; /* Done with SIB */
         }
 
         /* Calculate displacement length (if possible) */
-        retval = x86_checkea_calc_displen
-            (x86_ea, 32, basereg == REG3264_NONE,
-             basereg == REG3264_EBP || basereg == REG64_R13);
+        retval = x86_checkea_calc_displen(x86_ea, 32, basereg == REG3264_NONE,
+                                          basereg == REG3264_EBP ||
+                                              basereg == REG64_R13);
         return retval;
     } else if (*addrsize == 16 && x86_ea->need_modrm && !x86_ea->valid_modrm) {
         static const unsigned char modrm16[16] = {
-            0006 /* disp16  */, 0007 /* [BX]    */, 0004 /* [SI]    */,
-            0000 /* [BX+SI] */, 0005 /* [DI]    */, 0001 /* [BX+DI] */,
-            0377 /* invalid */, 0377 /* invalid */, 0006 /* [BP]+d  */,
-            0377 /* invalid */, 0002 /* [BP+SI] */, 0377 /* invalid */,
-            0003 /* [BP+DI] */, 0377 /* invalid */, 0377 /* invalid */,
-            0377 /* invalid */
+            0006 /* disp16  */, 0007 /* [BX]    */,
+            0004 /* [SI]    */, 0000 /* [BX+SI] */,
+            0005 /* [DI]    */, 0001 /* [BX+DI] */,
+            0377 /* invalid */, 0377 /* invalid */,
+            0006 /* [BP]+d  */, 0377 /* invalid */,
+            0002 /* [BP+SI] */, 0377 /* invalid */,
+            0003 /* [BP+DI] */, 0377 /* invalid */,
+            0377 /* invalid */, 0377 /* invalid */
         };
-        x86_checkea_reg16_data reg16mult = {0, 0, 0, 0};
+        x86_checkea_reg16_data reg16mult = { 0, 0, 0, 0 };
         enum {
             HAVE_NONE = 0,
-            HAVE_BX = 1<<0,
-            HAVE_SI = 1<<1,
-            HAVE_DI = 1<<2,
-            HAVE_BP = 1<<3
+            HAVE_BX = 1 << 0,
+            HAVE_SI = 1 << 1,
+            HAVE_DI = 1 << 2,
+            HAVE_BP = 1 << 3
         } havereg = HAVE_NONE;
 
         /* 64-bit mode does not allow 16-bit addresses */
         if (bits == 64 && !address16_op) {
             yasm_error_set(YASM_ERROR_TYPE,
-                N_("16-bit addresses not supported in 64-bit mode"));
+                           N_("16-bit addresses not supported in 64-bit mode"));
             return 1;
         }
 
@@ -969,9 +969,9 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
 
         if (x86_ea->ea.disp.abs) {
             int pcrel = 0;
-            switch (x86_expr_checkea_getregusage
-                    (&x86_ea->ea.disp.abs, (int *)NULL, &pcrel, bits,
-                     &reg16mult, x86_expr_checkea_get_reg16)) {
+            switch (x86_expr_checkea_getregusage(
+                &x86_ea->ea.disp.abs, (int *)NULL, &pcrel, bits, &reg16mult,
+                x86_expr_checkea_get_reg16)) {
                 case 1:
                     yasm_error_set(YASM_ERROR_VALUE,
                                    N_("invalid effective address"));
@@ -1014,8 +1014,8 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
         x86_ea->modrm |= modrm16[havereg];
 
         /* Calculate displacement length (if possible) */
-        retval = x86_checkea_calc_displen
-            (x86_ea, 16, havereg == HAVE_NONE, havereg == HAVE_BP);
+        retval = x86_checkea_calc_displen(x86_ea, 16, havereg == HAVE_NONE,
+                                          havereg == HAVE_BP);
         return retval;
     } else if (!x86_ea->need_modrm && !x86_ea->need_sib) {
         /* Special case for MOV MemOffs opcode: displacement but no modrm. */
@@ -1023,7 +1023,8 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
             case 64:
                 if (bits != 64) {
                     yasm_error_set(YASM_ERROR_TYPE,
-                        N_("invalid effective address (64-bit in non-64-bit mode)"));
+                                   N_("invalid effective address (64-bit in "
+                                      "non-64-bit mode)"));
                     return 1;
                 }
                 x86_ea->ea.disp.size = 64;
@@ -1034,7 +1035,8 @@ yasm_x86__expr_checkea(x86_effaddr *x86_ea, unsigned char *addrsize,
             case 16:
                 /* 64-bit mode does not allow 16-bit addresses */
                 if (bits == 64 && !address16_op) {
-                    yasm_error_set(YASM_ERROR_TYPE,
+                    yasm_error_set(
+                        YASM_ERROR_TYPE,
                         N_("16-bit addresses not supported in 64-bit mode"));
                     return 1;
                 }

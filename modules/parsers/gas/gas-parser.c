@@ -33,11 +33,9 @@
 
 #include "gas-parser.h"
 
-
 static void
-gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
-                    int save_input, yasm_linemap *linemap,
-                    yasm_errwarns *errwarns)
+gas_parser_do_parse(yasm_object *object, yasm_preproc *pp, int save_input,
+                    yasm_linemap *linemap, yasm_errwarns *errwarns)
 {
     yasm_parser_gas parser_gas;
     int i;
@@ -70,15 +68,17 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
 
     parser_gas.state = INITIAL;
 
-    for (i=0; i<10; i++)
+    for (i = 0; i < 10; i++)
         parser_gas.local[i] = 0;
 
     parser_gas.intel_syntax = 0;
 
     parser_gas.is_cpp_preproc =
-        yasm__strcasecmp(((yasm_preproc_base*)pp)->module->keyword, "cpp") == 0;
+        yasm__strcasecmp(((yasm_preproc_base *)pp)->module->keyword, "cpp") ==
+        0;
     parser_gas.is_nasm_preproc =
-        yasm__strcasecmp(((yasm_preproc_base*)pp)->module->keyword, "nasm") == 0;
+        yasm__strcasecmp(((yasm_preproc_base *)pp)->module->keyword, "nasm") ==
+        0;
 
     gas_parser_parse(&parser_gas);
 
@@ -88,8 +88,8 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
         /* XXX: Minus two to compensate for already having moved past the EOF
          * in the linemap.
          */
-        yasm_errwarn_propagate(errwarns,
-                               yasm_linemap_get_current(parser_gas.linemap)-2);
+        yasm_errwarn_propagate(
+            errwarns, yasm_linemap_get_current(parser_gas.linemap) - 2);
     }
 
     yasm_scanner_delete(&parser_gas.s);
@@ -106,28 +106,19 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
 }
 
 /* Define valid preprocessors to use with this parser */
-static const char *gas_parser_preproc_keywords[] = {
-    "gas",
-    "raw",
-    "cpp",
-    "nasm",
-    NULL
-};
+static const char *gas_parser_preproc_keywords[] = { "gas", "raw", "cpp",
+                                                     "nasm", NULL };
 
 /* Define parser structure -- see parser.h for details */
-yasm_parser_module yasm_gas_LTX_parser = {
-    "GNU AS (GAS)-compatible parser",
-    "gas",
-    gas_parser_preproc_keywords,
-    "gas",
-    NULL,   /* No standard macros */
-    gas_parser_do_parse
-};
-yasm_parser_module yasm_gnu_LTX_parser = {
-    "GNU AS (GAS)-compatible parser",
-    "gnu",
-    gas_parser_preproc_keywords,
-    "gas",
-    NULL,   /* No standard macros */
-    gas_parser_do_parse
-};
+yasm_parser_module yasm_gas_LTX_parser = { "GNU AS (GAS)-compatible parser",
+                                           "gas",
+                                           gas_parser_preproc_keywords,
+                                           "gas",
+                                           NULL, /* No standard macros */
+                                           gas_parser_do_parse };
+yasm_parser_module yasm_gnu_LTX_parser = { "GNU AS (GAS)-compatible parser",
+                                           "gnu",
+                                           gas_parser_preproc_keywords,
+                                           "gas",
+                                           NULL, /* No standard macros */
+                                           gas_parser_do_parse };

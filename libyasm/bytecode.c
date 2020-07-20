@@ -37,13 +37,12 @@
 
 #include "bytecode.h"
 
-
 void
 yasm_bc_set_multiple(yasm_bytecode *bc, yasm_expr *e)
 {
     if (bc->multiple)
-        bc->multiple = yasm_expr_create_tree(bc->multiple, YASM_EXPR_MUL, e,
-                                             e->line);
+        bc->multiple =
+            yasm_expr_create_tree(bc->multiple, YASM_EXPR_MUL, e, e->line);
     else
         bc->multiple = e;
 }
@@ -104,7 +103,7 @@ yasm_bc_create_common(const yasm_bytecode_callback *callback, void *contents,
     bc->len = 0;
     bc->mult_int = 1;
     bc->line = line;
-    bc->offset = ~0UL;  /* obviously incorrect / uninitialized value */
+    bc->offset = ~0UL; /* obviously incorrect / uninitialized value */
     bc->symrecs = NULL;
     bc->contents = contents;
 
@@ -121,7 +120,7 @@ void
 yasm_bc__add_symrec(yasm_bytecode *bc, yasm_symrec *sym)
 {
     if (!bc->symrecs) {
-        bc->symrecs = yasm_xmalloc(2*sizeof(yasm_symrec *));
+        bc->symrecs = yasm_xmalloc(2 * sizeof(yasm_symrec *));
         bc->symrecs[0] = sym;
         bc->symrecs[1] = NULL;
     } else {
@@ -131,10 +130,10 @@ yasm_bc__add_symrec(yasm_bytecode *bc, yasm_symrec *sym)
         size_t count = 1;
         while (bc->symrecs[count])
             count++;
-        bc->symrecs = yasm_xrealloc(bc->symrecs,
-                                    (count+2)*sizeof(yasm_symrec *));
+        bc->symrecs =
+            yasm_xrealloc(bc->symrecs, (count + 2) * sizeof(yasm_symrec *));
         bc->symrecs[count] = sym;
-        bc->symrecs[count+1] = NULL;
+        bc->symrecs[count + 1] = NULL;
     }
 }
 
@@ -219,7 +218,7 @@ yasm_calc_bc_dist(yasm_bytecode *precbc1, yasm_bytecode *precbc2)
 unsigned long
 yasm_bc_next_offset(yasm_bytecode *precbc)
 {
-    return precbc->offset + precbc->len*precbc->mult_int;
+    return precbc->offset + precbc->len * precbc->mult_int;
 }
 
 int
@@ -261,14 +260,15 @@ yasm_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
                 bc->mult_int = yasm_intnum_get_int(num);
         } else {
             if (yasm_expr__contains(bc->multiple, YASM_EXPR_FLOAT)) {
-                yasm_error_set(YASM_ERROR_VALUE,
+                yasm_error_set(
+                    YASM_ERROR_VALUE,
                     N_("expression must not contain floating point value"));
                 retval = -1;
             } else {
                 yasm_value value;
                 yasm_value_initialize(&value, bc->multiple, 0);
                 add_span(add_span_data, bc, 0, &value, 0, 0);
-                bc->mult_int = 0;   /* assume 0 to start */
+                bc->mult_int = 0; /* assume 0 to start */
             }
         }
     }
@@ -302,7 +302,7 @@ yasm_bc_tobytes(yasm_bytecode *bc, unsigned char *buf, unsigned long *bufsize,
                 /*@out@*/ int *gap, void *d,
                 yasm_output_value_func output_value,
                 /*@null@*/ yasm_output_reloc_func output_reloc)
-    /*@sets *buf@*/
+/*@sets *buf@*/
 {
     /*@only@*/ /*@null@*/ unsigned char *mybuf = NULL;
     unsigned char *bufstart;
@@ -319,32 +319,33 @@ yasm_bc_tobytes(yasm_bytecode *bc, unsigned char *buf, unsigned long *bufsize,
 
     /* special case for reserve bytecodes */
     if (bc->callback->special == YASM_BC_SPECIAL_RESERVE) {
-        *bufsize = bc->len*bc->mult_int;
+        *bufsize = bc->len * bc->mult_int;
         *gap = 1;
-        return NULL;    /* we didn't allocate a buffer */
+        return NULL; /* we didn't allocate a buffer */
     }
     *gap = 0;
 
-    if (*bufsize < bc->len*bc->mult_int) {
-        mybuf = yasm_xmalloc(bc->len*bc->mult_int);
+    if (*bufsize < bc->len * bc->mult_int) {
+        mybuf = yasm_xmalloc(bc->len * bc->mult_int);
         destbuf = mybuf;
     } else
         destbuf = buf;
     bufstart = destbuf;
 
-    *bufsize = bc->len*bc->mult_int;
+    *bufsize = bc->len * bc->mult_int;
 
     if (!bc->callback)
         yasm_internal_error(N_("got empty bytecode in bc_tobytes"));
-    else for (i=0; i<bc->mult_int; i++) {
-        origbuf = destbuf;
-        error = bc->callback->tobytes(bc, &destbuf, bufstart, d, output_value,
-                                      output_reloc);
+    else
+        for (i = 0; i < bc->mult_int; i++) {
+            origbuf = destbuf;
+            error = bc->callback->tobytes(bc, &destbuf, bufstart, d,
+                                          output_value, output_reloc);
 
-        if (!error && ((unsigned long)(destbuf - origbuf) != bc->len))
-            yasm_internal_error(
-                N_("written length does not match optimized length"));
-    }
+            if (!error && ((unsigned long)(destbuf - origbuf) != bc->len))
+                yasm_internal_error(
+                    N_("written length does not match optimized length"));
+        }
 
     return mybuf;
 }

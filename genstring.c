@@ -55,11 +55,13 @@ main(int argc, char *argv[])
 
     str = malloc(MAXLINE);
 
-    fprintf(out, "/* This file auto-generated from %s by genstring.c"
-                 " - don't edit it */\n\n"
-                 "static const char *%s[] = {\n", argv[3], argv[1]);
+    fprintf(out,
+            "/* This file auto-generated from %s by genstring.c"
+            " - don't edit it */\n\n"
+            "static const char *%s[] = {\n",
+            argv[3], argv[1]);
 
-    for (i=3; i<argc; i++) {
+    for (i = 3; i < argc; i++) {
         in = fopen(argv[i], "rt");
         if (!in) {
             fprintf(stderr, "Could not open `%s'.\n", argv[i]);
@@ -73,9 +75,9 @@ main(int argc, char *argv[])
 
             /* strip off trailing whitespace */
             len = strlen(strp);
-            while (len > 0 && (strp[len-1] == ' ' || strp[len-1] == '\t' ||
-                               strp[len-1] == '\n')) {
-                strp[len-1] = '\0';
+            while (len > 0 && (strp[len - 1] == ' ' || strp[len - 1] == '\t' ||
+                               strp[len - 1] == '\n')) {
+                strp[len - 1] = '\0';
                 len--;
             }
 

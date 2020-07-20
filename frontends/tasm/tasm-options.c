@@ -32,18 +32,16 @@
 
 #include "tasm-options.h"
 
-
 #ifdef __DEBUG__
-#define DEBUG(x) fprintf ## x ;
+#define DEBUG(x) fprintf##x;
 #else
 #define DEBUG(x)
 #endif
 
-
 /* Options Parser */
 int
 parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
-              void (*print_error) (const char *fmt, ...))
+              void (*print_error)(const char *fmt, ...))
 {
     int errors = 0, warnings = 0;
     size_t i;
@@ -51,11 +49,11 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
 
     DEBUG((stderr, "parse_cmdline: entered\n"));
 
-  fail:
+fail:
     while (--argc) {
         argv++;
 
-        if (argv[0][0] == '/' && argv[0][1]) {        /* opt */
+        if (argv[0][0] == '/' && argv[0][1]) { /* opt */
             got_it = 0;
             for (i = 0; i < nopts; i++) {
                 char *cmd = &argv[0][1];
@@ -63,7 +61,7 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                 if (yasm__strncasecmp(cmd, options[i].opt, len) == 0) {
                     char *param;
 
-                    param = &argv[0][1+len];
+                    param = &argv[0][1 + len];
                     if (options[i].takes_param) {
                         if (param[0] != '\0') {
                             /* do nothing */
@@ -72,9 +70,8 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                             argc--;
                             argv++;
                         } else {
-                            print_error(
-                                _("option `-%s' needs an argument!"),
-                                options[i].opt);
+                            print_error(_("option `-%s' needs an argument!"),
+                                        options[i].opt);
                             errors++;
                             goto fail;
                         }
@@ -87,11 +84,10 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                 }
             }
             if (!got_it) {
-                print_error(_("warning: unrecognized option `%s'"),
-                            argv[0]);
+                print_error(_("warning: unrecognized option `%s'"), argv[0]);
                 warnings++;
             }
-        } else {    /* not an option, then it should be a file or something */
+        } else { /* not an option, then it should be a file or something */
 
             if (not_an_option_handler(argv[0]))
                 errors++;
@@ -116,8 +112,8 @@ help_msg(const char *msg, const char *tail, opt_option *options, size_t nopts)
         if (options[i].takes_param) {
             if (options[i].opt)
                 sprintf(optbuf, "/%s <%s>", options[i].opt,
-                        options[i].param_desc ? options[i].
-                        param_desc : _("param"));
+                        options[i].param_desc ? options[i].param_desc
+                                              : _("param"));
         } else {
             if (options[i].opt)
                 sprintf(optbuf, "/%s", options[i].opt);

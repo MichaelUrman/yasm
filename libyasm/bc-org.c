@@ -37,10 +37,9 @@
 
 #include "bytecode.h"
 
-
 typedef struct bytecode_org {
-    unsigned long start;        /* target starting offset within section */
-    unsigned long fill;         /* fill value */
+    unsigned long start; /* target starting offset within section */
+    unsigned long fill;  /* fill value */
 } bytecode_org;
 
 static void bc_org_destroy(void *contents);
@@ -57,16 +56,9 @@ static int bc_org_tobytes(yasm_bytecode *bc, unsigned char **bufp,
                           /*@null@*/ yasm_output_reloc_func output_reloc);
 
 static const yasm_bytecode_callback bc_org_callback = {
-    bc_org_destroy,
-    bc_org_print,
-    bc_org_finalize,
-    NULL,
-    bc_org_calc_len,
-    bc_org_expand,
-    bc_org_tobytes,
-    YASM_BC_SPECIAL_OFFSET
+    bc_org_destroy,  bc_org_print,  bc_org_finalize, NULL,
+    bc_org_calc_len, bc_org_expand, bc_org_tobytes,  YASM_BC_SPECIAL_OFFSET
 };
-
 
 static void
 bc_org_destroy(void *contents)
@@ -120,9 +112,8 @@ bc_org_expand(yasm_bytecode *bc, int span, long old_val, long new_val,
 }
 
 static int
-bc_org_tobytes(yasm_bytecode *bc, unsigned char **bufp,
-               unsigned char *bufstart, void *d,
-               yasm_output_value_func output_value,
+bc_org_tobytes(yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart,
+               void *d, yasm_output_value_func output_value,
                /*@unused@*/ yasm_output_reloc_func output_reloc)
 {
     bytecode_org *org = (bytecode_org *)bc->contents;
@@ -135,8 +126,8 @@ bc_org_tobytes(yasm_bytecode *bc, unsigned char **bufp,
         return 1;
     }
     len = org->start - bc->offset;
-    for (i=0; i<len; i++)
-        YASM_WRITE_8(*bufp, org->fill);     /* XXX: handle more than 8 bit? */
+    for (i = 0; i < len; i++)
+        YASM_WRITE_8(*bufp, org->fill); /* XXX: handle more than 8 bit? */
     return 0;
 }
 

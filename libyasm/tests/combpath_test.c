@@ -32,7 +32,7 @@
 
 typedef struct Test_Entry {
     /* combpath function to test */
-    char * (*combpath) (const char *from, const char *to);
+    char *(*combpath)(const char *from, const char *to);
 
     /* input "from" path */
     const char *from;
@@ -46,45 +46,51 @@ typedef struct Test_Entry {
 
 static Test_Entry tests[] = {
     /* UNIX */
-    {yasm__combpath_unix, "file1", "file2", "file2"},
-    {yasm__combpath_unix, "./file1.ext", "./file2.ext", "file2.ext"},
-    {yasm__combpath_unix, "/file1", "file2", "/file2"},
-    {yasm__combpath_unix, "file1", "/file2", "/file2"},
-    {yasm__combpath_unix, "/foo/file1", "../../file2", "/file2"},
-    {yasm__combpath_unix, "/foo//file1", "../../file2", "/file2"},
-    {yasm__combpath_unix, "foo/bar/file1", "../file2", "foo/file2"},
-    {yasm__combpath_unix, "foo/bar/file1", "../../../file2", "../file2"},
-    {yasm__combpath_unix, "foo/bar//file1", "../..//..//file2", "../file2"},
-    {yasm__combpath_unix, "foo/bar/", "file2", "foo/bar/file2"},
-    {yasm__combpath_unix, "../../file1", "../../file2", "../../../../file2"},
-    {yasm__combpath_unix, "../foo/bar/../file1", "../../file2", "../foo/bar/../../../file2"},
-    {yasm__combpath_unix, "/", "../file2", "/file2"},
-    {yasm__combpath_unix, "../foo/", "../file2", "../file2"},
-    {yasm__combpath_unix, "../foo/file1", "../../bar/file2", "../../bar/file2"},
+    { yasm__combpath_unix, "file1", "file2", "file2" },
+    { yasm__combpath_unix, "./file1.ext", "./file2.ext", "file2.ext" },
+    { yasm__combpath_unix, "/file1", "file2", "/file2" },
+    { yasm__combpath_unix, "file1", "/file2", "/file2" },
+    { yasm__combpath_unix, "/foo/file1", "../../file2", "/file2" },
+    { yasm__combpath_unix, "/foo//file1", "../../file2", "/file2" },
+    { yasm__combpath_unix, "foo/bar/file1", "../file2", "foo/file2" },
+    { yasm__combpath_unix, "foo/bar/file1", "../../../file2", "../file2" },
+    { yasm__combpath_unix, "foo/bar//file1", "../..//..//file2", "../file2" },
+    { yasm__combpath_unix, "foo/bar/", "file2", "foo/bar/file2" },
+    { yasm__combpath_unix, "../../file1", "../../file2", "../../../../file2" },
+    { yasm__combpath_unix, "../foo/bar/../file1", "../../file2",
+      "../foo/bar/../../../file2" },
+    { yasm__combpath_unix, "/", "../file2", "/file2" },
+    { yasm__combpath_unix, "../foo/", "../file2", "../file2" },
+    { yasm__combpath_unix, "../foo/file1", "../../bar/file2",
+      "../../bar/file2" },
 
     /* Windows */
-    {yasm__combpath_win, "file1", "file2", "file2"},
-    {yasm__combpath_win, "./file1.ext", "./file2.ext", "file2.ext"},
-    {yasm__combpath_win, "./file1.ext", ".\\file2.ext", "file2.ext"},
-    {yasm__combpath_win, ".\\file1.ext", "./file2.ext", "file2.ext"},
-    {yasm__combpath_win, "/file1", "file2", "\\file2"},
-    {yasm__combpath_win, "\\file1", "file2", "\\file2"},
-    {yasm__combpath_win, "file1", "/file2", "\\file2"},
-    {yasm__combpath_win, "file1", "\\file2", "\\file2"},
-    {yasm__combpath_win, "/foo\\file1", "../../file2", "\\file2"},
-    {yasm__combpath_win, "\\foo\\\\file1", "..\\../file2", "\\file2"},
-    {yasm__combpath_win, "foo/bar/file1", "../file2", "foo\\file2"},
-    {yasm__combpath_win, "foo/bar/file1", "../..\\../file2", "..\\file2"},
-    {yasm__combpath_win, "foo/bar//file1", "../..\\\\..//file2", "..\\file2"},
-    {yasm__combpath_win, "foo/bar/", "file2", "foo\\bar\\file2"},
-    {yasm__combpath_win, "..\\../file1", "../..\\file2", "..\\..\\..\\..\\file2"},
-    {yasm__combpath_win, "../foo/bar\\\\../file1", "../..\\file2", "..\\foo\\bar\\..\\..\\..\\file2"},
-    {yasm__combpath_win, "/", "../file2", "\\file2"},
-    {yasm__combpath_win, "../foo/", "../file2", "..\\file2"},
-    {yasm__combpath_win, "../foo/file1", "../..\\bar\\file2", "..\\..\\bar\\file2"},
-    {yasm__combpath_win, "c:/file1.ext", "./file2.ext", "c:\\file2.ext"},
-    {yasm__combpath_win, "e:\\path\\to/file1.ext", ".\\file2.ext", "e:\\path\\to\\file2.ext"},
-    {yasm__combpath_win, ".\\file1.ext", "g:file2.ext", "g:file2.ext"},
+    { yasm__combpath_win, "file1", "file2", "file2" },
+    { yasm__combpath_win, "./file1.ext", "./file2.ext", "file2.ext" },
+    { yasm__combpath_win, "./file1.ext", ".\\file2.ext", "file2.ext" },
+    { yasm__combpath_win, ".\\file1.ext", "./file2.ext", "file2.ext" },
+    { yasm__combpath_win, "/file1", "file2", "\\file2" },
+    { yasm__combpath_win, "\\file1", "file2", "\\file2" },
+    { yasm__combpath_win, "file1", "/file2", "\\file2" },
+    { yasm__combpath_win, "file1", "\\file2", "\\file2" },
+    { yasm__combpath_win, "/foo\\file1", "../../file2", "\\file2" },
+    { yasm__combpath_win, "\\foo\\\\file1", "..\\../file2", "\\file2" },
+    { yasm__combpath_win, "foo/bar/file1", "../file2", "foo\\file2" },
+    { yasm__combpath_win, "foo/bar/file1", "../..\\../file2", "..\\file2" },
+    { yasm__combpath_win, "foo/bar//file1", "../..\\\\..//file2", "..\\file2" },
+    { yasm__combpath_win, "foo/bar/", "file2", "foo\\bar\\file2" },
+    { yasm__combpath_win, "..\\../file1", "../..\\file2",
+      "..\\..\\..\\..\\file2" },
+    { yasm__combpath_win, "../foo/bar\\\\../file1", "../..\\file2",
+      "..\\foo\\bar\\..\\..\\..\\file2" },
+    { yasm__combpath_win, "/", "../file2", "\\file2" },
+    { yasm__combpath_win, "../foo/", "../file2", "..\\file2" },
+    { yasm__combpath_win, "../foo/file1", "../..\\bar\\file2",
+      "..\\..\\bar\\file2" },
+    { yasm__combpath_win, "c:/file1.ext", "./file2.ext", "c:\\file2.ext" },
+    { yasm__combpath_win, "e:\\path\\to/file1.ext", ".\\file2.ext",
+      "e:\\path\\to\\file2.ext" },
+    { yasm__combpath_win, ".\\file1.ext", "g:file2.ext", "g:file2.ext" },
 };
 
 static char failed[1000];
@@ -119,21 +125,21 @@ int
 main(void)
 {
     int nf = 0;
-    int numtests = sizeof(tests)/sizeof(Test_Entry);
+    int numtests = sizeof(tests) / sizeof(Test_Entry);
     int i;
 
     failed[0] = '\0';
     printf("Test combpath_test: ");
-    for (i=0; i<numtests; i++) {
+    for (i = 0; i < numtests; i++) {
         int fail = run_test(&tests[i]);
-        printf("%c", fail>0 ? 'F':'.');
+        printf("%c", fail > 0 ? 'F' : '.');
         fflush(stdout);
         if (fail)
             sprintf(failed, "%s ** F: %s\n", failed, failmsg);
         nf += fail;
     }
 
-    printf(" +%d-%d/%d %d%%\n%s",
-           numtests-nf, nf, numtests, 100*(numtests-nf)/numtests, failed);
+    printf(" +%d-%d/%d %d%%\n%s", numtests - nf, nf, numtests,
+           100 * (numtests - nf) / numtests, failed);
     return (nf == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

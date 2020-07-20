@@ -30,7 +30,7 @@
 
 #include "dwarf2-dbgfmt.h"
 
-#define DW_LANG_Mips_Assembler  0x8001
+#define DW_LANG_Mips_Assembler 0x8001
 
 /* Tag encodings */
 typedef enum {
@@ -193,26 +193,23 @@ typedef struct dwarf2_abbrev {
 static void dwarf2_abbrev_bc_destroy(void *contents);
 static void dwarf2_abbrev_bc_print(const void *contents, FILE *f,
                                    int indent_level);
-static int dwarf2_abbrev_bc_calc_len
-    (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
-static int dwarf2_abbrev_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
-     yasm_output_value_func output_value,
-     /*@null@*/ yasm_output_reloc_func output_reloc);
+static int dwarf2_abbrev_bc_calc_len(yasm_bytecode *bc,
+                                     yasm_bc_add_span_func add_span,
+                                     void *add_span_data);
+static int
+dwarf2_abbrev_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                         unsigned char *bufstart, void *d,
+                         yasm_output_value_func output_value,
+                         /*@null@*/ yasm_output_reloc_func output_reloc);
 
 /* Bytecode callback structures */
 
 static const yasm_bytecode_callback dwarf2_abbrev_bc_callback = {
-    dwarf2_abbrev_bc_destroy,
-    dwarf2_abbrev_bc_print,
-    yasm_bc_finalize_common,
-    NULL,
-    dwarf2_abbrev_bc_calc_len,
-    yasm_bc_expand_common,
-    dwarf2_abbrev_bc_tobytes,
-    0
+    dwarf2_abbrev_bc_destroy,  dwarf2_abbrev_bc_print,
+    yasm_bc_finalize_common,   NULL,
+    dwarf2_abbrev_bc_calc_len, yasm_bc_expand_common,
+    dwarf2_abbrev_bc_tobytes,  0
 };
-
 
 static unsigned long
 dwarf2_add_abbrev_attr(dwarf2_abbrev *abbrev, dwarf_attribute name,
@@ -237,7 +234,7 @@ dwarf2_append_expr(yasm_section *sect, /*@only@*/ yasm_expr *expr,
     if (leb == 0)
         bc = yasm_bc_create_data(&dvs, size, 0, NULL, 0);
     else
-        bc = yasm_bc_create_leb128(&dvs, leb<0, 0);
+        bc = yasm_bc_create_leb128(&dvs, leb < 0, 0);
     yasm_bc_finalize(bc, yasm_dwarf2__append_bc(sect, bc));
     yasm_bc_calc_len(bc, NULL, NULL);
 }
@@ -249,8 +246,8 @@ dwarf2_append_str(yasm_section *sect, const char *str)
     yasm_bytecode *bc;
 
     yasm_dvs_initialize(&dvs);
-    yasm_dvs_append(&dvs, yasm_dv_create_string(yasm__xstrdup(str),
-                                                strlen(str)));
+    yasm_dvs_append(&dvs,
+                    yasm_dv_create_string(yasm__xstrdup(str), strlen(str)));
     bc = yasm_bc_create_data(&dvs, 1, 1, NULL, 0);
     yasm_bc_finalize(bc, yasm_dwarf2__append_bc(sect, bc));
     yasm_bc_calc_len(bc, NULL, NULL);
@@ -280,8 +277,8 @@ yasm_dwarf2__generate_info(yasm_object *object, yasm_section *debug_line,
     abbrev->id = 1;
     abbrev->tag = DW_TAG_compile_unit;
     abbrev->has_children = 0;
-    abc->len = yasm_size_uleb128(abbrev->id) + yasm_size_uleb128(abbrev->tag)
-        + 3;
+    abc->len =
+        yasm_size_uleb128(abbrev->id) + yasm_size_uleb128(abbrev->tag) + 3;
     STAILQ_INIT(&abbrev->attrs);
     yasm_dwarf2__append_bc(debug_abbrev, abc);
 
@@ -293,16 +290,19 @@ yasm_dwarf2__generate_info(yasm_object *object, yasm_section *debug_line,
      */
 
     /* generating info using abbrev 1 */
-    dwarf2_append_expr(debug_info,
-        yasm_expr_create_ident(yasm_expr_int(yasm_intnum_create_uint(1)), 0),
-        0, 1);
+    dwarf2_append_expr(
+        debug_info,
+        yasm_expr_create_ident(yasm_expr_int(yasm_intnum_create_uint(1)), 0), 0,
+        1);
 
     /* statement list (line numbers) */
     abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_stmt_list, DW_FORM_data4);
-    dwarf2_append_expr(debug_info,
-        yasm_expr_create_ident(yasm_expr_sym(
-            yasm_dwarf2__bc_sym(object->symtab,
-                                yasm_section_bcs_first(debug_line))), 0),
+    dwarf2_append_expr(
+        debug_info,
+        yasm_expr_create_ident(
+            yasm_expr_sym(yasm_dwarf2__bc_sym(
+                object->symtab, yasm_section_bcs_first(debug_line))),
+            0),
         dbgfmt_dwarf2->sizeof_offset, 0);
 
     if (main_code) {
@@ -312,15 +312,17 @@ yasm_dwarf2__generate_info(yasm_object *object, yasm_section *debug_line,
         /* All code is contiguous in one section */
         abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_low_pc, DW_FORM_addr);
         dwarf2_append_expr(debug_info,
-            yasm_expr_create_ident(yasm_expr_sym(first), 0),
-            dbgfmt_dwarf2->sizeof_address, 0);
+                           yasm_expr_create_ident(yasm_expr_sym(first), 0),
+                           dbgfmt_dwarf2->sizeof_address, 0);
 
         abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_high_pc, DW_FORM_addr);
-        dwarf2_append_expr(debug_info,
+        dwarf2_append_expr(
+            debug_info,
             yasm_expr_create(YASM_EXPR_ADD, yasm_expr_sym(first),
-                yasm_expr_int(yasm_calc_bc_dist(
-                    yasm_section_bcs_first(main_code),
-                    yasm_section_bcs_last(main_code))), 0),
+                             yasm_expr_int(yasm_calc_bc_dist(
+                                 yasm_section_bcs_first(main_code),
+                                 yasm_section_bcs_last(main_code))),
+                             0),
             dbgfmt_dwarf2->sizeof_address, 0);
     }
 
@@ -343,9 +345,11 @@ yasm_dwarf2__generate_info(yasm_object *object, yasm_section *debug_line,
 
     /* language - no standard code for assembler, use MIPS as a substitute */
     abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_language, DW_FORM_data2);
-    dwarf2_append_expr(debug_info,
-        yasm_expr_create_ident(yasm_expr_int(
-            yasm_intnum_create_uint(DW_LANG_Mips_Assembler)), 0), 2, 0);
+    dwarf2_append_expr(
+        debug_info,
+        yasm_expr_create_ident(
+            yasm_expr_int(yasm_intnum_create_uint(DW_LANG_Mips_Assembler)), 0),
+        2, 0);
 
     /* Terminate list of abbreviations */
     abbrev = yasm_xmalloc(sizeof(dwarf2_abbrev));
@@ -415,7 +419,7 @@ dwarf2_abbrev_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
     buf += yasm_get_uleb128(abbrev->tag, buf);
     YASM_WRITE_8(buf, abbrev->has_children);
 
-    STAILQ_FOREACH(attr, &abbrev->attrs, link) {
+    STAILQ_FOREACH (attr, &abbrev->attrs, link) {
         buf += yasm_get_uleb128(attr->name, buf);
         buf += yasm_get_uleb128(attr->form, buf);
     }
@@ -426,4 +430,3 @@ dwarf2_abbrev_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
     *bufp = buf;
     return 0;
 }
-

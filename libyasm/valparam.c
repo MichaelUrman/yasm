@@ -44,7 +44,7 @@ yasm_call_directive(const yasm_directive *directive, yasm_object *object,
 {
     yasm_valparam *vp;
 
-    if ((directive->flags & (YASM_DIR_ARG_REQUIRED|YASM_DIR_ID_REQUIRED)) &&
+    if ((directive->flags & (YASM_DIR_ARG_REQUIRED | YASM_DIR_ID_REQUIRED)) &&
         (!valparams || !yasm_vps_first(valparams))) {
         yasm_error_set(YASM_ERROR_SYNTAX,
                        N_("directive `%s' requires an argument"),
@@ -55,7 +55,8 @@ yasm_call_directive(const yasm_directive *directive, yasm_object *object,
         vp = yasm_vps_first(valparams);
         if ((directive->flags & YASM_DIR_ID_REQUIRED) &&
             vp->type != YASM_PARAM_ID) {
-            yasm_error_set(YASM_ERROR_SYNTAX,
+            yasm_error_set(
+                YASM_ERROR_SYNTAX,
                 N_("directive `%s' requires an identifier parameter"),
                 directive->name);
             return;
@@ -104,8 +105,9 @@ yasm_vp_expr(const yasm_valparam *vp, yasm_symtab *symtab, unsigned long line)
         return NULL;
     switch (vp->type) {
         case YASM_PARAM_ID:
-            return yasm_expr_create_ident(yasm_expr_sym(
-                yasm_symtab_use(symtab, yasm_vp_id(vp), line)), line);
+            return yasm_expr_create_ident(
+                yasm_expr_sym(yasm_symtab_use(symtab, yasm_vp_id(vp), line)),
+                line);
         case YASM_PARAM_EXPR:
             return yasm_expr_copy(vp->param.e);
         default:
@@ -174,12 +176,12 @@ yasm_vps_print(const yasm_valparamhead *headp, FILE *f)
 {
     const yasm_valparam *vp;
 
-    if(!headp) {
+    if (!headp) {
         fprintf(f, "(none)");
         return;
     }
 
-    yasm_vps_foreach(vp, headp) {
+    yasm_vps_foreach (vp, headp) {
         if (vp->val)
             fprintf(f, "(\"%s\",", vp->val);
         else
@@ -219,8 +221,8 @@ yasm_vps_destroy(yasm_valparamhead *headp)
 int
 yasm_dir_helper(void *obj, yasm_valparam *vp_first, unsigned long line,
                 const yasm_dir_help *help, size_t nhelp, void *data,
-                int (*helper_valparam) (void *obj, yasm_valparam *vp,
-                                        unsigned long line, void *data))
+                int (*helper_valparam)(void *obj, yasm_valparam *vp,
+                                       unsigned long line, void *data))
 {
     yasm_valparam *vp = vp_first;
     int anymatched = 0;
@@ -235,11 +237,11 @@ yasm_dir_helper(void *obj, yasm_valparam *vp_first, unsigned long line,
 
         matched = 0;
         if (!vp->val && (s = yasm_vp_id(vp))) {
-            for (i=0; i<nhelp; i++) {
+            for (i = 0; i < nhelp; i++) {
                 if (help[i].needsparam == 0 &&
                     yasm__strcasecmp(s, help[i].name) == 0) {
                     if (help[i].helper(obj, vp, line,
-                                       ((char *)data)+help[i].off,
+                                       ((char *)data) + help[i].off,
                                        help[i].arg) != 0)
                         return -1;
                     matched = 1;
@@ -248,11 +250,11 @@ yasm_dir_helper(void *obj, yasm_valparam *vp_first, unsigned long line,
                 }
             }
         } else if (vp->val) {
-            for (i=0; i<nhelp; i++) {
+            for (i = 0; i < nhelp; i++) {
                 if (help[i].needsparam == 1 &&
                     yasm__strcasecmp(vp->val, help[i].name) == 0) {
                     if (help[i].helper(obj, vp, line,
-                                       ((char *)data)+help[i].off,
+                                       ((char *)data) + help[i].off,
                                        help[i].arg) != 0)
                         return -1;
                     matched = 1;
@@ -269,7 +271,7 @@ yasm_dir_helper(void *obj, yasm_valparam *vp_first, unsigned long line,
             if (final > 0)
                 anymatched = 1;
         }
-    } while((vp = yasm_vps_next(vp)));
+    } while ((vp = yasm_vps_next(vp)));
 
     return anymatched;
 }
@@ -311,8 +313,8 @@ yasm_dir_helper_expr(void *obj, yasm_valparam *vp, unsigned long line,
     if (*expr)
         yasm_expr_destroy(*expr);
     if (!(*expr = yasm_vp_expr(vp, object->symtab, line))) {
-        yasm_error_set(YASM_ERROR_VALUE, N_("argument to `%s' is not an expression"),
-                       vp->val);
+        yasm_error_set(YASM_ERROR_VALUE,
+                       N_("argument to `%s' is not an expression"), vp->val);
         return -1;
     }
     return 0;
@@ -332,8 +334,7 @@ yasm_dir_helper_intn(void *obj, yasm_valparam *vp, unsigned long line,
     if (!(e = yasm_vp_expr(vp, object->symtab, line)) ||
         !(local = yasm_expr_get_intnum(&e, 0))) {
         yasm_error_set(YASM_ERROR_NOT_CONSTANT,
-                       N_("argument to `%s' is not an integer"),
-                       vp->val);
+                       N_("argument to `%s' is not an integer"), vp->val);
         if (e)
             yasm_expr_destroy(e);
         return -1;
@@ -363,8 +364,8 @@ yasm_dir_helper_string(void *obj, yasm_valparam *vp, unsigned long line,
 }
 
 int
-yasm_dir_helper_valparam_warn(void *obj, yasm_valparam *vp,
-                              unsigned long line, void *data)
+yasm_dir_helper_valparam_warn(void *obj, yasm_valparam *vp, unsigned long line,
+                              void *data)
 {
     const char *s;
 

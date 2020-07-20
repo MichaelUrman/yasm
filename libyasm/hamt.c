@@ -38,92 +38,97 @@
 #include "hamt.h"
 
 struct HAMTEntry {
-    STAILQ_ENTRY(HAMTEntry) next;       /* next hash table entry */
-    /*@dependent@*/ const char *str;    /* string being hashed */
-    /*@owned@*/ void *data;             /* data pointer being stored */
+    STAILQ_ENTRY(HAMTEntry) next;    /* next hash table entry */
+    /*@dependent@*/ const char *str; /* string being hashed */
+    /*@owned@*/ void *data;          /* data pointer being stored */
 };
 
 typedef struct HAMTNode {
-    unsigned long BitMapKey;            /* 32 bits, bitmap or hash key */
-    uintptr_t BaseValue;                /* Base of HAMTNode list or value */
+    unsigned long BitMapKey; /* 32 bits, bitmap or hash key */
+    uintptr_t BaseValue;     /* Base of HAMTNode list or value */
 } HAMTNode;
 
 struct HAMT {
     STAILQ_HEAD(HAMTEntryHead, HAMTEntry) entries;
     HAMTNode *root;
-    /*@exits@*/ void (*error_func) (const char *file, unsigned int line,
-                                    const char *message);
-    unsigned long (*HashKey) (const char *key);
-    unsigned long (*ReHashKey) (const char *key, int Level);
-    int (*CmpKey) (const char *s1, const char *s2);
+    /*@exits@*/ void (*error_func)(const char *file, unsigned int line,
+                                   const char *message);
+    unsigned long (*HashKey)(const char *key);
+    unsigned long (*ReHashKey)(const char *key, int Level);
+    int (*CmpKey)(const char *s1, const char *s2);
 };
 
 /* XXX make a portable version of this.  This depends on the pointer being
  * 4 or 2-byte aligned (as it uses the LSB of the pointer variable to store
  * the subtrie flag!
  */
-#define IsSubTrie(n)            ((n)->BaseValue & 1)
-#define SetSubTrie(h, n, v)     do {                            \
-        if ((uintptr_t)(v) & 1)                                 \
-            h->error_func(__FILE__, __LINE__,                   \
-                          N_("Subtrie is seen as subtrie before flag is set (misaligned?)"));   \
-        (n)->BaseValue = (uintptr_t)(v) | 1;    \
+#define IsSubTrie(n) ((n)->BaseValue & 1)
+#define SetSubTrie(h, n, v)                                                    \
+    do {                                                                       \
+        if ((uintptr_t)(v)&1)                                                  \
+            h->error_func(__FILE__, __LINE__,                                  \
+                          N_("Subtrie is seen as subtrie before flag is set "  \
+                             "(misaligned?)"));                                \
+        (n)->BaseValue = (uintptr_t)(v) | 1;                                   \
     } while (0)
-#define SetValue(h, n, v)       do {                            \
-        if ((uintptr_t)(v) & 1)                                 \
-            h->error_func(__FILE__, __LINE__,                   \
-                          N_("Value is seen as subtrie (misaligned?)")); \
-        (n)->BaseValue = (uintptr_t)(v);        \
+#define SetValue(h, n, v)                                                      \
+    do {                                                                       \
+        if ((uintptr_t)(v)&1)                                                  \
+            h->error_func(__FILE__, __LINE__,                                  \
+                          N_("Value is seen as subtrie (misaligned?)"));       \
+        (n)->BaseValue = (uintptr_t)(v);                                       \
     } while (0)
-#define GetSubTrie(n)           (HAMTNode *)(((n)->BaseValue | 1) ^ 1)
+#define GetSubTrie(n) (HAMTNode *)(((n)->BaseValue | 1) ^ 1)
 
 static unsigned long
 HashKey(const char *key)
 {
-    unsigned long a=31415, b=27183, vHash;
-    for (vHash=0; *key; key++, a*=b)
-        vHash = a*vHash + *key;
+    unsigned long a = 31415, b = 27183, vHash;
+    for (vHash = 0; *key; key++, a *= b)
+        vHash = a * vHash + *key;
     return vHash;
 }
 
 static unsigned long
 ReHashKey(const char *key, int Level)
 {
-    unsigned long a=31415, b=27183, vHash;
-    for (vHash=0; *key; key++, a*=b)
-        vHash = a*vHash*(unsigned long)Level + *key;
+    unsigned long a = 31415, b = 27183, vHash;
+    for (vHash = 0; *key; key++, a *= b)
+        vHash = a * vHash * (unsigned long)Level + *key;
     return vHash;
 }
 
 static unsigned long
 HashKey_nocase(const char *key)
 {
-    unsigned long a=31415, b=27183, vHash;
-    for (vHash=0; *key; key++, a*=b)
-        vHash = a*vHash + tolower(*key);
+    unsigned long a = 31415, b = 27183, vHash;
+    for (vHash = 0; *key; key++, a *= b)
+        vHash = a * vHash + tolower(*key);
     return vHash;
 }
 
 static unsigned long
 ReHashKey_nocase(const char *key, int Level)
 {
-    unsigned long a=31415, b=27183, vHash;
-    for (vHash=0; *key; key++, a*=b)
-        vHash = a*vHash*(unsigned long)Level + tolower(*key);
+    unsigned long a = 31415, b = 27183, vHash;
+    for (vHash = 0; *key; key++, a *= b)
+        vHash = a * vHash * (unsigned long)Level + tolower(*key);
     return vHash;
 }
 
 HAMT *
-HAMT_create(int nocase, /*@exits@*/ void (*error_func)
-    (const char *file, unsigned int line, const char *message))
+HAMT_create(int nocase,
+            /*@exits@*/
+            void (*error_func)(const char *file, unsigned int line,
+                               const char *message))
 {
     /*@out@*/ HAMT *hamt = yasm_xmalloc(sizeof(HAMT));
     int i;
 
     STAILQ_INIT(&hamt->entries);
-    hamt->root = yasm_xmalloc(32*sizeof(HAMTNode));
+    hamt->root = yasm_xmalloc(32 * sizeof(HAMTNode));
 
-    for (i=0; i<32; i++) {
+    for (i = 0; i < 32; i++) {
         hamt->root[i].BitMapKey = 0;
         hamt->root[i].BaseValue = 0;
     }
@@ -154,14 +159,14 @@ HAMT_delete_trie(HAMTNode *node)
         if (Size == 0)
             Size = 32;
 
-        for (i=0; i<Size; i++)
+        for (i = 0; i < Size; i++)
             HAMT_delete_trie(&(GetSubTrie(node))[i]);
         yasm_xfree(GetSubTrie(node));
     }
 }
 
 void
-HAMT_destroy(HAMT *hamt, void (*deletefunc) (/*@only@*/ void *data))
+HAMT_destroy(HAMT *hamt, void (*deletefunc)(/*@only@*/ void *data))
 {
     int i;
 
@@ -175,7 +180,7 @@ HAMT_destroy(HAMT *hamt, void (*deletefunc) (/*@only@*/ void *data))
     }
 
     /* delete trie */
-    for (i=0; i<32; i++)
+    for (i = 0; i < 32; i++)
         HAMT_delete_trie(&hamt->root[i]);
 
     yasm_xfree(hamt->root);
@@ -184,11 +189,11 @@ HAMT_destroy(HAMT *hamt, void (*deletefunc) (/*@only@*/ void *data))
 
 int
 HAMT_traverse(HAMT *hamt, void *d,
-              int (*func) (/*@dependent@*/ /*@null@*/ void *node,
-                            /*@null@*/ void *d))
+              int (*func)(/*@dependent@*/ /*@null@*/ void *node,
+                          /*@null@*/ void *d))
 {
     HAMTEntry *entry;
-    STAILQ_FOREACH(entry, &hamt->entries, next) {
+    STAILQ_FOREACH (entry, &hamt->entries, next) {
         int retval = func(entry->data, d);
         if (retval != 0)
             return retval;
@@ -217,7 +222,7 @@ HAMTEntry_get_data(const HAMTEntry *entry)
 /*@-temptrans -kepttrans -mustfree@*/
 void *
 HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
-            void (*deletefunc) (/*@only@*/ void *data))
+            void (*deletefunc)(/*@only@*/ void *data))
 {
     HAMTNode *node, *newnodes;
     HAMTEntry *entry;
@@ -245,9 +250,8 @@ HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
 
     for (;;) {
         if (!(IsSubTrie(node))) {
-            if (node->BitMapKey == key
-                && hamt->CmpKey(((HAMTEntry *)(node->BaseValue))->str,
-                                str) == 0) {
+            if (node->BitMapKey == key &&
+                hamt->CmpKey(((HAMTEntry *)(node->BaseValue))->str, str) == 0) {
                 /*@-branchstate@*/
                 if (*replace) {
                     deletefunc(((HAMTEntry *)(node->BaseValue))->data);
@@ -282,13 +286,13 @@ HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
                         newnodes = yasm_xmalloc(sizeof(HAMTNode));
                         newnodes[0].BitMapKey = key2;
                         newnodes[0].BaseValue = node->BaseValue;
-                        node->BitMapKey = 1<<keypart;
+                        node->BitMapKey = 1 << keypart;
                         SetSubTrie(hamt, node, newnodes);
                         node = &newnodes[0];
                         level++;
                     } else {
                         /* partitioned: allocate two-node subtrie */
-                        newnodes = yasm_xmalloc(2*sizeof(HAMTNode));
+                        newnodes = yasm_xmalloc(2 * sizeof(HAMTNode));
 
                         entry = yasm_xmalloc(sizeof(HAMTEntry));
                         entry->str = str;
@@ -309,7 +313,7 @@ HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
                         }
 
                         /* Set bits in bitmap corresponding to keys */
-                        node->BitMapKey = (1UL<<keypart) | (1UL<<keypart2);
+                        node->BitMapKey = (1UL << keypart) | (1UL << keypart2);
                         SetSubTrie(hamt, node, newnodes);
                         *replace = 1;
                         return data;
@@ -326,27 +330,27 @@ HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
             keypartbits = 0;
         }
         keypart = (key >> keypartbits) & 0x1F;
-        if (!(node->BitMapKey & (1<<keypart))) {
+        if (!(node->BitMapKey & (1 << keypart))) {
             /* bit is 0 in bitmap -> add node to table */
             unsigned long Size;
 
             /* set bit to 1 */
-            node->BitMapKey |= 1<<keypart;
+            node->BitMapKey |= 1 << keypart;
 
             /* Count total number of bits in bitmap to determine new size */
             BitCount(Size, node->BitMapKey);
             Size &= 0x1F;
             if (Size == 0)
                 Size = 32;
-            newnodes = yasm_xmalloc(Size*sizeof(HAMTNode));
+            newnodes = yasm_xmalloc(Size * sizeof(HAMTNode));
 
             /* Count bits below to find where to insert new node at */
-            BitCount(Map, node->BitMapKey & ~((~0UL)<<keypart));
-            Map &= 0x1F;        /* Clamp to <32 */
+            BitCount(Map, node->BitMapKey & ~((~0UL) << keypart));
+            Map &= 0x1F; /* Clamp to <32 */
             /* Copy existing nodes leaving gap for new node */
-            memcpy(newnodes, GetSubTrie(node), Map*sizeof(HAMTNode));
-            memcpy(&newnodes[Map+1], &(GetSubTrie(node))[Map],
-                   (Size-Map-1)*sizeof(HAMTNode));
+            memcpy(newnodes, GetSubTrie(node), Map * sizeof(HAMTNode));
+            memcpy(&newnodes[Map + 1], &(GetSubTrie(node))[Map],
+                   (Size - Map - 1) * sizeof(HAMTNode));
             /* Delete old subtrie */
             yasm_xfree(GetSubTrie(node));
             /* Set up new node */
@@ -363,8 +367,8 @@ HAMT_insert(HAMT *hamt, const char *str, void *data, int *replace,
         }
 
         /* Count bits below */
-        BitCount(Map, node->BitMapKey & ~((~0UL)<<keypart));
-        Map &= 0x1F;    /* Clamp to <32 */
+        BitCount(Map, node->BitMapKey & ~((~0UL) << keypart));
+        Map &= 0x1F; /* Clamp to <32 */
 
         /* Go down a level */
         level++;
@@ -380,7 +384,7 @@ HAMT_search(HAMT *hamt, const char *str)
     unsigned long key, keypart, Map;
     int keypartbits = 0;
     int level = 0;
-    
+
     key = hamt->HashKey(str);
     keypart = key & 0x1F;
     node = &hamt->root[keypart];
@@ -390,9 +394,8 @@ HAMT_search(HAMT *hamt, const char *str)
 
     for (;;) {
         if (!(IsSubTrie(node))) {
-            if (node->BitMapKey == key
-                && hamt->CmpKey(((HAMTEntry *)(node->BaseValue))->str,
-                                str) == 0)
+            if (node->BitMapKey == key &&
+                hamt->CmpKey(((HAMTEntry *)(node->BaseValue))->str, str) == 0)
                 return ((HAMTEntry *)(node->BaseValue))->data;
             else
                 return NULL;
@@ -406,16 +409,15 @@ HAMT_search(HAMT *hamt, const char *str)
             keypartbits = 0;
         }
         keypart = (key >> keypartbits) & 0x1F;
-        if (!(node->BitMapKey & (1<<keypart)))
-            return NULL;        /* bit is 0 in bitmap -> no match */
+        if (!(node->BitMapKey & (1 << keypart)))
+            return NULL; /* bit is 0 in bitmap -> no match */
 
         /* Count bits below */
-        BitCount(Map, node->BitMapKey & ~((~0UL)<<keypart));
-        Map &= 0x1F;    /* Clamp to <32 */
+        BitCount(Map, node->BitMapKey & ~((~0UL) << keypart));
+        Map &= 0x1F; /* Clamp to <32 */
 
         /* Go down a level */
         level++;
         node = &(GetSubTrie(node))[Map];
     }
 }
-

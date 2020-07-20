@@ -1,0 +1,13 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+AlwaysBreakAfterDefinitionReturnType: TopLevel
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+BreakBeforeBraces: Linux
+BreakStringLiterals: false
+IndentCaseLabels: true
+ColumnLimit:     80
+Cpp11BracedListStyle: false
+SortIncludes: false
+ForEachMacros: ['SLIST_FOREACH', 'STAILQ_FOREACH', 'TAILQ_FOREACH', 'yasm_vps_foreach']
+TypenameMacros: ['SLIST_HEAD', 'STAILQ_HEAD', 'TAILQ_HEAD']
+#SpaceBeforeParens: ControlStatementsExceptForEachMacros

@@ -65,7 +65,7 @@ get_sym_name(u32 idx, FILE *f, size_t symtab_off)
 {
     SYMBOL_ENTRY syment;
     long oldpos = ftell(f);
-    fseek(f, symtab_off+idx*SYMBOL_ENTRY_SIZE, SEEK_SET);
+    fseek(f, symtab_off + idx * SYMBOL_ENTRY_SIZE, SEEK_SET);
     read_syment(&syment, f);
     fseek(f, oldpos, SEEK_SET);
     return get_syment_name(&syment, f);
@@ -76,7 +76,7 @@ get_sect_name(u32 idx, FILE *f, size_t symtab_off, size_t secttab_off)
 {
     SECTION_HEADER secthead;
     long oldpos = ftell(f);
-    fseek(f, secttab_off+idx*SECTION_HEADER_SIZE, SEEK_SET);
+    fseek(f, secttab_off + idx * SECTION_HEADER_SIZE, SEEK_SET);
     fread(&secthead.s_name_idx, sizeof(secthead.s_name_idx), 1, f);
     fseek(f, oldpos, SEEK_SET);
     return get_sym_name(secthead.s_name_idx, f, symtab_off);
@@ -89,12 +89,12 @@ print_symbol(const SYMBOL_ENTRY *syment, FILE *f, size_t symtab_off,
     int first = 1;
     printf("\tOffset=0x%08X Flags=", syment->e_sect_off);
     if (syment->e_flags & XDF_SYM_EXTERN)
-        printf("%sEXTERN", first-->0?"":"|");
+        printf("%sEXTERN", first-- > 0 ? "" : "|");
     if (syment->e_flags & XDF_SYM_GLOBAL)
-        printf("%sGLOBAL", first-->0?"":"|");
+        printf("%sGLOBAL", first-- > 0 ? "" : "|");
     if (syment->e_flags & XDF_SYM_EQU)
-        printf("%sEQU", first-->0?"":"|");
-    if (first>0)
+        printf("%sEQU", first-- > 0 ? "" : "|");
+    if (first > 0)
         printf("None");
     printf(" Name=`%s' Section=", get_syment_name(syment, f));
     if (syment->e_sect_idx >= 0x80000000)
@@ -123,14 +123,14 @@ print_reloc(const RELOCATION_ENTRY *relocent, FILE *f, size_t symtab_off)
             type = "SEG";
             break;
     }
-    printf("\t Offset=0x%08X Type=%s Size=%d Shift=%d Target=`%s' (%d)", 
+    printf("\t Offset=0x%08X Type=%s Size=%d Shift=%d Target=`%s' (%d)",
            relocent->r_off, type, relocent->r_size, relocent->r_shift,
            get_sym_name(relocent->r_targ_idx, f, symtab_off),
            relocent->r_targ_idx);
     if (relocent->r_type == XDF_RELOC_WRT)
         printf(" Base=`%s' (%d)",
-           get_sym_name(relocent->r_base_idx, f, symtab_off),
-           relocent->r_base_idx);
+               get_sym_name(relocent->r_base_idx, f, symtab_off),
+               relocent->r_base_idx);
     printf("\n");
 }
 
@@ -147,18 +147,18 @@ print_section(const SECTION_HEADER *secthead, FILE *f, size_t symtab_off)
     printf("\tAlign=%d\n", secthead->s_align);
     printf("\tFlags=");
     if (secthead->s_flags & XDF_SECT_ABSOLUTE)
-        printf("%sABSOLUTE", first-->0?"":"|");
+        printf("%sABSOLUTE", first-- > 0 ? "" : "|");
     if (secthead->s_flags & XDF_SECT_FLAT)
-        printf("%sFLAT", first-->0?"":"|");
+        printf("%sFLAT", first-- > 0 ? "" : "|");
     if (secthead->s_flags & XDF_SECT_BSS)
-        printf("%sBSS", first-->0?"":"|");
+        printf("%sBSS", first-- > 0 ? "" : "|");
     if (secthead->s_flags & XDF_SECT_USE_16)
-        printf("%sUSE16", first-->0?"":"|");
+        printf("%sUSE16", first-- > 0 ? "" : "|");
     if (secthead->s_flags & XDF_SECT_USE_32)
-        printf("%sUSE32", first-->0?"":"|");
+        printf("%sUSE32", first-- > 0 ? "" : "|");
     if (secthead->s_flags & XDF_SECT_USE_64)
-        printf("%sUSE64", first-->0?"":"|");
-    if (first>0)
+        printf("%sUSE64", first-- > 0 ? "" : "|");
+    if (first > 0)
         printf("None");
     printf("\n\tData Offset=0x%08X\n", secthead->s_data_off);
     printf("\tData Size=%d\n", secthead->s_data_size);
@@ -166,7 +166,7 @@ print_section(const SECTION_HEADER *secthead, FILE *f, size_t symtab_off)
         printf("\tSection Data:");
         long oldpos = ftell(f);
         fseek(f, secthead->s_data_off, SEEK_SET);
-        for (i=0; i<secthead->s_data_size; i++) {
+        for (i = 0; i < secthead->s_data_size; i++) {
             if (i % 16 == 0)
                 printf("\n\t\t%08X:", i);
             if (i % 2 == 0)
@@ -182,7 +182,7 @@ print_section(const SECTION_HEADER *secthead, FILE *f, size_t symtab_off)
         printf("\tRelocations:\n");
         long oldpos = ftell(f);
         fseek(f, secthead->s_reltab_off, SEEK_SET);
-        for (i=0; i<secthead->s_num_reloc; i++) {
+        for (i = 0; i < secthead->s_num_reloc; i++) {
             RELOCATION_ENTRY relocent;
             fread(&relocent, sizeof(relocent), 1, f);
             print_reloc(&relocent, f, symtab_off);
@@ -222,8 +222,8 @@ main(int argc, char **argv)
     }
 
     print_file_header(&filehead);
-    symtab_off = FILE_HEADER_SIZE+filehead.f_nsect*SECTION_HEADER_SIZE;
-    for (i=0; i<filehead.f_nsect; i++) {
+    symtab_off = FILE_HEADER_SIZE + filehead.f_nsect * SECTION_HEADER_SIZE;
+    for (i = 0; i < filehead.f_nsect; i++) {
         SECTION_HEADER secthead;
         fread(&secthead.s_name_idx, sizeof(secthead.s_name_idx), 1, f);
         fread(&secthead.s_addr, sizeof(secthead.s_addr), 1, f);
@@ -238,7 +238,7 @@ main(int argc, char **argv)
     }
 
     printf("Symbol Table:\n");
-    for (i=0; i<filehead.f_nsyms; i++) {
+    for (i = 0; i < filehead.f_nsyms; i++) {
         SYMBOL_ENTRY syment;
         read_syment(&syment, f);
         print_symbol(&syment, f, symtab_off, sizeof(FILE_HEADER));
@@ -246,4 +246,3 @@ main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 }
-

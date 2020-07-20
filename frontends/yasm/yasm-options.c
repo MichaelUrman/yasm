@@ -32,18 +32,16 @@
 
 #include "yasm-options.h"
 
-
 #ifdef __DEBUG__
-#define DEBUG(x) fprintf ## x ;
+#define DEBUG(x) fprintf##x;
 #else
 #define DEBUG(x)
 #endif
 
-
 /* Options Parser */
 int
 parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
-              void (*print_error) (const char *fmt, ...))
+              void (*print_error)(const char *fmt, ...))
 {
     int errors = 0, warnings = 0;
     size_t i;
@@ -51,14 +49,14 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
 
     DEBUG((stderr, "parse_cmdline: entered\n"));
 
-  fail:
+fail:
     while (--argc) {
         argv++;
 
-        if (argv[0][0] == '-') {        /* opt */
+        if (argv[0][0] == '-') { /* opt */
             got_it = 0;
-            if (argv[0][1] == '-') {    /* lopt */
-                if (argv[0][2] == '\0') {   /* --, end of options */
+            if (argv[0][1] == '-') {      /* lopt */
+                if (argv[0][2] == '\0') { /* --, end of options */
                     /* Handle rest of args as non-options */
                     while (--argc) {
                         argv++;
@@ -94,8 +92,8 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                         } else
                             param = NULL;
 
-                        if (!options[i].
-                            handler(&argv[0][2], param, options[i].extra))
+                        if (!options[i].handler(&argv[0][2], param,
+                                                options[i].extra))
                             got_it = 1;
                         break;
                     }
@@ -107,10 +105,10 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                                 argv[0]);
                     warnings++;
                 }
-            } else if (argv[0][1] == '\0') {   /* just -, is non-option */
+            } else if (argv[0][1] == '\0') { /* just -, is non-option */
                 if (not_an_option_handler(argv[0]))
                     errors++;
-            } else {            /* sopt */
+            } else { /* sopt */
                 for (i = 0; i < nopts; i++) {
                     size_t optlen;
                     if (argv[0][1] == options[i].sopt) {
@@ -163,8 +161,8 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                         } else
                             param = NULL;
 
-                        if (!options[i].
-                            handler(&argv[0][1], param, options[i].extra))
+                        if (!options[i].handler(&argv[0][1], param,
+                                                options[i].extra))
                             got_it = 1;
                         break;
                     }
@@ -177,7 +175,7 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                     warnings++;
                 }
             }
-        } else {    /* not an option, then it should be a file or something */
+        } else { /* not an option, then it should be a file or something */
 
             if (not_an_option_handler(argv[0]))
                 errors++;
@@ -206,16 +204,16 @@ help_msg(const char *msg, const char *tail, opt_option *options, size_t nopts)
         if (options[i].takes_param) {
             if (options[i].sopt) {
                 sprintf(optbuf, "-%c <%s>", options[i].sopt,
-                        options[i].param_desc ? options[i].
-                        param_desc : _("param"));
+                        options[i].param_desc ? options[i].param_desc
+                                              : _("param"));
                 shortopt_len = strlen(optbuf);
             }
             if (options[i].sopt && options[i].lopt)
                 strcat(optbuf, ", ");
             if (options[i].lopt) {
                 sprintf(optopt, "--%s=<%s>", options[i].lopt,
-                        options[i].param_desc ? options[i].
-                        param_desc : _("param"));
+                        options[i].param_desc ? options[i].param_desc
+                                              : _("param"));
                 strcat(optbuf, optopt);
                 longopt_len = strlen(optbuf);
             }
@@ -238,8 +236,7 @@ help_msg(const char *msg, const char *tail, opt_option *options, size_t nopts)
             optbuf[shortopt_len] = '\0';
             printf("    %-22s  %s\n", optopt, gettext(options[i].description));
             printf("     %s\n", optbuf);
-        }
-        else
+        } else
             printf("    %-22s  %s\n", optbuf, gettext(options[i].description));
     }
 

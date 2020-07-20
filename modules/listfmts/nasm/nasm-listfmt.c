@@ -37,31 +37,30 @@
  * iteration, this should just happen.
  */
 
-#define REGULAR_BUF_SIZE    1024
+#define REGULAR_BUF_SIZE 1024
 
 yasm_listfmt_module yasm_nasm_LTX_listfmt;
 
 typedef struct sectreloc {
     /*@reldef@*/ SLIST_ENTRY(sectreloc) link;
     yasm_section *sect;
-    /*@null@*/ yasm_reloc *next_reloc;  /* next relocation in section */
+    /*@null@*/ yasm_reloc *next_reloc; /* next relocation in section */
     unsigned long next_reloc_addr;
 } sectreloc;
 
 typedef struct bcreloc {
     /*@reldef@*/ STAILQ_ENTRY(bcreloc) link;
-    unsigned long offset;       /* start of reloc from start of bytecode */
-    size_t size;                /* size of reloc in bytes */
-    int rel;                    /* PC/IP-relative or "absolute" */
+    unsigned long offset; /* start of reloc from start of bytecode */
+    size_t size;          /* size of reloc in bytes */
+    int rel;              /* PC/IP-relative or "absolute" */
 } bcreloc;
 
 typedef struct nasm_listfmt_output_info {
     yasm_arch *arch;
     /*@reldef@*/ STAILQ_HEAD(bcrelochead, bcreloc) bcrelocs;
-    /*@null@*/ yasm_reloc *next_reloc;  /* next relocation in section */
+    /*@null@*/ yasm_reloc *next_reloc; /* next relocation in section */
     unsigned long next_reloc_addr;
 } nasm_listfmt_output_info;
-
 
 static /*@null@*/ /*@only@*/ yasm_listfmt *
 nasm_listfmt_create(const char *in_filename, const char *obj_filename)
@@ -89,8 +88,8 @@ nasm_listfmt_output_value(yasm_value *value, unsigned char *buf,
     assert(info != NULL);
 
     /* Output */
-    switch (yasm_value_output_basic(value, buf, destsize, bc, warn,
-                                    info->arch)) {
+    switch (
+        yasm_value_output_basic(value, buf, destsize, bc, warn, info->arch)) {
         case -1:
             return 1;
         case 0:
@@ -100,7 +99,7 @@ nasm_listfmt_output_value(yasm_value *value, unsigned char *buf,
     }
 
     /* Generate reloc if needed */
-    if (info->next_reloc && info->next_reloc_addr == bc->offset+offset) {
+    if (info->next_reloc && info->next_reloc_addr == bc->offset + offset) {
         bcreloc *reloc = yasm_xmalloc(sizeof(bcreloc));
         reloc->offset = offset;
         reloc->size = destsize;
@@ -170,7 +169,7 @@ nasm_listfmt_output(yasm_listfmt *listfmt, FILE *f, yasm_linemap *linemap,
                 int found = 0;
 
                 /* look through reloc_hist for matching section */
-                SLIST_FOREACH(last_hist, &reloc_hist, link) {
+                SLIST_FOREACH (last_hist, &reloc_hist, link) {
                     if (last_hist->sect == sect) {
                         found = 1;
                         break;
@@ -187,8 +186,7 @@ nasm_listfmt_output(yasm_listfmt *listfmt, FILE *f, yasm_linemap *linemap,
                         yasm_intnum *addr;
                         yasm_symrec *sym;
                         yasm_reloc_get(last_hist->next_reloc, &addr, &sym);
-                        last_hist->next_reloc_addr =
-                            yasm_intnum_get_uint(addr);
+                        last_hist->next_reloc_addr = yasm_intnum_get_uint(addr);
                     }
 
                     SLIST_INSERT_HEAD(&reloc_hist, last_hist, link);
@@ -226,40 +224,41 @@ nasm_listfmt_output(yasm_listfmt *listfmt, FILE *f, yasm_linemap *linemap,
                 if (gap) {
                     fprintf(f, "%6lu %08lX <gap>%*s%s\n", listline++, offset,
                             18, "", source ? source : "");
-                } else while (size > 0) {
-                    int i;
+                } else
+                    while (size > 0) {
+                        int i;
 
-                    fprintf(f, "%6lu %08lX ", listline++, offset);
-                    for (i=0; i<18 && size > 0; size--) {
-                        if (reloc && (unsigned long)(p-origp) ==
-                                     reloc->offset) {
-                            fprintf(f, "%c", reloc->rel ? '(' : '[');
-                            i++;
+                        fprintf(f, "%6lu %08lX ", listline++, offset);
+                        for (i = 0; i < 18 && size > 0; size--) {
+                            if (reloc &&
+                                (unsigned long)(p - origp) == reloc->offset) {
+                                fprintf(f, "%c", reloc->rel ? '(' : '[');
+                                i++;
+                            }
+                            fprintf(f, "%02X", *(p++));
+                            i += 2;
+                            if (reloc && (unsigned long)(p - origp) ==
+                                             reloc->offset + reloc->size) {
+                                fprintf(f, "%c", reloc->rel ? ')' : ']');
+                                i++;
+                                reloc = STAILQ_NEXT(reloc, link);
+                            }
                         }
-                        fprintf(f, "%02X", *(p++));
-                        i+=2;
-                        if (reloc && (unsigned long)(p-origp) ==
-                                     reloc->offset+reloc->size) {
-                            fprintf(f, "%c", reloc->rel ? ')' : ']');
-                            i++;
-                            reloc = STAILQ_NEXT(reloc, link);
+                        if (size > 0)
+                            fprintf(f, "-");
+                        else {
+                            if (multiple > 1) {
+                                fprintf(f, "<rept>");
+                                i += 6;
+                            }
+                            fprintf(f, "%*s", 18 - i + 1, "");
                         }
-                    }
-                    if (size > 0)
-                        fprintf(f, "-");
-                    else {
-                        if (multiple > 1) {
-                            fprintf(f, "<rept>");
-                            i += 6;
+                        if (source) {
+                            fprintf(f, "    %s", source);
+                            source = NULL;
                         }
-                        fprintf(f, "%*s", 18-i+1, "");
+                        fprintf(f, "\n");
                     }
-                    if (source) {
-                        fprintf(f, "    %s", source);
-                        source = NULL;
-                    }
-                    fprintf(f, "\n");
-                }
 
                 if (bigbuf)
                     yasm_xfree(bigbuf);
@@ -292,10 +291,7 @@ nasm_listfmt_output(yasm_listfmt *listfmt, FILE *f, yasm_linemap *linemap,
 }
 
 /* Define listfmt structure -- see listfmt.h for details */
-yasm_listfmt_module yasm_nasm_LTX_listfmt = {
-    "NASM-style list format",
-    "nasm",
-    nasm_listfmt_create,
-    nasm_listfmt_destroy,
-    nasm_listfmt_output
-};
+yasm_listfmt_module yasm_nasm_LTX_listfmt = { "NASM-style list format", "nasm",
+                                              nasm_listfmt_create,
+                                              nasm_listfmt_destroy,
+                                              nasm_listfmt_output };

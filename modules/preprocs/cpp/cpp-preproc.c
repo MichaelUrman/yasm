@@ -56,7 +56,7 @@ typedef struct cpp_arg_entry {
 } cpp_arg_entry;
 
 typedef struct yasm_preproc_cpp {
-    yasm_preproc_base preproc;   /* base structure */
+    yasm_preproc_base preproc; /* base structure */
 
     /* List of arguments to pass to cpp. */
     TAILQ_HEAD(cpp_arg_head, cpp_arg_entry) cpp_args;
@@ -70,8 +70,8 @@ typedef struct yasm_preproc_cpp {
 } yasm_preproc_cpp;
 
 /* Flag values for yasm_preproc_cpp->flags. */
-#define CPP_HAS_BEEN_INVOKED        0x01
-#define CPP_HAS_GENERATED_DEPS      0x02
+#define CPP_HAS_BEEN_INVOKED 0x01
+#define CPP_HAS_GENERATED_DEPS 0x02
 
 /*******************************************************************************
     Internal functions and helpers.
@@ -81,13 +81,14 @@ typedef struct yasm_preproc_cpp {
     Append a string to the command line, ensuring that we don't overflow the
     buffer.
 */
-#define APPEND(s) do {                              \
-    size_t _len = strlen(s);                        \
-    if (p + _len >= limit)                          \
-        yasm__fatal(N_("command line too long!"));  \
-    strcpy(p, s);                                   \
-    p += _len;                                      \
-} while (0)
+#define APPEND(s)                                                              \
+    do {                                                                       \
+        size_t _len = strlen(s);                                               \
+        if (p + _len >= limit)                                                 \
+            yasm__fatal(N_("command line too long!"));                         \
+        strcpy(p, s);                                                          \
+        p += _len;                                                             \
+    } while (0)
 
 /*
     Put all the options together into a command line that can be used to invoke
@@ -100,7 +101,7 @@ cpp_build_cmdline(yasm_preproc_cpp *pp, const char *extra)
     cpp_arg_entry *arg;
 
     /* Initialize command line. */
-    cmdline = p = yasm_xmalloc(strlen(CPP_PROG)+CMDLINE_SIZE);
+    cmdline = p = yasm_xmalloc(strlen(CPP_PROG) + CMDLINE_SIZE);
     limit = p + CMDLINE_SIZE;
     strcpy(p, CPP_PROG);
     p += strlen(CPP_PROG);
@@ -108,7 +109,7 @@ cpp_build_cmdline(yasm_preproc_cpp *pp, const char *extra)
     arg = TAILQ_FIRST(&pp->cpp_args);
 
     /* Append arguments from the list. */
-    while ( arg ) {
+    while (arg) {
         APPEND(" ");
         APPEND(arg->op);
         APPEND(" ");
@@ -140,9 +141,9 @@ cpp_invoke(yasm_preproc_cpp *pp)
 #ifdef HAVE_POPEN
     pp->f = popen(cmdline, "r");
     if (!pp->f)
-        yasm__fatal( N_("Failed to execute preprocessor") );
+        yasm__fatal(N_("Failed to execute preprocessor"));
 #else
-    yasm__fatal( N_("Cannot execute preprocessor, no popen available") );
+    yasm__fatal(N_("Cannot execute preprocessor, no popen available"));
 #endif
 
     yasm_xfree(cmdline);
@@ -154,7 +155,7 @@ cpp_destroy_args(yasm_preproc_cpp *pp)
 {
     cpp_arg_entry *arg;
 
-    while ( (arg = TAILQ_FIRST(&pp->cpp_args)) ) {
+    while ((arg = TAILQ_FIRST(&pp->cpp_args))) {
         TAILQ_REMOVE(&pp->cpp_args, arg, entry);
         yasm_xfree(arg->param);
         yasm_xfree(arg);
@@ -172,9 +173,9 @@ cpp_generate_deps(yasm_preproc_cpp *pp)
 #ifdef HAVE_POPEN
     pp->f_deps = popen(cmdline, "r");
     if (!pp->f_deps)
-        yasm__fatal( N_("Failed to execute preprocessor") );
+        yasm__fatal(N_("Failed to execute preprocessor"));
 #else
-    yasm__fatal( N_("Cannot execute preprocessor, no popen available") );
+    yasm__fatal(N_("Cannot execute preprocessor, no popen available"));
 #endif
 
     yasm_xfree(cmdline);
@@ -188,8 +189,8 @@ cpp_preproc_create(const char *in, yasm_symtab *symtab, yasm_linemap *lm,
                    yasm_errwarns *errwarns)
 {
     yasm_preproc_cpp *pp = yasm_xmalloc(sizeof(yasm_preproc_cpp));
-    void * iter;
-    const char * inc_dir;
+    void *iter;
+    const char *inc_dir;
 
     pp->preproc.module = &yasm_cpp_LTX_preproc;
     pp->f = pp->f_deps = NULL;
@@ -221,7 +222,7 @@ cpp_preproc_destroy(yasm_preproc *preproc)
     if (pp->f) {
 #ifdef HAVE_POPEN
         if (pclose(pp->f) != 0)
-            yasm__fatal( N_("Preprocessor exited with failure") );
+            yasm__fatal(N_("Preprocessor exited with failure"));
 #endif
     }
 
@@ -238,7 +239,7 @@ cpp_preproc_get_line(yasm_preproc *preproc)
     int bufsize = BSIZE;
     char *buf, *p;
 
-    if (! (pp->flags & CPP_HAS_BEEN_INVOKED) ) {
+    if (!(pp->flags & CPP_HAS_BEEN_INVOKED)) {
         pp->flags |= CPP_HAS_BEEN_INVOKED;
 
         cpp_invoke(pp);
@@ -253,24 +254,24 @@ cpp_preproc_get_line(yasm_preproc *preproc)
     buf = yasm_xmalloc((size_t)bufsize);
     p = buf;
     for (;;) {
-        if (!fgets(p, bufsize-(p-buf), pp->f)) {
+        if (!fgets(p, bufsize - (p - buf), pp->f)) {
             if (ferror(pp->f)) {
                 yasm_error_set(YASM_ERROR_IO,
                                N_("error when reading from file"));
                 yasm_errwarn_propagate(pp->errwarns,
-                    yasm_linemap_get_current(pp->cur_lm));
+                                       yasm_linemap_get_current(pp->cur_lm));
             }
             break;
         }
         p += strlen(p);
         if (p > buf && p[-1] == '\n')
             break;
-        if ((p-buf) >= bufsize) {
+        if ((p - buf) >= bufsize) {
             /* Increase size of buffer */
             char *oldbuf = buf;
             bufsize *= 2;
             buf = yasm_xrealloc(buf, (size_t)bufsize);
-            p = buf + (p-oldbuf);
+            p = buf + (p - oldbuf);
         }
     }
 
@@ -287,15 +288,14 @@ cpp_preproc_get_line(yasm_preproc *preproc)
 }
 
 static size_t
-cpp_preproc_get_included_file(yasm_preproc *preproc, char *buf,
-                              size_t max_size)
+cpp_preproc_get_included_file(yasm_preproc *preproc, char *buf, size_t max_size)
 {
     char *p = buf;
     int ch = '\0';
     size_t n = 0;
     yasm_preproc_cpp *pp = (yasm_preproc_cpp *)preproc;
 
-    if (! (pp->flags & CPP_HAS_GENERATED_DEPS) ) {
+    if (!(pp->flags & CPP_HAS_GENERATED_DEPS)) {
         pp->flags |= CPP_HAS_GENERATED_DEPS;
 
         cpp_generate_deps(pp);
@@ -304,7 +304,7 @@ cpp_preproc_get_included_file(yasm_preproc *preproc, char *buf,
         while (ch != ':')
             ch = fgetc(pp->f_deps);
 
-        fgetc(pp->f_deps);      /* Discard space after colon. */
+        fgetc(pp->f_deps); /* Discard space after colon. */
 
         while (ch != ' ' && ch != EOF)
             ch = fgetc(pp->f_deps);

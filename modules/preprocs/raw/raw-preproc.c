@@ -28,11 +28,10 @@
 
 #include <libyasm.h>
 
-
 #define BSIZE 512
 
 typedef struct yasm_preproc_raw {
-    yasm_preproc_base preproc;   /* base structure */
+    yasm_preproc_base preproc; /* base structure */
 
     FILE *in;
     yasm_linemap *cur_lm;
@@ -51,9 +50,8 @@ raw_preproc_create(const char *in_filename, yasm_symtab *symtab,
     if (strcmp(in_filename, "-") != 0) {
         f = fopen(in_filename, "r");
         if (!f)
-            yasm__fatal( N_("Could not open input file") );
-    }
-    else
+            yasm__fatal(N_("Could not open input file"));
+    } else
         f = stdin;
 
     preproc_raw->preproc.module = &yasm_raw_LTX_preproc;
@@ -81,11 +79,12 @@ raw_preproc_get_line(yasm_preproc *preproc)
     /* Loop to ensure entire line is read (don't want to limit line length). */
     p = buf;
     for (;;) {
-        if (!fgets(p, bufsize-(p-buf), preproc_raw->in)) {
+        if (!fgets(p, bufsize - (p - buf), preproc_raw->in)) {
             if (ferror(preproc_raw->in)) {
                 yasm_error_set(YASM_ERROR_IO,
                                N_("error when reading from file"));
-                yasm_errwarn_propagate(preproc_raw->errwarns,
+                yasm_errwarn_propagate(
+                    preproc_raw->errwarns,
                     yasm_linemap_get_current(preproc_raw->cur_lm));
             }
             break;
@@ -93,12 +92,12 @@ raw_preproc_get_line(yasm_preproc *preproc)
         p += strlen(p);
         if (p > buf && p[-1] == '\n')
             break;
-        if ((p-buf)+1 >= bufsize) {
+        if ((p - buf) + 1 >= bufsize) {
             /* Increase size of buffer */
             char *oldbuf = buf;
             bufsize *= 2;
             buf = yasm_xrealloc(buf, (size_t)bufsize);
-            p = buf + (p-oldbuf);
+            p = buf + (p - oldbuf);
         }
     }
 
@@ -115,8 +114,7 @@ raw_preproc_get_line(yasm_preproc *preproc)
 }
 
 static size_t
-raw_preproc_get_included_file(yasm_preproc *preproc, char *buf,
-                              size_t max_size)
+raw_preproc_get_included_file(yasm_preproc *preproc, char *buf, size_t max_size)
 {
     /* no included files */
     return 0;
@@ -152,18 +150,12 @@ raw_preproc_add_standard(yasm_preproc *preproc, const char **macros)
     /* no standard macros */
 }
 
-
 /* Define preproc structure -- see preproc.h for details */
 yasm_preproc_module yasm_raw_LTX_preproc = {
-    "Disable preprocessing",
-    "raw",
-    raw_preproc_create,
-    raw_preproc_destroy,
-    raw_preproc_get_line,
-    raw_preproc_get_included_file,
-    raw_preproc_add_include_file,
-    raw_preproc_predefine_macro,
-    raw_preproc_undefine_macro,
-    raw_preproc_define_builtin,
+    "Disable preprocessing",      "raw",
+    raw_preproc_create,           raw_preproc_destroy,
+    raw_preproc_get_line,         raw_preproc_get_included_file,
+    raw_preproc_add_include_file, raw_preproc_predefine_macro,
+    raw_preproc_undefine_macro,   raw_preproc_define_builtin,
     raw_preproc_add_standard
 };

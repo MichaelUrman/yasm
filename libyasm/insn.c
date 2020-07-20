@@ -37,7 +37,6 @@
 #include "insn.h"
 #include "arch.h"
 
-
 void
 yasm_ea_set_segreg(yasm_effaddr *ea, uintptr_t segreg)
 {
@@ -138,9 +137,8 @@ yasm_insn_ops_append(yasm_insn *insn, yasm_insn_operand *op)
 void
 yasm_insn_add_prefix(yasm_insn *insn, uintptr_t prefix)
 {
-    insn->prefixes =
-        yasm_xrealloc(insn->prefixes,
-                      (insn->num_prefixes+1)*sizeof(uintptr_t));
+    insn->prefixes = yasm_xrealloc(insn->prefixes, (insn->num_prefixes + 1) *
+                                                       sizeof(uintptr_t));
     insn->prefixes[insn->num_prefixes] = prefix;
     insn->num_prefixes++;
 }
@@ -148,8 +146,8 @@ yasm_insn_add_prefix(yasm_insn *insn, uintptr_t prefix)
 void
 yasm_insn_add_seg_prefix(yasm_insn *insn, uintptr_t segreg)
 {
-    insn->segregs =
-        yasm_xrealloc(insn->segregs, (insn->num_segregs+1)*sizeof(uintptr_t));
+    insn->segregs = yasm_xrealloc(insn->segregs,
+                                  (insn->num_segregs + 1) * sizeof(uintptr_t));
     insn->segregs[insn->num_segregs] = segreg;
     insn->num_segregs++;
 }
@@ -168,8 +166,7 @@ yasm_insn_initialize(yasm_insn *insn)
 }
 
 void
-yasm_insn_delete(yasm_insn *insn,
-                 void (*ea_destroy) (/*@only@*/ yasm_effaddr *))
+yasm_insn_delete(yasm_insn *insn, void (*ea_destroy)(/*@only@*/ yasm_effaddr *))
 {
     if (insn->num_operands > 0) {
         yasm_insn_operand *cur, *next;
@@ -224,10 +221,10 @@ yasm_insn_print(const yasm_insn *insn, FILE *f, int indent_level)
                 fprintf(f, "\n");
                 break;
         }
-        fprintf(f, "%*sTargetMod=%lx\n", indent_level+1, "",
+        fprintf(f, "%*sTargetMod=%lx\n", indent_level + 1, "",
                 (unsigned long)op->targetmod);
-        fprintf(f, "%*sSize=%u\n", indent_level+1, "", op->size);
-        fprintf(f, "%*sDeref=%d, Strict=%d\n", indent_level+1, "",
+        fprintf(f, "%*sSize=%u\n", indent_level + 1, "", op->size);
+        fprintf(f, "%*sDeref=%d, Strict=%d\n", indent_level + 1, "",
                 (int)op->deref, (int)op->strict);
     }
 }
@@ -242,8 +239,8 @@ yasm_insn_finalize(yasm_insn *insn)
     unsigned long xrefline;
 
     /* Simplify the operands' expressions first. */
-    for (i = 0, op = yasm_insn_ops_first(insn);
-         op && i<insn->num_operands; op = yasm_insn_op_next(op), i++) {
+    for (i = 0, op = yasm_insn_ops_first(insn); op && i < insn->num_operands;
+         op = yasm_insn_op_next(op), i++) {
         /* Check operand type */
         switch (op->type) {
             case YASM_INSN__OPERAND_MEMORY:
@@ -252,9 +249,8 @@ yasm_insn_finalize(yasm_insn *insn)
                  * simplify reg*1 identities.
                  */
                 if (op->data.ea)
-                    op->data.ea->disp.abs =
-                        yasm_expr__level_tree(op->data.ea->disp.abs, 1, 1, 0,
-                                              0, NULL, NULL);
+                    op->data.ea->disp.abs = yasm_expr__level_tree(
+                        op->data.ea->disp.abs, 1, 1, 0, 0, NULL, NULL);
                 if (yasm_error_occurred()) {
                     /* Add a pointer to where it was used to the error */
                     yasm_error_fetch(&eclass, &str, &xrefline, &xrefstr);
@@ -271,8 +267,7 @@ yasm_insn_finalize(yasm_insn *insn)
                 break;
             case YASM_INSN__OPERAND_IMM:
                 op->data.val =
-                    yasm_expr__level_tree(op->data.val, 1, 1, 1, 0, NULL,
-                                          NULL);
+                    yasm_expr__level_tree(op->data.val, 1, 1, 1, 0, NULL, NULL);
                 if (yasm_error_occurred()) {
                     /* Add a pointer to where it was used to the error */
                     yasm_error_fetch(&eclass, &str, &xrefline, &xrefstr);

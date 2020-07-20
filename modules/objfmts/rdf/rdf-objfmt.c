@@ -28,57 +28,56 @@
 
 #include <libyasm.h>
 
+#define REGULAR_OUTBUF_SIZE 1024
 
-#define REGULAR_OUTBUF_SIZE     1024
-
-#define RDF_MAGIC       "RDOFF2"
+#define RDF_MAGIC "RDOFF2"
 
 /* Maximum size of an import/export label (including trailing zero) */
-#define EXIM_LABEL_MAX          64
+#define EXIM_LABEL_MAX 64
 
 /* Maximum size of library or module name (including trailing zero) */
-#define MODLIB_NAME_MAX         128
+#define MODLIB_NAME_MAX 128
 
 /* Maximum number of segments that we can handle in one file */
-#define RDF_MAXSEGS             64
+#define RDF_MAXSEGS 64
 
 /* Record types that may present the RDOFF header */
-#define RDFREC_GENERIC          0
-#define RDFREC_RELOC            1
-#define RDFREC_IMPORT           2
-#define RDFREC_GLOBAL           3
-#define RDFREC_DLL              4
-#define RDFREC_BSS              5
-#define RDFREC_SEGRELOC         6
-#define RDFREC_FARIMPORT        7
-#define RDFREC_MODNAME          8
-#define RDFREC_COMMON           10
+#define RDFREC_GENERIC 0
+#define RDFREC_RELOC 1
+#define RDFREC_IMPORT 2
+#define RDFREC_GLOBAL 3
+#define RDFREC_DLL 4
+#define RDFREC_BSS 5
+#define RDFREC_SEGRELOC 6
+#define RDFREC_FARIMPORT 7
+#define RDFREC_MODNAME 8
+#define RDFREC_COMMON 10
 
 /* Flags for ExportRec/ImportRec */
-#define SYM_DATA        1
-#define SYM_FUNCTION    2
+#define SYM_DATA 1
+#define SYM_FUNCTION 2
 
 /* Flags for ExportRec */
-#define SYM_GLOBAL      4
+#define SYM_GLOBAL 4
 
 /* Flags for ImportRec */
-#define SYM_IMPORT      8
-#define SYM_FAR         16
+#define SYM_IMPORT 8
+#define SYM_FAR 16
 
 typedef struct rdf_reloc {
     yasm_reloc reloc;
     enum {
-        RDF_RELOC_NORM,     /* normal */
-        RDF_RELOC_REL,      /* relative to current position */
-        RDF_RELOC_SEG       /* segment containing symbol */
-    } type;                         /* type of relocation */
+        RDF_RELOC_NORM, /* normal */
+        RDF_RELOC_REL,  /* relative to current position */
+        RDF_RELOC_SEG   /* segment containing symbol */
+    } type;             /* type of relocation */
     unsigned int size;
     unsigned int refseg;
 } rdf_reloc;
 
 typedef struct rdf_section_data {
-    /*@dependent@*/ yasm_symrec *sym;   /* symbol created for this section */
-    long scnum;             /* section number (0=first section) */
+    /*@dependent@*/ yasm_symrec *sym; /* symbol created for this section */
+    long scnum;                       /* section number (0=first section) */
     enum {
         RDF_SECT_BSS = 0,
         RDF_SECT_CODE = 1,
@@ -88,15 +87,15 @@ typedef struct rdf_section_data {
         RDF_SECT_PCOMMENT = 5,
         RDF_SECT_SYMDEBUG = 6,
         RDF_SECT_LINEDEBUG = 7
-    } type;                 /* section type */
-    unsigned int reserved;  /* reserved data */
-    unsigned long size;     /* size of raw data (section data) in bytes */
+    } type;                /* section type */
+    unsigned int reserved; /* reserved data */
+    unsigned long size;    /* size of raw data (section data) in bytes */
 
-    unsigned char *raw_data;    /* raw section data, only used during output */
+    unsigned char *raw_data; /* raw section data, only used during output */
 } rdf_section_data;
 
 typedef struct rdf_symrec_data {
-    unsigned int segment;               /* assigned RDF "segment" index */
+    unsigned int segment; /* assigned RDF "segment" index */
 } rdf_symrec_data;
 
 typedef STAILQ_HEAD(xdf_str_head, xdf_str) xdf_str_head;
@@ -106,9 +105,9 @@ typedef struct xdf_str {
 } xdf_str;
 
 typedef struct yasm_objfmt_rdf {
-    yasm_objfmt_base objfmt;                /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
-    long parse_scnum;               /* sect numbering in parser */
+    long parse_scnum; /* sect numbering in parser */
 
     /*@owned@*/ xdf_str_head module_names;
     /*@owned@*/ xdf_str_head library_names;
@@ -123,29 +122,26 @@ typedef struct rdf_objfmt_output_info {
     yasm_section *sect;
     /*@dependent@*/ rdf_section_data *rsd;
 
-    unsigned long indx;             /* symbol "segment" (extern/common only) */
+    unsigned long indx; /* symbol "segment" (extern/common only) */
 
-    unsigned long bss_size;         /* total BSS size */
+    unsigned long bss_size; /* total BSS size */
 } rdf_objfmt_output_info;
 
 static void rdf_section_data_destroy(/*@only@*/ void *d);
 static void rdf_section_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback rdf_section_data_cb = {
-    rdf_section_data_destroy,
-    rdf_section_data_print
+    rdf_section_data_destroy, rdf_section_data_print
 };
 
 static void rdf_symrec_data_destroy(/*@only@*/ void *d);
 static void rdf_symrec_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback rdf_symrec_data_cb = {
-    rdf_symrec_data_destroy,
-    rdf_symrec_data_print
+    rdf_symrec_data_destroy, rdf_symrec_data_print
 };
 
 yasm_objfmt_module yasm_rdf_LTX_objfmt;
-
 
 static /*@dependent@*/ rdf_symrec_data *
 rdf_objfmt_sym_set_data(yasm_symrec *sym, unsigned int segment)
@@ -167,7 +163,7 @@ rdf_objfmt_create(yasm_object *object)
      * Really we only support byte-addressable ones.
      */
 
-    objfmt_rdf->parse_scnum = 0;    /* section numbering starts at 0 */
+    objfmt_rdf->parse_scnum = 0; /* section numbering starts at 0 */
 
     STAILQ_INIT(&objfmt_rdf->module_names);
     STAILQ_INIT(&objfmt_rdf->library_names);
@@ -215,8 +211,7 @@ rdf_objfmt_output_value(yasm_value *value, unsigned char *buf,
     }
 
     if (value->rel && value->wrt) {
-        yasm_error_set(YASM_ERROR_TOO_COMPLEX,
-                       N_("rdf: WRT not supported"));
+        yasm_error_set(YASM_ERROR_TOO_COMPLEX, N_("rdf: WRT not supported"));
         return 1;
     }
 
@@ -230,7 +225,7 @@ rdf_objfmt_output_value(yasm_value *value, unsigned char *buf,
         reloc = yasm_xmalloc(sizeof(rdf_reloc));
         reloc->reloc.addr = yasm_intnum_create_uint(bc->offset + offset);
         reloc->reloc.sym = value->rel;
-        reloc->size = valsize/8;
+        reloc->size = valsize / 8;
 
         if (value->seg_of)
             reloc->type = RDF_RELOC_SEG;
@@ -258,8 +253,7 @@ rdf_objfmt_output_value(yasm_value *value, unsigned char *buf,
             intn_plus = yasm_bc_next_offset(precbc);
         } else {
             /* must be common/external */
-            rsymd = yasm_symrec_get_data(reloc->reloc.sym,
-                                         &rdf_symrec_data_cb);
+            rsymd = yasm_symrec_get_data(reloc->reloc.sym, &rdf_symrec_data_cb);
             if (!rsymd)
                 yasm_internal_error(
                     N_("rdf: no symbol data for relocated symbol"));
@@ -403,14 +397,14 @@ rdf_objfmt_output_section_reloc(yasm_section *sect, /*@null@*/ void *d)
             YASM_WRITE_8(localbuf, RDFREC_SEGRELOC);
         else
             YASM_WRITE_8(localbuf, RDFREC_RELOC);
-        YASM_WRITE_8(localbuf, 8);              /* record length */
+        YASM_WRITE_8(localbuf, 8); /* record length */
         /* Section number, +0x40 if relative reloc */
-        YASM_WRITE_8(localbuf, rsd->scnum +
-                     (reloc->type == RDF_RELOC_REL ? 0x40 : 0));
+        YASM_WRITE_8(localbuf,
+                     rsd->scnum + (reloc->type == RDF_RELOC_REL ? 0x40 : 0));
         yasm_intnum_get_sized(reloc->reloc.addr, localbuf, 4, 32, 0, 0, 0);
-        localbuf += 4;                          /* offset of relocation */
-        YASM_WRITE_8(localbuf, reloc->size);        /* size of relocation */
-        YASM_WRITE_16_L(localbuf, reloc->refseg);   /* relocated symbol */
+        localbuf += 4;                            /* offset of relocation */
+        YASM_WRITE_8(localbuf, reloc->size);      /* size of relocation */
+        YASM_WRITE_16_L(localbuf, reloc->refseg); /* relocated symbol */
         fwrite(info->buf, 10, 1, info->f);
 
         reloc = (rdf_reloc *)yasm_section_reloc_next((yasm_reloc *)reloc);
@@ -441,10 +435,10 @@ rdf_objfmt_output_section_file(yasm_section *sect, /*@null@*/ void *d)
 
     /* Section header */
     localbuf = info->buf;
-    YASM_WRITE_16_L(localbuf, rsd->type);       /* type */
-    YASM_WRITE_16_L(localbuf, rsd->scnum);      /* number */
-    YASM_WRITE_16_L(localbuf, rsd->reserved);   /* reserved */
-    YASM_WRITE_32_L(localbuf, rsd->size);       /* length */
+    YASM_WRITE_16_L(localbuf, rsd->type);     /* type */
+    YASM_WRITE_16_L(localbuf, rsd->scnum);    /* number */
+    YASM_WRITE_16_L(localbuf, rsd->reserved); /* reserved */
+    YASM_WRITE_32_L(localbuf, rsd->size);     /* length */
     fwrite(info->buf, 10, 1, info->f);
 
     /* Section data */
@@ -457,11 +451,11 @@ rdf_objfmt_output_section_file(yasm_section *sect, /*@null@*/ void *d)
     return 0;
 }
 
-#define FLAG_EXT    0x1000
-#define FLAG_GLOB   0x2000
-#define FLAG_SET    0x4000
-#define FLAG_CLR    0x8000
-#define FLAG_MASK   0x0fff
+#define FLAG_EXT 0x1000
+#define FLAG_GLOB 0x2000
+#define FLAG_SET 0x4000
+#define FLAG_CLR 0x8000
+#define FLAG_MASK 0x0fff
 
 static int
 rdf_helper_flag(void *obj, yasm_valparam *vp, unsigned long line, void *d,
@@ -490,17 +484,17 @@ rdf_parse_flags(yasm_symrec *sym)
 
     static const yasm_dir_help help[] = {
         { "data", 0, rdf_helper_flag, 0,
-          FLAG_EXT|FLAG_GLOB|FLAG_SET|SYM_DATA },
+          FLAG_EXT | FLAG_GLOB | FLAG_SET | SYM_DATA },
         { "object", 0, rdf_helper_flag, 0,
-          FLAG_EXT|FLAG_GLOB|FLAG_SET|SYM_DATA },
+          FLAG_EXT | FLAG_GLOB | FLAG_SET | SYM_DATA },
         { "proc", 0, rdf_helper_flag, 0,
-          FLAG_EXT|FLAG_GLOB|FLAG_SET|SYM_FUNCTION },
+          FLAG_EXT | FLAG_GLOB | FLAG_SET | SYM_FUNCTION },
         { "function", 0, rdf_helper_flag, 0,
-          FLAG_EXT|FLAG_GLOB|FLAG_SET|SYM_FUNCTION },
-        { "import", 0, rdf_helper_flag, 0, FLAG_EXT|FLAG_SET|SYM_IMPORT },
-        { "export", 0, rdf_helper_flag, 0, FLAG_GLOB|FLAG_SET|SYM_GLOBAL },
-        { "far", 0, rdf_helper_flag, 0, FLAG_EXT|FLAG_SET|SYM_FAR },
-        { "near", 0, rdf_helper_flag, 0, FLAG_EXT|FLAG_CLR|SYM_FAR }
+          FLAG_EXT | FLAG_GLOB | FLAG_SET | SYM_FUNCTION },
+        { "import", 0, rdf_helper_flag, 0, FLAG_EXT | FLAG_SET | SYM_IMPORT },
+        { "export", 0, rdf_helper_flag, 0, FLAG_GLOB | FLAG_SET | SYM_GLOBAL },
+        { "far", 0, rdf_helper_flag, 0, FLAG_EXT | FLAG_SET | SYM_FAR },
+        { "near", 0, rdf_helper_flag, 0, FLAG_EXT | FLAG_CLR | SYM_FAR }
     };
 
     if (!objext_valparams)
@@ -528,7 +522,7 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
     assert(info != NULL);
 
     if (vis == YASM_SYM_LOCAL || vis == YASM_SYM_DLOCAL)
-        return 0;   /* skip local syms */
+        return 0; /* skip local syms */
 
     /* Look at symrec for value/scnum/etc. */
     if (yasm_symrec_get_label(sym, &precbc)) {
@@ -550,7 +544,7 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
         value = yasm_bc_next_offset(precbc);
     } else if (yasm_symrec_get_equ(sym)) {
         yasm_warn_set(YASM_WARN_GENERAL,
-            N_("rdf does not support exporting EQU/absolute values"));
+                      N_("rdf does not support exporting EQU/absolute values"));
         yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
         return 0;
     }
@@ -558,20 +552,20 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
     name = yasm_symrec_get_global_name(sym, info->object);
     len = strlen(name);
 
-    if (len > EXIM_LABEL_MAX-1) {
+    if (len > EXIM_LABEL_MAX - 1) {
         yasm_warn_set(YASM_WARN_GENERAL,
                       N_("label name too long, truncating to %d bytes"),
                       EXIM_LABEL_MAX);
-        len = EXIM_LABEL_MAX-1;
+        len = EXIM_LABEL_MAX - 1;
     }
 
     localbuf = info->buf;
     if (vis & YASM_SYM_GLOBAL) {
         YASM_WRITE_8(localbuf, RDFREC_GLOBAL);
-        YASM_WRITE_8(localbuf, 6+len+1);        /* record length */
-        YASM_WRITE_8(localbuf, rdf_parse_flags(sym));   /* flags */
-        YASM_WRITE_8(localbuf, scnum);          /* segment referred to */
-        YASM_WRITE_32_L(localbuf, value);       /* offset */
+        YASM_WRITE_8(localbuf, 6 + len + 1);          /* record length */
+        YASM_WRITE_8(localbuf, rdf_parse_flags(sym)); /* flags */
+        YASM_WRITE_8(localbuf, scnum);                /* segment referred to */
+        YASM_WRITE_32_L(localbuf, value);             /* offset */
     } else {
         /* Save symbol segment in symrec data (for later reloc gen) */
         scnum = info->indx++;
@@ -585,15 +579,16 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
             unsigned long addralign = 0;
 
             YASM_WRITE_8(localbuf, RDFREC_COMMON);
-            YASM_WRITE_8(localbuf, 8+len+1);    /* record length */
-            YASM_WRITE_16_L(localbuf, scnum);   /* segment allocated */
+            YASM_WRITE_8(localbuf, 8 + len + 1); /* record length */
+            YASM_WRITE_16_L(localbuf, scnum);    /* segment allocated */
 
             /* size */
             csize_expr = yasm_symrec_get_common_size(sym);
             assert(csize_expr != NULL);
             intn = yasm_expr_get_intnum(csize_expr, 1);
             if (!intn) {
-                yasm_error_set(YASM_ERROR_NOT_CONSTANT,
+                yasm_error_set(
+                    YASM_ERROR_NOT_CONSTANT,
                     N_("COMMON data size not an integer expression"));
             } else
                 value = yasm_intnum_get_uint(intn);
@@ -608,12 +603,13 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
                         /*@dependent@*/ /*@null@*/
                         const yasm_intnum *align_intn;
 
-                        if (!(align_expr = yasm_vp_expr(vp,
-                                info->object->symtab,
-                                yasm_symrec_get_decl_line(sym))) ||
-                            !(align_intn = yasm_expr_get_intnum(&align_expr,
-                                                                0))) {
-                            yasm_error_set(YASM_ERROR_VALUE,
+                        if (!(align_expr = yasm_vp_expr(
+                                  vp, info->object->symtab,
+                                  yasm_symrec_get_decl_line(sym))) ||
+                            !(align_intn =
+                                  yasm_expr_get_intnum(&align_expr, 0))) {
+                            yasm_error_set(
+                                YASM_ERROR_VALUE,
                                 N_("argument to `%s' is not an integer"),
                                 vp->val);
                             if (align_expr)
@@ -626,12 +622,14 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
                         /* Alignments must be a power of two. */
                         if (!is_exp2(addralign)) {
                             yasm_error_set(YASM_ERROR_VALUE,
-                                N_("alignment constraint is not a power of two"));
+                                           N_("alignment constraint is not a "
+                                              "power of two"));
                             continue;
                         }
                     } else
                         yasm_warn_set(YASM_WARN_GENERAL,
-                            N_("Unrecognized qualifier `%s'"), vp->val);
+                                      N_("Unrecognized qualifier `%s'"),
+                                      vp->val);
                 }
             }
             YASM_WRITE_16_L(localbuf, addralign);
@@ -642,19 +640,19 @@ rdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
                 flags &= ~SYM_FAR;
             } else
                 YASM_WRITE_8(localbuf, RDFREC_IMPORT);
-            YASM_WRITE_8(localbuf, 3+len+1);    /* record length */
-            YASM_WRITE_8(localbuf, flags);      /* flags */
-            YASM_WRITE_16_L(localbuf, scnum);   /* segment allocated */
+            YASM_WRITE_8(localbuf, 3 + len + 1); /* record length */
+            YASM_WRITE_8(localbuf, flags);       /* flags */
+            YASM_WRITE_16_L(localbuf, scnum);    /* segment allocated */
         }
     }
 
     /* Symbol name */
     memcpy(localbuf, name, len);
     localbuf += len;
-    YASM_WRITE_8(localbuf, 0);          /* 0-terminated name */
+    YASM_WRITE_8(localbuf, 0); /* 0-terminated name */
     yasm_xfree(name);
 
-    fwrite(info->buf, (unsigned long)(localbuf-info->buf), 1, info->f);
+    fwrite(info->buf, (unsigned long)(localbuf - info->buf), 1, info->f);
 
     yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
     return 0;
@@ -679,7 +677,7 @@ rdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     info.bss_size = 0;
 
     /* Allocate space for file header by seeking forward */
-    if (fseek(f, (long)strlen(RDF_MAGIC)+8, SEEK_SET) < 0) {
+    if (fseek(f, (long)strlen(RDF_MAGIC) + 8, SEEK_SET) < 0) {
         yasm__fatal(N_("could not seek on output file"));
         /*@notreached@*/
         return;
@@ -688,10 +686,10 @@ rdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     /* Output custom header records (library and module, etc) */
     cur = STAILQ_FIRST(&objfmt_rdf->module_names);
     while (cur) {
-        len = strlen(cur->str)+1;
+        len = strlen(cur->str) + 1;
         localbuf = info.buf;
-        YASM_WRITE_8(localbuf, RDFREC_MODNAME);         /* record type */
-        YASM_WRITE_8(localbuf, len);                    /* record length */
+        YASM_WRITE_8(localbuf, RDFREC_MODNAME); /* record type */
+        YASM_WRITE_8(localbuf, len);            /* record length */
         fwrite(info.buf, 2, 1, f);
         fwrite(cur->str, len, 1, f);
         cur = STAILQ_NEXT(cur, link);
@@ -699,10 +697,10 @@ rdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
 
     cur = STAILQ_FIRST(&objfmt_rdf->library_names);
     while (cur) {
-        len = strlen(cur->str)+1;
+        len = strlen(cur->str) + 1;
         localbuf = info.buf;
-        YASM_WRITE_8(localbuf, RDFREC_DLL);             /* record type */
-        YASM_WRITE_8(localbuf, len);                    /* record length */
+        YASM_WRITE_8(localbuf, RDFREC_DLL); /* record type */
+        YASM_WRITE_8(localbuf, len);        /* record length */
         fwrite(info.buf, 2, 1, f);
         fwrite(cur->str, len, 1, f);
         cur = STAILQ_NEXT(cur, link);
@@ -736,9 +734,9 @@ rdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     /* Output BSS record */
     if (info.bss_size > 0) {
         localbuf = info.buf;
-        YASM_WRITE_8(localbuf, RDFREC_BSS);             /* record type */
-        YASM_WRITE_8(localbuf, 4);                      /* record length */
-        YASM_WRITE_32_L(localbuf, info.bss_size);       /* total BSS size */
+        YASM_WRITE_8(localbuf, RDFREC_BSS);       /* record type */
+        YASM_WRITE_8(localbuf, 4);                /* record length */
+        YASM_WRITE_32_L(localbuf, info.bss_size); /* total BSS size */
         fwrite(info.buf, 6, 1, f);
     }
 
@@ -776,8 +774,8 @@ rdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
 
     fwrite(RDF_MAGIC, strlen(RDF_MAGIC), 1, f);
     localbuf = info.buf;
-    YASM_WRITE_32_L(localbuf, filelen-10);              /* object size */
-    YASM_WRITE_32_L(localbuf, headerlen-14);            /* header size */
+    YASM_WRITE_32_L(localbuf, filelen - 10);   /* object size */
+    YASM_WRITE_32_L(localbuf, headerlen - 14); /* header size */
     fwrite(info.buf, 8, 1, f);
 
     yasm_xfree(info.buf);
@@ -848,8 +846,8 @@ rdf_objfmt_add_default_section(yasm_object *object)
 }
 
 static int
-rdf_helper_set_type(void *obj, yasm_valparam *vp, unsigned long line,
-                    void *d, uintptr_t newtype)
+rdf_helper_set_type(void *obj, yasm_valparam *vp, unsigned long line, void *d,
+                    uintptr_t newtype)
 {
     unsigned int *type = (unsigned int *)d;
     *type = newtype;
@@ -931,7 +929,7 @@ rdf_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     flags_override = yasm_dir_helper(object, vp, line, help, NELEMS(help),
                                      &data, rdf_helper_set_reserved);
     if (flags_override < 0)
-        return NULL;    /* error occurred */
+        return NULL; /* error occurred */
 
     if (data.type == 0xffff) {
         yasm_error_set(YASM_ERROR_VALUE,
@@ -981,7 +979,7 @@ rdf_section_data_print(void *data, FILE *f, int indent_level)
     rdf_section_data *rsd = (rdf_section_data *)data;
 
     fprintf(f, "%*ssym=\n", indent_level, "");
-    yasm_symrec_print(rsd->sym, f, indent_level+1);
+    yasm_symrec_print(rsd->sym, f, indent_level + 1);
     fprintf(f, "%*sscnum=%ld\n", indent_level, "", rsd->scnum);
     fprintf(f, "%*stype=0x%x\n", indent_level, "", rsd->type);
     fprintf(f, "%*sreserved=0x%x\n", indent_level, "", rsd->reserved);
@@ -1016,11 +1014,11 @@ rdf_objfmt_add_libmodule(yasm_object *object, char *name, int lib)
     else
         STAILQ_INSERT_TAIL(&objfmt_rdf->module_names, str, link);
 
-    if (strlen(str->str) > MODLIB_NAME_MAX-1) {
+    if (strlen(str->str) > MODLIB_NAME_MAX - 1) {
         yasm_warn_set(YASM_WARN_GENERAL,
                       N_("name too long, truncating to %d bytes"),
                       MODLIB_NAME_MAX);
-        str->str[MODLIB_NAME_MAX-1] = '\0';
+        str->str[MODLIB_NAME_MAX - 1] = '\0';
     }
 }
 
@@ -1041,30 +1039,24 @@ dir_module(yasm_object *object, yasm_valparamhead *valparams,
 }
 
 /* Define valid debug formats to use with this object format */
-static const char *rdf_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *rdf_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 static const yasm_directive rdf_objfmt_directives[] = {
-    { "library",        "nasm", dir_library,    YASM_DIR_ARG_REQUIRED },
-    { "module",         "nasm", dir_module,     YASM_DIR_ARG_REQUIRED },
+    { "library", "nasm", dir_library, YASM_DIR_ARG_REQUIRED },
+    { "module", "nasm", dir_module, YASM_DIR_ARG_REQUIRED },
     { NULL, NULL, NULL, 0 }
 };
 
-static const char *rdf_nasm_stdmac[] = {
-    "%imacro library 1+.nolist",
-    "[library %1]",
-    "%endmacro",
-    "%imacro module 1+.nolist",
-    "[module %1]",
-    "%endmacro",
-    NULL
-};
+static const char *rdf_nasm_stdmac[] = { "%imacro library 1+.nolist",
+                                         "[library %1]",
+                                         "%endmacro",
+                                         "%imacro module 1+.nolist",
+                                         "[module %1]",
+                                         "%endmacro",
+                                         NULL };
 
 static const yasm_stdmac rdf_objfmt_stdmacs[] = {
-    { "nasm", "nasm", rdf_nasm_stdmac },
-    { NULL, NULL, NULL }
+    { "nasm", "nasm", rdf_nasm_stdmac }, { NULL, NULL, NULL }
 };
 
 /* Define objfmt structure -- see objfmt.h for details */

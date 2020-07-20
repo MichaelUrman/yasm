@@ -28,15 +28,13 @@
 
 #include <libyasm.h>
 
-
 typedef struct yasm_objfmt_dbg {
-    yasm_objfmt_base objfmt;        /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
     FILE *dbgfile;
 } yasm_objfmt_dbg;
 
 yasm_objfmt_module yasm_dbg_LTX_objfmt;
-
 
 static yasm_objfmt *
 dbg_objfmt_create(yasm_object *object)
@@ -96,7 +94,7 @@ dbg_objfmt_init_new_section(yasm_section *sect, unsigned long line)
     fprintf(objfmt_dbg->dbgfile, "init_new_section(\"%s\", %lu)\n",
             yasm_section_get_name(sect), line);
     yasm_symtab_define_label(object->symtab, ".text",
-        yasm_section_bcs_first(sect), 1, 0);
+                             yasm_section_bcs_first(sect), 1, 0);
 }
 
 static yasm_section *
@@ -157,10 +155,7 @@ dbg_objfmt_get_special_sym(yasm_object *object, const char *name,
 }
 
 /* Define valid debug formats to use with this object format */
-static const char *dbg_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *dbg_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 /* Define objfmt structure -- see objfmt.h for details */
 yasm_objfmt_module yasm_dbg_LTX_objfmt = {
@@ -171,8 +166,8 @@ yasm_objfmt_module yasm_dbg_LTX_objfmt = {
     0,
     dbg_objfmt_dbgfmt_keywords,
     "null",
-    NULL,       /* no directives */
-    NULL,       /* no standard macros */
+    NULL, /* no directives */
+    NULL, /* no standard macros */
     dbg_objfmt_create,
     dbg_objfmt_output,
     dbg_objfmt_destroy,

@@ -45,11 +45,13 @@ load_dll(const char *name, const char **perr)
 {
     void *dll = NULL;
 #if defined(_MSC_VER)
-    static char message[512] = {0};
+    static char message[512] = { 0 };
     dll = LoadLibrary(name);
     if (!dll) {
         DWORD err = GetLastError();
-        if (err != 0 && FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, err, 0, message, 511, NULL)) {
+        if (err != 0 && FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+                                           FORMAT_MESSAGE_IGNORE_INSERTS,
+                                       0, err, 0, message, 511, NULL)) {
             *perr = message;
         }
     }
@@ -67,12 +69,12 @@ load_plugin(const char *name, const char **perr)
 {
     char *path;
     void *lib = NULL;
-    void (*init_plugin) (void) = NULL;
+    void (*init_plugin)(void) = NULL;
     const char *err = "";
 
     /* Load library */
 
-    path = yasm_xmalloc(strlen(name)+10);
+    path = yasm_xmalloc(strlen(name) + 10);
 #if defined(_MSC_VER)
     strcpy(path, name);
     strcat(path, ".dll");
@@ -95,11 +97,11 @@ load_plugin(const char *name, const char **perr)
         lib = load_dll(name, perr);
 
     if (!lib)
-        return 0;       /* Didn't load successfully */
+        return 0; /* Didn't load successfully */
 
     /* Add to array of loaded plugins */
-    loaded_plugins =
-        yasm_xrealloc(loaded_plugins, (num_loaded_plugins+1)*sizeof(void *));
+    loaded_plugins = yasm_xrealloc(loaded_plugins,
+                                   (num_loaded_plugins + 1) * sizeof(void *));
     loaded_plugins[num_loaded_plugins] = lib;
     num_loaded_plugins++;
 
@@ -113,7 +115,7 @@ load_plugin(const char *name, const char **perr)
 #endif
 
     if (!init_plugin)
-        return 0;       /* Didn't load successfully */
+        return 0; /* Didn't load successfully */
 
     init_plugin();
     return 1;

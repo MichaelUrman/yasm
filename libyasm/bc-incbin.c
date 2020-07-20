@@ -40,10 +40,9 @@
 
 #include "file.h"
 
-
 typedef struct bytecode_incbin {
-    /*@only@*/ char *filename;          /* file to include data from */
-    const char *from;           /* filename of what contained incbin */
+    /*@only@*/ char *filename; /* file to include data from */
+    const char *from;          /* filename of what contained incbin */
 
     /* starting offset to read from (NULL=0) */
     /*@only@*/ /*@null@*/ yasm_expr *start;
@@ -63,16 +62,9 @@ static int bc_incbin_tobytes(yasm_bytecode *bc, unsigned char **bufp,
                              /*@null@*/ yasm_output_reloc_func output_reloc);
 
 static const yasm_bytecode_callback bc_incbin_callback = {
-    bc_incbin_destroy,
-    bc_incbin_print,
-    bc_incbin_finalize,
-    NULL,
-    bc_incbin_calc_len,
-    yasm_bc_expand_common,
-    bc_incbin_tobytes,
-    0
+    bc_incbin_destroy,  bc_incbin_print,       bc_incbin_finalize, NULL,
+    bc_incbin_calc_len, yasm_bc_expand_common, bc_incbin_tobytes,  0
 };
-
 
 static void
 bc_incbin_destroy(void *contents)
@@ -89,8 +81,7 @@ bc_incbin_print(const void *contents, FILE *f, int indent_level)
 {
     const bytecode_incbin *incbin = (const bytecode_incbin *)contents;
     fprintf(f, "%*s_IncBin_\n", indent_level, "");
-    fprintf(f, "%*sFilename=`%s'\n", indent_level, "",
-            incbin->filename);
+    fprintf(f, "%*sFilename=`%s'\n", indent_level, "", incbin->filename);
     fprintf(f, "%*sStart=", indent_level, "");
     if (!incbin->start)
         fprintf(f, "nil (0)");
@@ -165,8 +156,7 @@ bc_incbin_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
     /* Open file and determine its length */
     f = yasm_fopen_include(incbin->filename, incbin->from, "rb", NULL);
     if (!f) {
-        yasm_error_set(YASM_ERROR_IO,
-                       N_("`incbin': unable to open file `%s'"),
+        yasm_error_set(YASM_ERROR_IO, N_("`incbin': unable to open file `%s'"),
                        incbin->filename);
         return -1;
     }

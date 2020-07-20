@@ -49,29 +49,41 @@ typedef struct Test_Entry {
 } Test_Entry;
 
 static Test_Entry tests[] = {
-    {"noescape", 8, "noescape", 8, NULL},
-    {"noescape2", 10, "noescape2", 10, NULL},   /* includes trailing zero */
-    {"\\\\\\b\\f\\n\\r\\t\\\"", 14, "\\\b\f\n\r\t\"", 7, NULL},
-    {"\\a", 2, "a", 1, NULL},
+    { "noescape", 8, "noescape", 8, NULL },
+    { "noescape2", 10, "noescape2", 10, NULL }, /* includes trailing zero */
+    { "\\\\\\b\\f\\n\\r\\t\\\"", 14, "\\\b\f\n\r\t\"", 7, NULL },
+    { "\\a", 2, "a", 1, NULL },
     /* hex tests */
-    {"\\x", 2, "\x00", 1, NULL},
-    {"\\x12", 4, "\x12", 1, NULL},
-    {"\\x1234", 6, "\x34", 1, NULL},
-    {"\\xg", 3, "\x00g", 2, NULL},
-    {"\\xaga", 5, "\x0aga", 3, NULL},
-    {"\\xaag", 5, "\xaag", 2, NULL},
-    {"\\xaaa", 5, "\xaa", 1, NULL},
-    {"\\x55559", 7, "\x59", 1, NULL},
+    { "\\x", 2, "\x00", 1, NULL },
+    { "\\x12", 4, "\x12", 1, NULL },
+    { "\\x1234", 6, "\x34", 1, NULL },
+    { "\\xg", 3, "\x00g", 2, NULL },
+    { "\\xaga", 5, "\x0aga", 3, NULL },
+    { "\\xaag", 5, "\xaag", 2, NULL },
+    { "\\xaaa", 5, "\xaa", 1, NULL },
+    { "\\x55559", 7, "\x59", 1, NULL },
 
     /* oct tests */
-    {"\\778", 4, "\000", 1, "octal value out of range"},
-    {"\\779", 4, "\001", 1, "octal value out of range"},
-    {"\\1x", 3, "\001x", 2, NULL},
-    {"\\7779", 5, "\xff" "9", 2, NULL},
-    {"\\7999", 5, "\x11" "9", 2, "octal value out of range"},
-    {"\\77a", 4, "\077a", 2, NULL},
-    {"\\5555555", 8, "\x6d" "5555", 5, NULL},
-    {"\\9999", 5, "\x91" "9", 2, "octal value out of range"},
+    { "\\778", 4, "\000", 1, "octal value out of range" },
+    { "\\779", 4, "\001", 1, "octal value out of range" },
+    { "\\1x", 3, "\001x", 2, NULL },
+    { "\\7779", 5,
+      "\xff"
+      "9",
+      2, NULL },
+    { "\\7999", 5,
+      "\x11"
+      "9",
+      2, "octal value out of range" },
+    { "\\77a", 4, "\077a", 2, NULL },
+    { "\\5555555", 8,
+      "\x6d"
+      "5555",
+      5, NULL },
+    { "\\9999", 5,
+      "\x91"
+      "9",
+      2, "octal value out of range" },
 };
 
 static char failed[1000];
@@ -91,7 +103,8 @@ run_test(Test_Entry *test)
     yasm_unescape_cstring((unsigned char *)str, &len);
     if (len != test->result_len) {
         sprintf(failmsg,
-                "unescape_cstring(\"%s\", %lu) bad output len: expected %lu, got %lu!",
+                "unescape_cstring(\"%s\", %lu) bad output len: expected %lu, "
+                "got %lu!",
                 test->input, (unsigned long)test->in_len,
                 (unsigned long)test->result_len, (unsigned long)len);
         return 1;
@@ -99,7 +112,8 @@ run_test(Test_Entry *test)
 
     if (strncmp(str, test->result, len) != 0) {
         sprintf(failmsg,
-                "unescape_cstring(\"%s\", %lu) bad output: expected \"%s\", got \"%s\"!",
+                "unescape_cstring(\"%s\", %lu) bad output: expected \"%s\", "
+                "got \"%s\"!",
                 test->input, (unsigned long)test->in_len, test->result, str);
         return 1;
     }
@@ -113,7 +127,8 @@ run_test(Test_Entry *test)
     }
     if (wstr == NULL && test->warn != NULL) {
         sprintf(failmsg,
-                "unescape_cstring(\"%s\", %lu) expected warning: %s, did not get it!",
+                "unescape_cstring(\"%s\", %lu) expected warning: %s, did not "
+                "get it!",
                 test->input, (unsigned long)test->in_len, test->warn);
         return 1;
     }
@@ -132,24 +147,24 @@ int
 main(void)
 {
     int nf = 0;
-    int numtests = sizeof(tests)/sizeof(Test_Entry);
+    int numtests = sizeof(tests) / sizeof(Test_Entry);
     int i;
 
     yasm_errwarn_initialize();
 
     failed[0] = '\0';
     printf("Test uncstring_test: ");
-    for (i=0; i<numtests; i++) {
+    for (i = 0; i < numtests; i++) {
         int fail = run_test(&tests[i]);
-        printf("%c", fail>0 ? 'F':'.');
+        printf("%c", fail > 0 ? 'F' : '.');
         fflush(stdout);
         if (fail)
             sprintf(failed, "%s ** F: %s\n", failed, failmsg);
         nf += fail;
     }
 
-    printf(" +%d-%d/%d %d%%\n%s",
-           numtests-nf, nf, numtests, 100*(numtests-nf)/numtests, failed);
+    printf(" +%d-%d/%d %d%%\n%s", numtests - nf, nf, numtests,
+           100 * (numtests - nf) / numtests, failed);
 
     yasm_errwarn_cleanup();
     return (nf == 0) ? EXIT_SUCCESS : EXIT_FAILURE;

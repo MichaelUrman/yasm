@@ -34,25 +34,24 @@
 #include "linemap.h"
 #include "errwarn.h"
 
-
-#define MSG_MAXSIZE     1024
+#define MSG_MAXSIZE 1024
 
 #if !defined(HAVE_TOASCII) || defined(lint)
-# define toascii(c) ((c) & 0x7F)
+#define toascii(c) ((c)&0x7F)
 #endif
 
 /* Default handlers for replacable functions */
-static /*@exits@*/ void def_internal_error_
-    (const char *file, unsigned int line, const char *message);
+static /*@exits@*/ void def_internal_error_(const char *file, unsigned int line,
+                                            const char *message);
 static /*@exits@*/ void def_fatal(const char *message, va_list va);
 static const char *def_gettext_hook(const char *msgid);
 
 /* Storage for errwarn's "extern" functions */
-/*@exits@*/ void (*yasm_internal_error_)
-    (const char *file, unsigned int line, const char *message)
-    = def_internal_error_;
-/*@exits@*/ void (*yasm_fatal) (const char *message, va_list va) = def_fatal;
-const char * (*yasm_gettext_hook) (const char *msgid) = def_gettext_hook;
+/*@exits@*/ void (*yasm_internal_error_)(const char *file, unsigned int line,
+                                         const char *message) =
+    def_internal_error_;
+/*@exits@*/ void (*yasm_fatal)(const char *message, va_list va) = def_fatal;
+const char *(*yasm_gettext_hook)(const char *msgid) = def_gettext_hook;
 
 /* Error indicator */
 /* yasm_eclass is not static so that yasm_error_occurred macro can access it */
@@ -100,7 +99,6 @@ struct yasm_errwarns {
 /* Static buffer for use by conv_unprint(). */
 static char unprint[5];
 
-
 static const char *
 def_gettext_hook(const char *msgid)
 {
@@ -111,11 +109,11 @@ void
 yasm_errwarn_initialize(void)
 {
     /* Default enabled warnings.  See errwarn.h for a list. */
-    warn_class_enabled = 
-        (1UL<<YASM_WARN_GENERAL) | (1UL<<YASM_WARN_UNREC_CHAR) |
-        (1UL<<YASM_WARN_PREPROC) | (0UL<<YASM_WARN_ORPHAN_LABEL) |
-        (1UL<<YASM_WARN_UNINIT_CONTENTS) | (0UL<<YASM_WARN_SIZE_OVERRIDE) |
-        (1UL<<YASM_WARN_IMPLICIT_SIZE_OVERRIDE);
+    warn_class_enabled =
+        (1UL << YASM_WARN_GENERAL) | (1UL << YASM_WARN_UNREC_CHAR) |
+        (1UL << YASM_WARN_PREPROC) | (0UL << YASM_WARN_ORPHAN_LABEL) |
+        (1UL << YASM_WARN_UNINIT_CONTENTS) | (0UL << YASM_WARN_SIZE_OVERRIDE) |
+        (1UL << YASM_WARN_IMPLICIT_SIZE_OVERRIDE);
 
     yasm_eclass = YASM_ERROR_NONE;
     yasm_estr = NULL;
@@ -162,8 +160,8 @@ static void
 def_internal_error_(const char *file, unsigned int line, const char *message)
 {
     fprintf(stderr,
-            yasm_gettext_hook(N_("INTERNAL ERROR at %s, line %u: %s\n")),
-            file, line, yasm_gettext_hook(message));
+            yasm_gettext_hook(N_("INTERNAL ERROR at %s, line %u: %s\n")), file,
+            line, yasm_gettext_hook(message));
 #ifdef HAVE_ABORT
     abort();
 #else
@@ -217,7 +215,7 @@ errwarn_data_new(yasm_errwarns *errwarns, unsigned long line,
     }
 
     if (replace_parser_error && ins_we && ins_we->type == WE_PARSERERROR) {
-        /* overwrite last error */      
+        /* overwrite last error */
         we = ins_we;
     } else {
         /* add a new error */
@@ -274,7 +272,7 @@ yasm_error_set_va(yasm_error_class eclass, const char *format, va_list va)
         return;
 
     yasm_eclass = eclass;
-    yasm_estr = yasm_xmalloc(MSG_MAXSIZE+1);
+    yasm_estr = yasm_xmalloc(MSG_MAXSIZE + 1);
 #ifdef HAVE_VSNPRINTF
     vsnprintf(yasm_estr, MSG_MAXSIZE, yasm_gettext_hook(format), va);
 #else
@@ -299,7 +297,7 @@ yasm_error_set_xref_va(unsigned long xrefline, const char *format, va_list va)
 
     yasm_exrefline = xrefline;
 
-    yasm_exrefstr = yasm_xmalloc(MSG_MAXSIZE+1);
+    yasm_exrefstr = yasm_xmalloc(MSG_MAXSIZE + 1);
 #ifdef HAVE_VSNPRINTF
     vsnprintf(yasm_exrefstr, MSG_MAXSIZE, yasm_gettext_hook(format), va);
 #else
@@ -330,7 +328,8 @@ yasm_error_fetch(yasm_error_class *eclass, char **str, unsigned long *xrefline,
     yasm_exrefstr = NULL;
 }
 
-void yasm_warn_clear(void)
+void
+yasm_warn_clear(void)
 {
     /* Delete all error/warnings */
     while (!STAILQ_EMPTY(&yasm_warns)) {
@@ -357,12 +356,12 @@ yasm_warn_set_va(yasm_warn_class wclass, const char *format, va_list va)
 {
     warn *w;
 
-    if (!(warn_class_enabled & (1UL<<wclass)))
-        return;     /* warning is part of disabled class */
+    if (!(warn_class_enabled & (1UL << wclass)))
+        return; /* warning is part of disabled class */
 
     w = yasm_xmalloc(sizeof(warn));
     w->wclass = wclass;
-    w->wstr = yasm_xmalloc(MSG_MAXSIZE+1);
+    w->wstr = yasm_xmalloc(MSG_MAXSIZE + 1);
 #ifdef HAVE_VSNPRINTF
     vsnprintf(w->wstr, MSG_MAXSIZE, yasm_gettext_hook(format), va);
 #else
@@ -401,13 +400,13 @@ yasm_warn_fetch(yasm_warn_class *wclass, char **str)
 void
 yasm_warn_enable(yasm_warn_class num)
 {
-    warn_class_enabled |= (1UL<<num);
+    warn_class_enabled |= (1UL << num);
 }
 
 void
 yasm_warn_disable(yasm_warn_class num)
 {
-    warn_class_enabled &= ~(1UL<<num);
+    warn_class_enabled &= ~(1UL << num);
 }
 
 void
@@ -455,8 +454,8 @@ yasm_errwarn_propagate(yasm_errwarns *errwarns, unsigned long line)
         yasm_error_class eclass;
 
         yasm_error_fetch(&eclass, &we->msg, &we->xrefline, &we->xrefmsg);
-        if (eclass != YASM_ERROR_GENERAL
-            && (eclass & YASM_ERROR_PARSE) == YASM_ERROR_PARSE)
+        if (eclass != YASM_ERROR_GENERAL &&
+            (eclass & YASM_ERROR_PARSE) == YASM_ERROR_PARSE)
             we->type = WE_PARSERERROR;
         else
             we->type = WE_ERROR;
@@ -477,7 +476,7 @@ unsigned int
 yasm_errwarns_num_errors(yasm_errwarns *errwarns, int warning_as_error)
 {
     if (warning_as_error)
-        return errwarns->ecount+errwarns->wcount;
+        return errwarns->ecount + errwarns->wcount;
     else
         return errwarns->ecount;
 }
@@ -493,7 +492,7 @@ yasm_errwarns_output_all(yasm_errwarns *errwarns, yasm_linemap *lm,
     unsigned long line, xref_line;
 
     /* Output error/warnings. */
-    SLIST_FOREACH(we, &errwarns->errwarns, link) {
+    SLIST_FOREACH (we, &errwarns->errwarns, link) {
         /* Output error/warning */
         yasm_linemap_lookup(lm, we->line, &filename, &line);
         if (we->xrefline)
@@ -505,8 +504,7 @@ yasm_errwarns_output_all(yasm_errwarns *errwarns, yasm_linemap *lm,
         if (we->type == WE_ERROR || we->type == WE_PARSERERROR)
             print_error(filename, line, we->msg, xref_filename, xref_line,
                         we->xrefmsg);
-        else
-        {
+        else {
             print_warning(filename, line, we->msg);
 
             /* If we're treating warnings as errors, tell the user about it. */

@@ -35,9 +35,8 @@
 
 #include "bytecode.h"
 
-
 typedef struct bytecode_align {
-    /*@only@*/ yasm_expr *boundary;     /* alignment boundary */
+    /*@only@*/ yasm_expr *boundary; /* alignment boundary */
 
     /* What to fill intervening locations with, NULL if using code_fill */
     /*@only@*/ /*@null@*/ yasm_expr *fill;
@@ -63,16 +62,11 @@ static int bc_align_tobytes(yasm_bytecode *bc, unsigned char **bufp,
                             /*@null@*/ yasm_output_reloc_func output_reloc);
 
 static const yasm_bytecode_callback bc_align_callback = {
-    bc_align_destroy,
-    bc_align_print,
-    bc_align_finalize,
-    NULL,
-    bc_align_calc_len,
-    bc_align_expand,
-    bc_align_tobytes,
-    YASM_BC_SPECIAL_OFFSET
+    bc_align_destroy,  bc_align_print,
+    bc_align_finalize, NULL,
+    bc_align_calc_len, bc_align_expand,
+    bc_align_tobytes,  YASM_BC_SPECIAL_OFFSET
 };
-
 
 static void
 bc_align_destroy(void *contents)
@@ -123,8 +117,7 @@ bc_align_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
     long neg_thres = 0;
     long pos_thres = 0;
 
-    if (bc_align_expand(bc, 0, 0, (long)bc->offset, &neg_thres,
-                        &pos_thres) < 0)
+    if (bc_align_expand(bc, 0, 0, (long)bc->offset, &neg_thres, &pos_thres) < 0)
         return -1;
 
     return 0;
@@ -146,8 +139,8 @@ bc_align_expand(yasm_bytecode *bc, int span, long old_val, long new_val,
     }
 
     end = (unsigned long)new_val;
-    if ((unsigned long)new_val & (boundary-1))
-        end = ((unsigned long)new_val & ~(boundary-1)) + boundary;
+    if ((unsigned long)new_val & (boundary - 1))
+        end = ((unsigned long)new_val & ~(boundary - 1)) + boundary;
 
     *pos_thres = (long)end;
     bc->len = end - (unsigned long)new_val;
@@ -156,7 +149,7 @@ bc_align_expand(yasm_bytecode *bc, int span, long old_val, long new_val,
         unsigned long maxskip =
             yasm_intnum_get_uint(yasm_expr_get_intnum(&align->maxskip, 0));
         if (bc->len > maxskip) {
-            *pos_thres = (long)end-maxskip-1;
+            *pos_thres = (long)end - maxskip - 1;
             bc->len = 0;
         }
     }
@@ -178,8 +171,8 @@ bc_align_tobytes(yasm_bytecode *bc, unsigned char **bufp,
         return 0;
     else {
         unsigned long end = bc->offset;
-        if (bc->offset & (boundary-1))
-            end = (bc->offset & ~(boundary-1)) + boundary;
+        if (bc->offset & (boundary - 1))
+            end = (bc->offset & ~(boundary - 1)) + boundary;
         len = end - bc->offset;
         if (len == 0)
             return 0;
@@ -198,7 +191,7 @@ bc_align_tobytes(yasm_bytecode *bc, unsigned char **bufp,
         *bufp += len;
     } else if (align->code_fill) {
         unsigned long maxlen = 15;
-        while (!align->code_fill[maxlen] && maxlen>0)
+        while (!align->code_fill[maxlen] && maxlen > 0)
             maxlen--;
         if (maxlen == 0) {
             yasm_error_set(YASM_ERROR_GENERAL,
@@ -214,8 +207,8 @@ bc_align_tobytes(yasm_bytecode *bc, unsigned char **bufp,
         }
 
         if (!align->code_fill[len]) {
-            yasm_error_set(YASM_ERROR_VALUE,
-                           N_("invalid alignment size %d"), len);
+            yasm_error_set(YASM_ERROR_VALUE, N_("invalid alignment size %d"),
+                           len);
             return 1;
         }
         /* Handle rest of code fill */
@@ -230,9 +223,8 @@ bc_align_tobytes(yasm_bytecode *bc, unsigned char **bufp,
 }
 
 yasm_bytecode *
-yasm_bc_create_align(yasm_expr *boundary, yasm_expr *fill,
-                     yasm_expr *maxskip, const unsigned char **code_fill,
-                     unsigned long line)
+yasm_bc_create_align(yasm_expr *boundary, yasm_expr *fill, yasm_expr *maxskip,
+                     const unsigned char **code_fill, unsigned long line)
 {
     bytecode_align *align = yasm_xmalloc(sizeof(bytecode_align));
 

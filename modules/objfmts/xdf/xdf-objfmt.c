@@ -28,38 +28,37 @@
 
 #include <libyasm.h>
 
+#define REGULAR_OUTBUF_SIZE 1024
 
-#define REGULAR_OUTBUF_SIZE     1024
+#define XDF_MAGIC 0x87654322
 
-#define XDF_MAGIC       0x87654322
-
-#define XDF_SYM_EXTERN  1
-#define XDF_SYM_GLOBAL  2
-#define XDF_SYM_EQU     4
+#define XDF_SYM_EXTERN 1
+#define XDF_SYM_GLOBAL 2
+#define XDF_SYM_EQU 4
 
 typedef struct xdf_reloc {
     yasm_reloc reloc;
-    /*@null@*/ yasm_symrec *base;   /* base symbol (for WRT) */
+    /*@null@*/ yasm_symrec *base; /* base symbol (for WRT) */
     enum {
-        XDF_RELOC_REL = 1,          /* relative to segment */
-        XDF_RELOC_WRT = 2,          /* relative to symbol */
-        XDF_RELOC_RIP = 4,          /* RIP-relative */
-        XDF_RELOC_SEG = 8           /* segment containing symbol */
-    } type;                         /* type of relocation */
+        XDF_RELOC_REL = 1, /* relative to segment */
+        XDF_RELOC_WRT = 2, /* relative to symbol */
+        XDF_RELOC_RIP = 4, /* RIP-relative */
+        XDF_RELOC_SEG = 8  /* segment containing symbol */
+    } type;                /* type of relocation */
     enum {
-        XDF_RELOC_8  = 1,         
-        XDF_RELOC_16 = 2,      
-        XDF_RELOC_32 = 4,      
+        XDF_RELOC_8 = 1,
+        XDF_RELOC_16 = 2,
+        XDF_RELOC_32 = 4,
         XDF_RELOC_64 = 8
-    } size;                         /* size of relocation */
-    unsigned int shift;             /* relocation shift (0,4,8,16,24,32) */
+    } size;             /* size of relocation */
+    unsigned int shift; /* relocation shift (0,4,8,16,24,32) */
 } xdf_reloc;
 
 typedef struct xdf_section_data {
-    /*@dependent@*/ yasm_symrec *sym;   /* symbol created for this section */
-    yasm_intnum *addr;      /* starting memory address */
-    yasm_intnum *vaddr;     /* starting virtual address */
-    long scnum;             /* section number (0=first section) */
+    /*@dependent@*/ yasm_symrec *sym; /* symbol created for this section */
+    yasm_intnum *addr;                /* starting memory address */
+    yasm_intnum *vaddr;               /* starting virtual address */
+    long scnum;                       /* section number (0=first section) */
     enum {
         XDF_SECT_ABSOLUTE = 0x01,
         XDF_SECT_FLAT = 0x02,
@@ -68,21 +67,21 @@ typedef struct xdf_section_data {
         XDF_SECT_USE_16 = 0x10,
         XDF_SECT_USE_32 = 0x20,
         XDF_SECT_USE_64 = 0x40
-    } flags;                /* section flags */
-    unsigned long scnptr;   /* file ptr to raw data */
-    unsigned long size;     /* size of raw data (section data) in bytes */
-    unsigned long relptr;   /* file ptr to relocation */
-    unsigned long nreloc;   /* number of relocation entries >64k -> error */
+    } flags;              /* section flags */
+    unsigned long scnptr; /* file ptr to raw data */
+    unsigned long size;   /* size of raw data (section data) in bytes */
+    unsigned long relptr; /* file ptr to relocation */
+    unsigned long nreloc; /* number of relocation entries >64k -> error */
 } xdf_section_data;
 
 typedef struct xdf_symrec_data {
-    unsigned long index;                /* assigned XDF symbol table index */
+    unsigned long index; /* assigned XDF symbol table index */
 } xdf_symrec_data;
 
 typedef struct yasm_objfmt_xdf {
-    yasm_objfmt_base objfmt;                /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
-    long parse_scnum;               /* sect numbering in parser */
+    long parse_scnum; /* sect numbering in parser */
 } yasm_objfmt_xdf;
 
 typedef struct xdf_objfmt_output_info {
@@ -94,29 +93,26 @@ typedef struct xdf_objfmt_output_info {
     yasm_section *sect;
     /*@dependent@*/ xdf_section_data *xsd;
 
-    unsigned long indx;             /* current symbol index */
-    int all_syms;                   /* outputting all symbols? */
-    unsigned long strtab_offset;    /* current string table offset */
+    unsigned long indx;          /* current symbol index */
+    int all_syms;                /* outputting all symbols? */
+    unsigned long strtab_offset; /* current string table offset */
 } xdf_objfmt_output_info;
 
 static void xdf_section_data_destroy(/*@only@*/ void *d);
 static void xdf_section_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback xdf_section_data_cb = {
-    xdf_section_data_destroy,
-    xdf_section_data_print
+    xdf_section_data_destroy, xdf_section_data_print
 };
 
 static void xdf_symrec_data_destroy(/*@only@*/ void *d);
 static void xdf_symrec_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback xdf_symrec_data_cb = {
-    xdf_symrec_data_destroy,
-    xdf_symrec_data_print
+    xdf_symrec_data_destroy, xdf_symrec_data_print
 };
 
 yasm_objfmt_module yasm_xdf_LTX_objfmt;
-
 
 static yasm_objfmt *
 xdf_objfmt_create(yasm_object *object)
@@ -136,7 +132,7 @@ xdf_objfmt_create(yasm_object *object)
         return NULL;
     }
 
-    objfmt_xdf->parse_scnum = 0;    /* section numbering starts at 0 */
+    objfmt_xdf->parse_scnum = 0; /* section numbering starts at 0 */
 
     objfmt_xdf->objfmt.module = &yasm_xdf_LTX_objfmt;
 
@@ -187,7 +183,7 @@ xdf_objfmt_output_value(yasm_value *value, unsigned char *buf,
         reloc->reloc.addr = yasm_intnum_create_uint(bc->offset + offset);
         reloc->reloc.sym = value->rel;
         reloc->base = NULL;
-        reloc->size = valsize/8;
+        reloc->size = valsize / 8;
         reloc->shift = value->rshift;
 
         if (value->seg_of)
@@ -293,7 +289,7 @@ xdf_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
         /* Don't output BSS sections.
          * TODO: Check for non-reserve bytecodes?
          */
-        pos = 0;    /* position = 0 because it's not in the file */
+        pos = 0; /* position = 0 because it's not in the file */
         xsd->size = yasm_bc_next_offset(yasm_section_bcs_last(sect));
     } else {
         pos = ftell(info->f);
@@ -339,12 +335,11 @@ xdf_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
 
         xsymd = yasm_symrec_get_data(reloc->reloc.sym, &xdf_symrec_data_cb);
         if (!xsymd)
-            yasm_internal_error(
-                N_("xdf: no symbol data for relocated symbol"));
+            yasm_internal_error(N_("xdf: no symbol data for relocated symbol"));
 
         yasm_intnum_get_sized(reloc->reloc.addr, localbuf, 4, 32, 0, 0, 0);
-        localbuf += 4;                          /* address of relocation */
-        YASM_WRITE_32_L(localbuf, xsymd->index);    /* relocated symbol */
+        localbuf += 4;                           /* address of relocation */
+        YASM_WRITE_32_L(localbuf, xsymd->index); /* relocated symbol */
         if (reloc->base) {
             xsymd = yasm_symrec_get_data(reloc->base, &xdf_symrec_data_cb);
             if (!xsymd)
@@ -355,12 +350,12 @@ xdf_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
             if (reloc->type == XDF_RELOC_WRT)
                 yasm_internal_error(
                     N_("xdf: no base symbol for WRT relocation"));
-            YASM_WRITE_32_L(localbuf, 0);           /* no base symbol */
+            YASM_WRITE_32_L(localbuf, 0); /* no base symbol */
         }
-        YASM_WRITE_8(localbuf, reloc->type);        /* type of relocation */
-        YASM_WRITE_8(localbuf, reloc->size);        /* size of relocation */
-        YASM_WRITE_8(localbuf, reloc->shift);       /* relocation shift */
-        YASM_WRITE_8(localbuf, 0);                  /* flags */
+        YASM_WRITE_8(localbuf, reloc->type);  /* type of relocation */
+        YASM_WRITE_8(localbuf, reloc->size);  /* size of relocation */
+        YASM_WRITE_8(localbuf, reloc->shift); /* relocation shift */
+        YASM_WRITE_8(localbuf, 0);            /* flags */
         fwrite(info->buf, 16, 1, info->f);
 
         reloc = (xdf_reloc *)yasm_section_reloc_next((yasm_reloc *)reloc);
@@ -385,29 +380,29 @@ xdf_objfmt_output_secthead(yasm_section *sect, /*@null@*/ void *d)
     xsymd = yasm_symrec_get_data(xsd->sym, &xdf_symrec_data_cb);
     assert(xsymd != NULL);
 
-    YASM_WRITE_32_L(localbuf, xsymd->index);    /* section name symbol */
+    YASM_WRITE_32_L(localbuf, xsymd->index); /* section name symbol */
     if (xsd->addr) {
         yasm_intnum_get_sized(xsd->addr, localbuf, 8, 64, 0, 0, 0);
-        localbuf += 8;                          /* physical address */
+        localbuf += 8; /* physical address */
     } else {
         YASM_WRITE_32_L(localbuf, 0);
         YASM_WRITE_32_L(localbuf, 0);
     }
     if (xsd->vaddr) {
         yasm_intnum_get_sized(xsd->vaddr, localbuf, 8, 64, 0, 0, 0);
-        localbuf += 8;                          /* virtual address */
+        localbuf += 8; /* virtual address */
     } else if (xsd->addr) {
         yasm_intnum_get_sized(xsd->addr, localbuf, 8, 64, 0, 0, 0);
-        localbuf += 8;                          /* VA=PA */
+        localbuf += 8; /* VA=PA */
     } else {
         YASM_WRITE_32_L(localbuf, 0);
         YASM_WRITE_32_L(localbuf, 0);
     }
     YASM_WRITE_16_L(localbuf, yasm_section_get_align(sect)); /* alignment */
-    YASM_WRITE_16_L(localbuf, xsd->flags);      /* flags */
-    YASM_WRITE_32_L(localbuf, xsd->scnptr);     /* file ptr to data */
-    YASM_WRITE_32_L(localbuf, xsd->size);       /* section size */
-    YASM_WRITE_32_L(localbuf, xsd->relptr);     /* file ptr to relocs */
+    YASM_WRITE_16_L(localbuf, xsd->flags);                   /* flags */
+    YASM_WRITE_32_L(localbuf, xsd->scnptr); /* file ptr to data */
+    YASM_WRITE_32_L(localbuf, xsd->size);   /* section size */
+    YASM_WRITE_32_L(localbuf, xsd->relptr); /* file ptr to relocs */
     YASM_WRITE_32_L(localbuf, xsd->nreloc); /* num of relocation entries */
     fwrite(info->buf, 40, 1, info->f);
 
@@ -421,13 +416,13 @@ xdf_objfmt_count_sym(yasm_symrec *sym, /*@null@*/ void *d)
     yasm_sym_vis vis = yasm_symrec_get_visibility(sym);
     assert(info != NULL);
     if (vis & YASM_SYM_COMMON) {
-        yasm_error_set(YASM_ERROR_GENERAL,
+        yasm_error_set(
+            YASM_ERROR_GENERAL,
             N_("XDF object format does not support common variables"));
         yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
         return 0;
     }
-    if (info->all_syms ||
-        (vis != YASM_SYM_LOCAL && !(vis & YASM_SYM_DLOCAL))) {
+    if (info->all_syms || (vis != YASM_SYM_LOCAL && !(vis & YASM_SYM_DLOCAL))) {
         /* Save index in symrec data */
         xdf_symrec_data *sym_data = yasm_xmalloc(sizeof(xdf_symrec_data));
         sym_data->index = info->indx;
@@ -452,7 +447,7 @@ xdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
         const yasm_intnum *intn;
         size_t len = strlen(name);
         unsigned long value = 0;
-        long scnum = -3;        /* -3 = debugging symbol */
+        long scnum = -3; /* -3 = debugging symbol */
         /*@dependent@*/ /*@null@*/ yasm_section *sect;
         /*@dependent@*/ /*@null@*/ yasm_bytecode *precbc;
         unsigned long flags = 0;
@@ -485,7 +480,8 @@ xdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
             intn = yasm_expr_get_intnum(&equ_val_copy, 1);
             if (!intn) {
                 if (vis & YASM_SYM_GLOBAL) {
-                    yasm_error_set(YASM_ERROR_NOT_CONSTANT,
+                    yasm_error_set(
+                        YASM_ERROR_NOT_CONSTANT,
                         N_("global EQU value not an integer expression"));
                     yasm_errwarn_propagate(info->errwarns, equ_val->line);
                 }
@@ -494,7 +490,7 @@ xdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
             yasm_expr_destroy(equ_val_copy);
 
             flags |= XDF_SYM_EQU;
-            scnum = -2;     /* -2 = absolute symbol */
+            scnum = -2; /* -2 = absolute symbol */
         } else {
             if (vis & YASM_SYM_EXTERN) {
                 flags = XDF_SYM_EXTERN;
@@ -503,11 +499,11 @@ xdf_objfmt_output_sym(yasm_symrec *sym, /*@null@*/ void *d)
         }
 
         localbuf = info->buf;
-        YASM_WRITE_32_L(localbuf, scnum);       /* section number */
-        YASM_WRITE_32_L(localbuf, value);       /* value */
+        YASM_WRITE_32_L(localbuf, scnum); /* section number */
+        YASM_WRITE_32_L(localbuf, value); /* value */
         YASM_WRITE_32_L(localbuf, info->strtab_offset);
-        info->strtab_offset += (unsigned long)(len+1);
-        YASM_WRITE_32_L(localbuf, flags);       /* flags */
+        info->strtab_offset += (unsigned long)(len + 1);
+        YASM_WRITE_32_L(localbuf, flags); /* flags */
         fwrite(info->buf, 16, 1, info->f);
         yasm_xfree(name);
     }
@@ -525,7 +521,7 @@ xdf_objfmt_output_str(yasm_symrec *sym, /*@null@*/ void *d)
     if (info->all_syms || vis != YASM_SYM_LOCAL) {
         /*@only@*/ char *name = yasm_symrec_get_global_name(sym, info->object);
         size_t len = strlen(name);
-        fwrite(name, len+1, 1, info->f);
+        fwrite(name, len + 1, 1, info->f);
         yasm_xfree(name);
     }
     return 0;
@@ -547,7 +543,7 @@ xdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     info.buf = yasm_xmalloc(REGULAR_OUTBUF_SIZE);
 
     /* Allocate space for headers by seeking forward */
-    if (fseek(f, (long)(16+40*(objfmt_xdf->parse_scnum)), SEEK_SET) < 0) {
+    if (fseek(f, (long)(16 + 40 * (objfmt_xdf->parse_scnum)), SEEK_SET) < 0) {
         yasm__fatal(N_("could not seek on output file"));
         /*@notreached@*/
         return;
@@ -555,12 +551,13 @@ xdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
 
     /* Get number of symbols */
     info.indx = 0;
-    info.all_syms = 1;  /* force all syms into symbol table */
+    info.all_syms = 1; /* force all syms into symbol table */
     yasm_symtab_traverse(object->symtab, &info, xdf_objfmt_count_sym);
     symtab_count = info.indx;
 
     /* Get file offset of start of string table */
-    info.strtab_offset = 16+40*(objfmt_xdf->parse_scnum)+16*symtab_count;
+    info.strtab_offset =
+        16 + 40 * (objfmt_xdf->parse_scnum) + 16 * symtab_count;
 
     /* Output symbol table */
     yasm_symtab_traverse(object->symtab, &info, xdf_objfmt_output_sym);
@@ -569,8 +566,7 @@ xdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     yasm_symtab_traverse(object->symtab, &info, xdf_objfmt_output_str);
 
     /* Section data/relocs */
-    if (yasm_object_sections_traverse(object, &info,
-                                      xdf_objfmt_output_section))
+    if (yasm_object_sections_traverse(object, &info, xdf_objfmt_output_section))
         return;
 
     /* Write headers */
@@ -581,11 +577,11 @@ xdf_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     }
 
     localbuf = info.buf;
-    YASM_WRITE_32_L(localbuf, XDF_MAGIC);       /* magic number */
+    YASM_WRITE_32_L(localbuf, XDF_MAGIC);               /* magic number */
     YASM_WRITE_32_L(localbuf, objfmt_xdf->parse_scnum); /* number of sects */
     YASM_WRITE_32_L(localbuf, symtab_count);            /* number of symtabs */
     /* size of sect headers + symbol table + strings */
-    YASM_WRITE_32_L(localbuf, info.strtab_offset-16);
+    YASM_WRITE_32_L(localbuf, info.strtab_offset - 16);
     fwrite(info.buf, 16, 1, f);
 
     yasm_object_sections_traverse(object, &info, xdf_objfmt_output_secthead);
@@ -642,11 +638,17 @@ xdf_helper_use(void *obj, yasm_valparam *vp, unsigned long line, void *d,
 {
     yasm_object *object = (yasm_object *)obj;
     unsigned long *flags = (unsigned long *)d;
-    *flags &= ~(XDF_SECT_USE_16|XDF_SECT_USE_32|XDF_SECT_USE_64);
+    *flags &= ~(XDF_SECT_USE_16 | XDF_SECT_USE_32 | XDF_SECT_USE_64);
     switch (bits) {
-        case 16: *flags |= XDF_SECT_USE_16; break;
-        case 32: *flags |= XDF_SECT_USE_32; break;
-        case 64: *flags |= XDF_SECT_USE_64; break;
+        case 16:
+            *flags |= XDF_SECT_USE_16;
+            break;
+        case 32:
+            *flags |= XDF_SECT_USE_32;
+            break;
+        case 64:
+            *flags |= XDF_SECT_USE_64;
+            break;
     };
     yasm_arch_set_var(object->arch, "mode_bits", bits);
     return 0;
@@ -707,7 +709,7 @@ xdf_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     flags_override = yasm_dir_helper(object, vp, line, help, NELEMS(help),
                                      &data, yasm_dir_helper_valparam_warn);
     if (flags_override < 0)
-        return NULL;    /* error occurred */
+        return NULL; /* error occurred */
 
     if (data.absaddr)
         data.flags |= XDF_SECT_ABSOLUTE;
@@ -788,7 +790,7 @@ xdf_section_data_print(void *data, FILE *f, int indent_level)
     xdf_section_data *xsd = (xdf_section_data *)data;
 
     fprintf(f, "%*ssym=\n", indent_level, "");
-    yasm_symrec_print(xsd->sym, f, indent_level+1);
+    yasm_symrec_print(xsd->sym, f, indent_level + 1);
     fprintf(f, "%*sscnum=%ld\n", indent_level, "", xsd->scnum);
     fprintf(f, "%*sflags=0x%x\n", indent_level, "", xsd->flags);
     fprintf(f, "%*saddr=", indent_level, "");
@@ -816,27 +818,22 @@ xdf_symrec_data_print(void *data, FILE *f, int indent_level)
 }
 
 /* Define valid debug formats to use with this object format */
-static const char *xdf_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *xdf_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 /* Define objfmt structure -- see objfmt.h for details */
-yasm_objfmt_module yasm_xdf_LTX_objfmt = {
-    "Extended Dynamic Object",
-    "xdf",
-    "xdf",
-    32,
-    0,
-    xdf_objfmt_dbgfmt_keywords,
-    "null",
-    NULL,       /* no directives */
-    NULL,       /* no standard macros */
-    xdf_objfmt_create,
-    xdf_objfmt_output,
-    xdf_objfmt_destroy,
-    xdf_objfmt_add_default_section,
-    xdf_objfmt_init_new_section,
-    xdf_objfmt_section_switch,
-    xdf_objfmt_get_special_sym
-};
+yasm_objfmt_module yasm_xdf_LTX_objfmt = { "Extended Dynamic Object",
+                                           "xdf",
+                                           "xdf",
+                                           32,
+                                           0,
+                                           xdf_objfmt_dbgfmt_keywords,
+                                           "null",
+                                           NULL, /* no directives */
+                                           NULL, /* no standard macros */
+                                           xdf_objfmt_create,
+                                           xdf_objfmt_output,
+                                           xdf_objfmt_destroy,
+                                           xdf_objfmt_add_default_section,
+                                           xdf_objfmt_init_new_section,
+                                           xdf_objfmt_section_switch,
+                                           xdf_objfmt_get_special_sym };

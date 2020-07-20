@@ -32,7 +32,7 @@
 
 #include "compat-queue.h"
 
-#define OUTPUT  "module.c"
+#define OUTPUT "module.c"
 #define MAXNAME 128
 #define MAXLINE 1024
 #define MAXMODULES 128
@@ -53,8 +53,8 @@ main(int argc, char *argv[])
     char *strp;
     char *modules[MAXMODULES];
     int num_modules = 0;
-    STAILQ_HEAD(includehead, include) includes =
-        STAILQ_HEAD_INITIALIZER(includes);
+    STAILQ_HEAD(includehead, include)
+    includes = STAILQ_HEAD_INITIALIZER(includes);
     include *inc;
     int isam = 0;
     int linecont = 0;
@@ -72,11 +72,11 @@ main(int argc, char *argv[])
      */
     len = strlen(argv[2]);
     inc = malloc(sizeof(include));
-    inc->filename = malloc(len+1);
+    inc->filename = malloc(len + 1);
     strcpy(inc->filename, argv[2]);
     STAILQ_INSERT_TAIL(&includes, inc, link);
 
-    isam = argv[2][len-2] == 'a' && argv[2][len-1] == 'm';
+    isam = argv[2][len - 2] == 'a' && argv[2][len - 1] == 'm';
 
     while (!STAILQ_EMPTY(&includes)) {
         inc = STAILQ_FIRST(&includes);
@@ -93,7 +93,7 @@ main(int argc, char *argv[])
             /* Strip off any trailing whitespace */
             len = strlen(str);
             if (len > 0) {
-                strp = &str[len-1];
+                strp = &str[len - 1];
                 while (len > 0 && isspace(*strp)) {
                     *strp-- = '\0';
                     len--;
@@ -121,7 +121,7 @@ main(int argc, char *argv[])
                     strp++;
                 /* Build new include and add to end of list */
                 inc = malloc(sizeof(include));
-                inc->filename = malloc(strlen(strp)+1);
+                inc->filename = malloc(strlen(strp) + 1);
                 strcpy(inc->filename, strp);
                 STAILQ_INSERT_TAIL(&includes, inc, link);
                 continue;
@@ -141,10 +141,10 @@ main(int argc, char *argv[])
             while (isspace(*strp))
                 strp++;
 
-keepgoing:
+        keepgoing:
             /* Check for continuation */
-            if (len > 0 && str[len-1] == '\\') {
-                str[len-1] = '\0';
+            if (len > 0 && str[len - 1] == '\\') {
+                str[len - 1] = '\0';
                 while (isspace(*strp))
                     *strp-- = '\0';
                 linecont = 1;
@@ -189,29 +189,30 @@ keepgoing:
     while (fgets(str, MAXLINE, in)) {
         if (strncmp(str, "MODULES_", 8) == 0) {
             len = 0;
-            strp = str+8;
+            strp = str + 8;
             while (*strp != '\0' && *strp != '_') {
                 len++;
                 strp++;
             }
             *strp = '\0';
 
-            for (i=0; i<num_modules; i++) {
-                if (strncmp(modules[i], str+8, len) == 0) {
+            for (i = 0; i < num_modules; i++) {
+                if (strncmp(modules[i], str + 8, len) == 0) {
                     fprintf(out, "    {\"%s\", &yasm_%s_LTX_%s},\n",
-                            modules[i]+len+1, modules[i]+len+1, str+8);
+                            modules[i] + len + 1, modules[i] + len + 1,
+                            str + 8);
                 }
             }
         } else if (strncmp(str, "EXTERN_LIST", 11) == 0) {
-            for (i=0; i<num_modules; i++) {
+            for (i = 0; i < num_modules; i++) {
                 strcpy(str, modules[i]);
                 strp = str;
                 while (*strp != '\0' && *strp != '_')
                     strp++;
                 *strp++ = '\0';
 
-                fprintf(out, "extern yasm_%s_module yasm_%s_LTX_%s;\n",
-                        str, strp, str);
+                fprintf(out, "extern yasm_%s_module yasm_%s_LTX_%s;\n", str,
+                        strp, str);
             }
         } else
             fputs(str, out);
@@ -220,7 +221,7 @@ keepgoing:
     fclose(in);
     fclose(out);
 
-    for (i=0; i<num_modules; i++)
+    for (i = 0; i < num_modules; i++)
         free(modules[i]);
     free(str);
 

@@ -30,13 +30,12 @@
 #define N_(String) (String)
 
 typedef struct yasm_objfmt_dbg {
-    yasm_objfmt_base objfmt;        /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
     FILE *dbgfile;
 } yasm_objfmt_dbg;
 
 yasm_objfmt_module yasm_dbg_LTX_objfmt;
-
 
 static yasm_objfmt *
 dbg_objfmt_create(yasm_object *object)
@@ -99,7 +98,7 @@ dbg_objfmt_add_default_section(yasm_object *object)
     if (isnew) {
         fprintf(objfmt_dbg->dbgfile, "(new) ");
         yasm_symtab_define_label(object->symtab, ".text",
-            yasm_section_bcs_first(retval), 1, 0);
+                                 yasm_section_bcs_first(retval), 1, 0);
         yasm_section_set_default(retval, 1);
     }
     return retval;
@@ -145,16 +144,12 @@ dbg_objfmt_get_special_sym(yasm_object *object, const char *name,
 {
     yasm_objfmt_dbg *objfmt_dbg = (yasm_objfmt_dbg *)object->objfmt;
     fprintf(objfmt_dbg->dbgfile,
-            "PLUGIN get_special_sym(object, \"%s\", \"%s\")\n",
-            name, parser);
+            "PLUGIN get_special_sym(object, \"%s\", \"%s\")\n", name, parser);
     return NULL;
 }
 
 /* Define valid debug formats to use with this object format */
-static const char *dbg_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *dbg_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 /* Define objfmt structure -- see objfmt.h for details */
 yasm_objfmt_module yasm_dbg_LTX_objfmt = {
@@ -164,8 +159,8 @@ yasm_objfmt_module yasm_dbg_LTX_objfmt = {
     32,
     dbg_objfmt_dbgfmt_keywords,
     "null",
-    NULL,       /* no directives */
-    NULL,       /* no standard macros */
+    NULL, /* no directives */
+    NULL, /* no standard macros */
     dbg_objfmt_create,
     dbg_objfmt_output,
     dbg_objfmt_destroy,

@@ -29,7 +29,6 @@
 #include "coretype.h"
 #include "assocdat.h"
 
-
 typedef struct assoc_data_item {
     const yasm_assoc_data_callback *callback;
     void *data;
@@ -41,7 +40,6 @@ struct yasm__assoc_data {
     size_t alloc;
 };
 
-
 yasm__assoc_data *
 yasm__assoc_data_create(void)
 {
@@ -49,8 +47,8 @@ yasm__assoc_data_create(void)
 
     assoc_data->size = 0;
     assoc_data->alloc = 2;
-    assoc_data->vector = yasm_xmalloc(assoc_data->alloc *
-                                      sizeof(assoc_data_item));
+    assoc_data->vector =
+        yasm_xmalloc(assoc_data->alloc * sizeof(assoc_data_item));
 
     return assoc_data;
 }
@@ -64,7 +62,7 @@ yasm__assoc_data_get(yasm__assoc_data *assoc_data,
     if (!assoc_data)
         return NULL;
 
-    for (i=0; i<assoc_data->size; i++) {
+    for (i = 0; i < assoc_data->size; i++) {
         if (assoc_data->vector[i].callback == callback)
             return assoc_data->vector[i].data;
     }
@@ -86,7 +84,7 @@ yasm__assoc_data_add(yasm__assoc_data *assoc_data_arg,
         assoc_data = yasm__assoc_data_create();
 
     /* See if there's already assocated data for this callback */
-    for (i=0; i<assoc_data->size; i++) {
+    for (i = 0; i < assoc_data->size; i++) {
         if (assoc_data->vector[i].callback == callback) {
             item = &assoc_data->vector[i];
             break;
@@ -102,7 +100,7 @@ yasm__assoc_data_add(yasm__assoc_data *assoc_data_arg,
                 yasm_xrealloc(assoc_data->vector,
                               assoc_data->alloc * sizeof(assoc_data_item));
         }
-        item = &assoc_data->vector[assoc_data->size-1];
+        item = &assoc_data->vector[assoc_data->size - 1];
         item->callback = callback;
         item->data = NULL;
     }
@@ -124,7 +122,7 @@ yasm__assoc_data_destroy(yasm__assoc_data *assoc_data)
     if (!assoc_data)
         return;
 
-    for (i=0; i<assoc_data->size; i++)
+    for (i = 0; i < assoc_data->size; i++)
         assoc_data->vector[i].callback->destroy(assoc_data->vector[i].data);
     yasm_xfree(assoc_data->vector);
     yasm_xfree(assoc_data);

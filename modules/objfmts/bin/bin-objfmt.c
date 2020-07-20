@@ -31,11 +31,10 @@
 #endif
 #include <libyasm.h>
 
-
-#define REGULAR_OUTBUF_SIZE     1024
+#define REGULAR_OUTBUF_SIZE 1024
 
 typedef struct bin_section_data {
-    int bss;                    /* aka nobits */
+    int bss; /* aka nobits */
 
     /* User-provided alignment */
     yasm_intnum *align, *valign;
@@ -54,7 +53,7 @@ typedef struct bin_section_data {
 } bin_section_data;
 
 typedef struct yasm_objfmt_bin {
-    yasm_objfmt_base objfmt;            /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
     enum {
         NO_MAP = 0,
@@ -72,32 +71,25 @@ typedef struct yasm_objfmt_bin {
  * section<sectname>.vstart, and section<sectname>.length
  */
 typedef struct bin_symrec_data {
-    yasm_section *section;          /* referenced section */
-    enum bin_ssym {
-        SSYM_START,
-        SSYM_VSTART,
-        SSYM_LENGTH
-    } which;
+    yasm_section *section; /* referenced section */
+    enum bin_ssym { SSYM_START, SSYM_VSTART, SSYM_LENGTH } which;
 } bin_symrec_data;
 
 static void bin_section_data_destroy(/*@only@*/ void *d);
 static void bin_section_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback bin_section_data_cb = {
-    bin_section_data_destroy,
-    bin_section_data_print
+    bin_section_data_destroy, bin_section_data_print
 };
 
 static void bin_symrec_data_destroy(/*@only@*/ void *d);
 static void bin_symrec_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback bin_symrec_data_cb = {
-    bin_symrec_data_destroy,
-    bin_symrec_data_print
+    bin_symrec_data_destroy, bin_symrec_data_print
 };
 
 yasm_objfmt_module yasm_bin_LTX_objfmt;
-
 
 static yasm_objfmt *
 bin_objfmt_create(yasm_object *object)
@@ -130,7 +122,7 @@ static bin_group *
 find_group_by_name(bin_groups *groups, const char *name)
 {
     bin_group *group, *found;
-    TAILQ_FOREACH(group, groups, link) {
+    TAILQ_FOREACH (group, groups, link) {
         if (strcmp(yasm_section_get_name(group->section), name) == 0)
             return group;
         /* Recurse to loop through follow groups */
@@ -146,7 +138,7 @@ static bin_group *
 find_group_by_section(bin_groups *groups, yasm_section *section)
 {
     bin_group *group, *found;
-    TAILQ_FOREACH(group, groups, link) {
+    TAILQ_FOREACH (group, groups, link) {
         if (group->section == section)
             return group;
         /* Recurse to loop through follow groups */
@@ -180,7 +172,7 @@ bin_group_destroy(/*@only@*/ bin_group *group)
 {
     bin_group *follow, *group_temp;
     TAILQ_FOREACH_SAFE(follow, &group->follow_groups, link, group_temp)
-        bin_group_destroy(follow);
+    bin_group_destroy(follow);
     yasm_xfree(group);
 }
 
@@ -190,10 +182,10 @@ typedef struct bin_objfmt_output_info {
     /*@dependent@*/ FILE *f;
     /*@only@*/ unsigned char *buf;
     /*@observer@*/ const yasm_section *sect;
-    unsigned long start;        /* what normal variables go against */
+    unsigned long start; /* what normal variables go against */
 
     yasm_intnum *origin;
-    yasm_intnum *tmp_intn;      /* temporary working intnum */
+    yasm_intnum *tmp_intn; /* temporary working intnum */
 
     bin_groups lma_groups, vma_groups;
 } bin_objfmt_output_info;
@@ -212,15 +204,18 @@ bin_objfmt_check_sym(yasm_symrec *sym, /*@null@*/ void *d)
         return 0;
 
     if (vis & YASM_SYM_EXTERN) {
-        yasm_warn_set(YASM_WARN_GENERAL,
+        yasm_warn_set(
+            YASM_WARN_GENERAL,
             N_("binary object format does not support extern variables"));
         yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
     } else if (vis & YASM_SYM_GLOBAL) {
-        yasm_warn_set(YASM_WARN_GENERAL,
+        yasm_warn_set(
+            YASM_WARN_GENERAL,
             N_("binary object format does not support global variables"));
         yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
     } else if (vis & YASM_SYM_COMMON) {
-        yasm_error_set(YASM_ERROR_TYPE,
+        yasm_error_set(
+            YASM_ERROR_TYPE,
             N_("binary object format does not support common variables"));
         yasm_errwarn_propagate(info->errwarns, yasm_symrec_get_decl_line(sym));
     }
@@ -250,12 +245,11 @@ bin_lma_create_group(yasm_section *sect, /*@null@*/ void *d)
         yasm_intnum *align_intn = yasm_intnum_create_uint(align);
         if (yasm_intnum_compare(align_intn, bsd->align) > 0) {
             yasm_warn_set(YASM_WARN_GENERAL,
-                N_("section `%s' internal align of %lu is greater than `%s' of %lu; using `%s'"),
-                yasm_section_get_name(sect),
-                yasm_intnum_get_uint(align_intn),
-                N_("align"),
-                yasm_intnum_get_uint(bsd->align),
-                N_("align"));
+                          N_("section `%s' internal align of %lu is greater "
+                             "than `%s' of %lu; using `%s'"),
+                          yasm_section_get_name(sect),
+                          yasm_intnum_get_uint(align_intn), N_("align"),
+                          yasm_intnum_get_uint(bsd->align), N_("align"));
             yasm_errwarn_propagate(info->errwarns, 0);
         }
         yasm_intnum_destroy(align_intn);
@@ -326,11 +320,11 @@ bin_objfmt_align(yasm_intnum *start, const yasm_intnum *align)
      * trickery to do this easily.
      */
     yasm_intnum *align_intn =
-        yasm_intnum_create_uint(yasm_intnum_get_uint(align)-1);
+        yasm_intnum_create_uint(yasm_intnum_get_uint(align) - 1);
     yasm_intnum_calc(align_intn, YASM_EXPR_AND, start);
     if (!yasm_intnum_is_zero(align_intn)) {
         /* start = (start & ~(align-1)) + align; */
-        yasm_intnum_set_uint(align_intn, yasm_intnum_get_uint(align)-1);
+        yasm_intnum_set_uint(align_intn, yasm_intnum_get_uint(align) - 1);
         yasm_intnum_calc(align_intn, YASM_EXPR_NOT, NULL);
         yasm_intnum_calc(align_intn, YASM_EXPR_AND, start);
         yasm_intnum_set(start, align);
@@ -357,7 +351,8 @@ group_assign_start_recurse(bin_group *group, yasm_intnum *start,
         if (group->bsd->align) {
             bin_objfmt_align(group->bsd->istart, group->bsd->align);
             if (yasm_intnum_compare(start, group->bsd->istart) != 0) {
-                yasm_warn_set(YASM_WARN_GENERAL,
+                yasm_warn_set(
+                    YASM_WARN_GENERAL,
                     N_("start inconsistent with align; using aligned value"));
                 yasm_errwarn_propagate(errwarns, group->bsd->start->line);
             }
@@ -390,11 +385,11 @@ group_assign_start_recurse(bin_group *group, yasm_intnum *start,
     /* Find the maximum end value */
     yasm_intnum_set(tmp, group->bsd->istart);
     yasm_intnum_calc(tmp, YASM_EXPR_ADD, group->bsd->length);
-    if (yasm_intnum_compare(tmp, last) > 0)     /* tmp > last */
+    if (yasm_intnum_compare(tmp, last) > 0) /* tmp > last */
         yasm_intnum_set(last, tmp);
 
     /* Recurse for each following group. */
-    TAILQ_FOREACH(follow_group, &group->follow_groups, link) {
+    TAILQ_FOREACH (follow_group, &group->follow_groups, link) {
         /* Following sections have to follow this one,
          * so add length to start.
          */
@@ -427,12 +422,12 @@ group_assign_vstart_recurse(bin_group *group, yasm_intnum *start,
         yasm_intnum *align_intn = yasm_intnum_create_uint(align);
         if (yasm_intnum_compare(align_intn, group->bsd->valign) > 0) {
             yasm_warn_set(YASM_WARN_GENERAL,
-                N_("section `%s' internal align of %lu is greater than `%s' of %lu; using `%s'"),
-                yasm_section_get_name(group->section),
-                yasm_intnum_get_uint(align_intn),
-                N_("valign"),
-                yasm_intnum_get_uint(group->bsd->valign),
-                N_("valign"));
+                          N_("section `%s' internal align of %lu is greater "
+                             "than `%s' of %lu; using `%s'"),
+                          yasm_section_get_name(group->section),
+                          yasm_intnum_get_uint(align_intn), N_("valign"),
+                          yasm_intnum_get_uint(group->bsd->valign),
+                          N_("valign"));
             yasm_errwarn_propagate(errwarns, 0);
         }
         yasm_intnum_destroy(align_intn);
@@ -456,7 +451,7 @@ group_assign_vstart_recurse(bin_group *group, yasm_intnum *start,
     }
 
     /* Recurse for each following group. */
-    TAILQ_FOREACH(follow_group, &group->follow_groups, link) {
+    TAILQ_FOREACH (follow_group, &group->follow_groups, link) {
         /* Following sections have to follow this one,
          * so add length to start.
          */
@@ -480,9 +475,12 @@ get_ssym_value(yasm_symrec *sym)
     assert(bsd != NULL);
 
     switch (bsymd->which) {
-        case SSYM_START: return bsd->istart;
-        case SSYM_VSTART: return bsd->ivstart;
-        case SSYM_LENGTH: return bsd->length;
+        case SSYM_START:
+            return bsd->istart;
+        case SSYM_VSTART:
+            return bsd->ivstart;
+        case SSYM_LENGTH:
+            return bsd->length;
     }
     return NULL;
 }
@@ -492,7 +490,7 @@ bin_objfmt_expr_xform(/*@returned@*/ /*@only@*/ yasm_expr *e,
                       /*@unused@*/ /*@null@*/ void *d)
 {
     int i;
-    for (i=0; i<e->numterms; i++) {
+    for (i = 0; i < e->numterms; i++) {
         /*@dependent@*/ yasm_section *sect;
         /*@dependent@*/ /*@null@*/ yasm_bytecode *precbc;
         /*@null@*/ yasm_intnum *dist;
@@ -502,9 +500,9 @@ bin_objfmt_expr_xform(/*@returned@*/ /*@only@*/ yasm_expr *e,
          * vstart + intnum(dist).
          */
         if (((e->terms[i].type == YASM_EXPR_SYM &&
-             yasm_symrec_get_label(e->terms[i].data.sym, &precbc)) ||
-            (e->terms[i].type == YASM_EXPR_PRECBC &&
-             (precbc = e->terms[i].data.precbc))) &&
+              yasm_symrec_get_label(e->terms[i].data.sym, &precbc)) ||
+             (e->terms[i].type == YASM_EXPR_PRECBC &&
+              (precbc = e->terms[i].data.precbc))) &&
             (sect = yasm_bc_get_section(precbc)) &&
             (dist = yasm_calc_bc_dist(yasm_section_bcs_first(sect), precbc))) {
             bin_section_data *bsd;
@@ -536,10 +534,10 @@ typedef struct map_output_info {
 
     /* symrec output information */
     unsigned long count;
-    yasm_section *section;  /* NULL for EQUs */
+    yasm_section *section; /* NULL for EQUs */
 
-    yasm_object *object;    /* object */
-    FILE *f;                /* map output file */
+    yasm_object *object; /* object */
+    FILE *f;             /* map output file */
 } map_output_info;
 
 static int
@@ -565,17 +563,17 @@ static void
 map_print_intnum(const yasm_intnum *intn, map_output_info *info)
 {
     size_t i;
-    yasm_intnum_get_sized(intn, info->buf, info->bytes, info->bytes*8, 0, 0,
+    yasm_intnum_get_sized(intn, info->buf, info->bytes, info->bytes * 8, 0, 0,
                           0);
-    for (i=info->bytes; i != 0; i--)
-        fprintf(info->f, "%02X", info->buf[i-1]);
+    for (i = info->bytes; i != 0; i--)
+        fprintf(info->f, "%02X", info->buf[i - 1]);
 }
 
 static void
 map_sections_summary(bin_groups *groups, map_output_info *info)
 {
     bin_group *group;
-    TAILQ_FOREACH(group, groups, link) {
+    TAILQ_FOREACH (group, groups, link) {
         bin_section_data *bsd = group->bsd;
 
         assert(bsd != NULL);
@@ -612,18 +610,17 @@ static void
 map_sections_detail(bin_groups *groups, map_output_info *info)
 {
     bin_group *group;
-    TAILQ_FOREACH(group, groups, link) {
+    TAILQ_FOREACH (group, groups, link) {
         bin_section_data *bsd = group->bsd;
         size_t i;
         const char *s;
 
         s = yasm_section_get_name(group->section);
         fprintf(info->f, "---- Section %s ", s);
-        for (i=0; i<(65-strlen(s)); i++)
+        for (i = 0; i < (65 - strlen(s)); i++)
             fputc('-', info->f);
 
-        fprintf(info->f, "\n\nclass:     %s",
-                bsd->bss ? "nobits" : "progbits");
+        fprintf(info->f, "\n\nclass:     %s", bsd->bss ? "nobits" : "progbits");
         fprintf(info->f, "\nlength:    ");
         map_print_intnum(bsd->length, info);
         fprintf(info->f, "\nstart:     ");
@@ -674,8 +671,8 @@ map_symrec_output(yasm_symrec *sym, void *d)
 
     if (!info->section && (equ = yasm_symrec_get_equ(sym))) {
         yasm_expr *realequ = yasm_expr_copy(equ);
-        realequ = yasm_expr__level_tree
-            (realequ, 1, 1, 1, 0, bin_objfmt_expr_xform, NULL);
+        realequ = yasm_expr__level_tree(realequ, 1, 1, 1, 0,
+                                        bin_objfmt_expr_xform, NULL);
         yasm_intnum_set(info->intn, yasm_expr_get_intnum(&realequ, 0));
         yasm_expr_destroy(realequ);
         map_print_intnum(info->intn, info);
@@ -707,7 +704,7 @@ static void
 map_sections_symbols(bin_groups *groups, map_output_info *info)
 {
     bin_group *group;
-    TAILQ_FOREACH(group, groups, link) {
+    TAILQ_FOREACH (group, groups, link) {
         info->count = 0;
         info->section = group->section;
         yasm_symtab_traverse(info->object->symtab, info, map_symrec_count);
@@ -716,14 +713,11 @@ map_sections_symbols(bin_groups *groups, map_output_info *info)
             const char *s = yasm_section_get_name(group->section);
             size_t i;
             fprintf(info->f, "---- Section %s ", s);
-            for (i=0; i<(65-strlen(s)); i++)
+            for (i = 0; i < (65 - strlen(s)); i++)
                 fputc('-', info->f);
-            fprintf(info->f, "\n\n%-*s%-*s%s\n",
-                    info->bytes*2+2, "Real",
-                    info->bytes*2+2, "Virtual",
-                    "Name");
-            yasm_symtab_traverse(info->object->symtab, info,
-                                 map_symrec_output);
+            fprintf(info->f, "\n\n%-*s%-*s%s\n", info->bytes * 2 + 2, "Real",
+                    info->bytes * 2 + 2, "Virtual", "Name");
+            yasm_symtab_traverse(info->object->symtab, info, map_symrec_output);
             fprintf(info->f, "\n\n");
         }
 
@@ -744,15 +738,14 @@ output_map(bin_objfmt_output_info *info)
         return;
 
     if (objfmt_bin->map_flags == MAP_NONE)
-        objfmt_bin->map_flags = MAP_BRIEF;          /* default to brief */
+        objfmt_bin->map_flags = MAP_BRIEF; /* default to brief */
 
     if (!objfmt_bin->map_filename)
-        f = stdout;                                 /* default to stdout */
+        f = stdout; /* default to stdout */
     else {
         f = fopen(objfmt_bin->map_filename, "wt");
         if (!f) {
-            yasm_warn_set(YASM_WARN_GENERAL,
-                          N_("unable to open map file `%s'"),
+            yasm_warn_set(YASM_WARN_GENERAL, N_("unable to open map file `%s'"),
                           objfmt_bin->map_filename);
             yasm_errwarn_propagate(info->errwarns, 0);
             return;
@@ -775,13 +768,13 @@ output_map(bin_objfmt_output_info *info)
     mapinfo.buf = yasm_xmalloc(mapinfo.bytes);
 
     fprintf(f, "\n- YASM Map file ");
-    for (i=0; i<63; i++)
+    for (i = 0; i < 63; i++)
         fputc('-', f);
     fprintf(f, "\n\nSource file:  %s\n", info->object->src_filename);
     fprintf(f, "Output file:  %s\n\n", info->object->obj_filename);
 
     fprintf(f, "-- Program origin ");
-    for (i=0; i<61; i++)
+    for (i = 0; i < 61; i++)
         fputc('-', f);
     fprintf(f, "\n\n");
     map_print_intnum(info->origin, &mapinfo);
@@ -789,15 +782,12 @@ output_map(bin_objfmt_output_info *info)
 
     if (objfmt_bin->map_flags & MAP_BRIEF) {
         fprintf(f, "-- Sections (summary) ");
-        for (i=0; i<57; i++)
+        for (i = 0; i < 57; i++)
             fputc('-', f);
-        fprintf(f, "\n\n%-*s%-*s%-*s%-*s%-*s%-*s%s\n",
-                mapinfo.bytes*2+2, "Vstart",
-                mapinfo.bytes*2+2, "Vstop",
-                mapinfo.bytes*2+2, "Start",
-                mapinfo.bytes*2+2, "Stop",
-                mapinfo.bytes*2+2, "Length",
-                10, "Class", "Name");
+        fprintf(f, "\n\n%-*s%-*s%-*s%-*s%-*s%-*s%s\n", mapinfo.bytes * 2 + 2,
+                "Vstart", mapinfo.bytes * 2 + 2, "Vstop", mapinfo.bytes * 2 + 2,
+                "Start", mapinfo.bytes * 2 + 2, "Stop", mapinfo.bytes * 2 + 2,
+                "Length", 10, "Class", "Name");
 
         map_sections_summary(&info->lma_groups, &mapinfo);
         fprintf(f, "\n");
@@ -805,7 +795,7 @@ output_map(bin_objfmt_output_info *info)
 
     if (objfmt_bin->map_flags & MAP_SECTIONS) {
         fprintf(f, "-- Sections (detailed) ");
-        for (i=0; i<56; i++)
+        for (i = 0; i < 56; i++)
             fputc('-', f);
         fprintf(f, "\n\n");
         map_sections_detail(&info->lma_groups, &mapinfo);
@@ -813,7 +803,7 @@ output_map(bin_objfmt_output_info *info)
 
     if (objfmt_bin->map_flags & MAP_SYMBOLS) {
         fprintf(f, "-- Symbols ");
-        for (i=0; i<68; i++)
+        for (i = 0; i < 68; i++)
             fputc('-', f);
         fprintf(f, "\n\n");
 
@@ -829,9 +819,9 @@ output_map(bin_objfmt_output_info *info)
 
         if (mapinfo.count > 0) {
             fprintf(f, "---- No Section ");
-            for (i=0; i<63; i++)
+            for (i = 0; i < 63; i++)
                 fputc('-', f);
-            fprintf(f, "\n\n%-*s%s\n", mapinfo.bytes*2+2, "Value", "Name");
+            fprintf(f, "\n\n%-*s%s\n", mapinfo.bytes * 2 + 2, "Value", "Name");
             yasm_symtab_traverse(info->object->symtab, &mapinfo,
                                  map_symrec_output);
             fprintf(f, "\n\n");
@@ -864,8 +854,7 @@ check_lma_overlap(yasm_section *sect, /*@null@*/ void *d)
     bsd = yasm_section_get_data(sect, &bin_section_data_cb);
     bsd2 = yasm_section_get_data(other, &bin_section_data_cb);
 
-    if (yasm_intnum_is_zero(bsd->length) ||
-        yasm_intnum_is_zero(bsd2->length))
+    if (yasm_intnum_is_zero(bsd->length) || yasm_intnum_is_zero(bsd2->length))
         return 0;
 
     if (yasm_intnum_compare(bsd->istart, bsd2->istart) <= 0) {
@@ -911,22 +900,23 @@ bin_objfmt_output_value(yasm_value *value, unsigned char *buf,
         /*@null@*/ const yasm_intnum *ssymval;
 
         if (yasm_symrec_is_abs(value->rel)) {
-            syme = yasm_expr_create_ident(yasm_expr_int(
-                yasm_intnum_create_uint(0)), bc->line);
-        } else if (yasm_symrec_get_label(value->rel, &precbc)
-                   && (sect = yasm_bc_get_section(precbc))) {
+            syme = yasm_expr_create_ident(
+                yasm_expr_int(yasm_intnum_create_uint(0)), bc->line);
+        } else if (yasm_symrec_get_label(value->rel, &precbc) &&
+                   (sect = yasm_bc_get_section(precbc))) {
             syme = yasm_expr_create_ident(yasm_expr_sym(value->rel), bc->line);
         } else if ((ssymval = get_ssym_value(value->rel))) {
-            syme = yasm_expr_create_ident(yasm_expr_int(
-                yasm_intnum_copy(ssymval)), bc->line);
+            syme = yasm_expr_create_ident(
+                yasm_expr_int(yasm_intnum_copy(ssymval)), bc->line);
         } else
             goto done;
 
         /* Handle PC-relative */
         if (value->curpos_rel) {
             yasm_expr *sube;
-            sube = yasm_expr_create(YASM_EXPR_SUB, yasm_expr_precbc(bc),
-                yasm_expr_int(yasm_intnum_create_uint(bc->len*bc->mult_int)),
+            sube = yasm_expr_create(
+                YASM_EXPR_SUB, yasm_expr_precbc(bc),
+                yasm_expr_int(yasm_intnum_create_uint(bc->len * bc->mult_int)),
                 bc->line);
             syme = yasm_expr_create(YASM_EXPR_SUB, yasm_expr_expr(syme),
                                     yasm_expr_expr(sube), bc->line);
@@ -935,7 +925,8 @@ bin_objfmt_output_value(yasm_value *value, unsigned char *buf,
         }
 
         if (value->rshift > 0)
-            syme = yasm_expr_create(YASM_EXPR_SHR, yasm_expr_expr(syme),
+            syme = yasm_expr_create(
+                YASM_EXPR_SHR, yasm_expr_expr(syme),
                 yasm_expr_int(yasm_intnum_create_uint(rshift)), bc->line);
 
         /* Add into absolute portion */
@@ -951,8 +942,8 @@ bin_objfmt_output_value(yasm_value *value, unsigned char *buf,
 done:
     /* Simplify absolute portion of value, transforming symrecs */
     if (value->abs)
-        value->abs = yasm_expr__level_tree
-            (value->abs, 1, 1, 1, 0, bin_objfmt_expr_xform, NULL);
+        value->abs = yasm_expr__level_tree(value->abs, 1, 1, 1, 0,
+                                           bin_objfmt_expr_xform, NULL);
 
     /* Output */
     switch (yasm_value_output_basic(value, buf, destsize, bc, warn,
@@ -966,7 +957,8 @@ done:
     }
 
     /* Couldn't output, assume it contains an external reference. */
-    yasm_error_set(YASM_ERROR_GENERAL,
+    yasm_error_set(
+        YASM_ERROR_GENERAL,
         N_("binary object format does not support external references"));
     return 1;
 }
@@ -994,7 +986,8 @@ bin_objfmt_output_bytecode(yasm_bytecode *bc, /*@null@*/ void *d)
     /* Warn that gaps are converted to 0 and write out the 0's. */
     if (gap) {
         unsigned long left;
-        yasm_warn_set(YASM_WARN_UNINIT_CONTENTS,
+        yasm_warn_set(
+            YASM_WARN_UNINIT_CONTENTS,
             N_("uninitialized space declared in code/data section: zeroing"));
         /* Write out in chunks */
         memset(info->buf, 0, REGULAR_OUTBUF_SIZE);
@@ -1040,7 +1033,8 @@ bin_objfmt_no_output_bytecode(yasm_bytecode *bc, /*@null@*/ void *d)
 
     /* Warn if not a gap. */
     if (!gap) {
-        yasm_warn_set(YASM_WARN_GENERAL,
+        yasm_warn_set(
+            YASM_WARN_GENERAL,
             N_("initialized space declared in nobits section: ignoring"));
     }
 
@@ -1057,8 +1051,8 @@ bin_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
     assert(info != NULL);
 
     if (bsd->bss) {
-        yasm_section_bcs_traverse(sect, info->errwarns,
-                                  info, bin_objfmt_no_output_bytecode);
+        yasm_section_bcs_traverse(sect, info->errwarns, info,
+                                  bin_objfmt_no_output_bytecode);
     } else {
         yasm_intnum_set(info->tmp_intn, bsd->istart);
         yasm_intnum_calc(info->tmp_intn, YASM_EXPR_SUB, info->origin);
@@ -1069,7 +1063,7 @@ bin_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
             yasm_errwarn_propagate(info->errwarns, 0);
             return 0;
         }
-        if (!yasm_intnum_check_size(info->tmp_intn, sizeof(long)*8, 0, 1)) {
+        if (!yasm_intnum_check_size(info->tmp_intn, sizeof(long) * 8, 0, 1)) {
             yasm_error_set(YASM_ERROR_VALUE,
                            N_("section `%s' start value too large"),
                            yasm_section_get_name(sect));
@@ -1079,8 +1073,8 @@ bin_objfmt_output_section(yasm_section *sect, /*@null@*/ void *d)
         if (fseek(info->f, yasm_intnum_get_int(info->tmp_intn) + info->start,
                   SEEK_SET) < 0)
             yasm__fatal(N_("could not seek on output file"));
-        yasm_section_bcs_traverse(sect, info->errwarns,
-                                  info, bin_objfmt_output_bytecode);
+        yasm_section_bcs_traverse(sect, info->errwarns, info,
+                                  bin_objfmt_output_bytecode);
     }
 
     return 0;
@@ -1096,10 +1090,10 @@ bin_objfmt_cleanup(bin_objfmt_output_info *info)
     yasm_intnum_destroy(info->tmp_intn);
 
     TAILQ_FOREACH_SAFE(group, &info->lma_groups, link, group_temp)
-        bin_group_destroy(group);
+    bin_group_destroy(group);
 
     TAILQ_FOREACH_SAFE(group, &info->vma_groups, link, group_temp)
-        bin_group_destroy(group);
+    bin_group_destroy(group);
 }
 
 static void
@@ -1146,7 +1140,7 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     /* Create section groups */
     if (yasm_object_sections_traverse(object, &info, bin_lma_create_group)) {
         bin_objfmt_cleanup(&info);
-        return;     /* error detected */
+        return; /* error detected */
     }
 
     /* Determine section order according to LMA.
@@ -1160,7 +1154,8 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     /* Look at each group with follows specified, and find the section
      * that group is supposed to follow.
      */
-    TAILQ_FOREACH_SAFE(lma_group, &info.lma_groups, link, group_temp) {
+    TAILQ_FOREACH_SAFE(lma_group, &info.lma_groups, link, group_temp)
+    {
         if (lma_group->bsd->follows) {
             bin_group *found;
             /* Need to find group containing section this section follows. */
@@ -1168,7 +1163,8 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
                 find_group_by_name(&info.lma_groups, lma_group->bsd->follows);
             if (!found) {
                 yasm_error_set(YASM_ERROR_VALUE,
-                               N_("section `%s' follows an invalid or unknown section `%s'"),
+                               N_("section `%s' follows an invalid or unknown "
+                                  "section `%s'"),
                                yasm_section_get_name(lma_group->section),
                                lma_group->bsd->follows);
                 yasm_errwarn_propagate(errwarns, 0);
@@ -1180,10 +1176,11 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
             if (lma_group->section == found->section ||
                 find_group_by_section(&lma_group->follow_groups,
                                       found->section)) {
-                yasm_error_set(YASM_ERROR_VALUE,
-                               N_("follows loop between section `%s' and section `%s'"),
-                               yasm_section_get_name(lma_group->section),
-                               yasm_section_get_name(found->section));
+                yasm_error_set(
+                    YASM_ERROR_VALUE,
+                    N_("follows loop between section `%s' and section `%s'"),
+                    yasm_section_get_name(lma_group->section),
+                    yasm_section_get_name(found->section));
                 yasm_errwarn_propagate(errwarns, 0);
                 bin_objfmt_cleanup(&info);
                 return;
@@ -1202,10 +1199,11 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
      * and move BSS sections to a separate list so they can be moved to the
      * end of the lma list after all other sections are sorted.
      */
-    unsorted_groups = info.lma_groups;  /* structure copy */
+    unsorted_groups = info.lma_groups; /* structure copy */
     TAILQ_INIT(&info.lma_groups);
     TAILQ_INIT(&bss_groups);
-    TAILQ_FOREACH_SAFE(lma_group, &unsorted_groups, link, group_temp) {
+    TAILQ_FOREACH_SAFE(lma_group, &unsorted_groups, link, group_temp)
+    {
         bin_group *before;
 
         if (!lma_group->bsd->istart) {
@@ -1217,7 +1215,7 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
         }
 
         before = NULL;
-        TAILQ_FOREACH(group, &info.lma_groups, link) {
+        TAILQ_FOREACH (group, &info.lma_groups, link) {
             if (!group->bsd->istart)
                 continue;
             if (yasm_intnum_compare(group->bsd->istart,
@@ -1234,8 +1232,8 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
 
     /* Move the pure-BSS sections to the end of the LMA list. */
     TAILQ_FOREACH_SAFE(group, &bss_groups, link, group_temp)
-        TAILQ_INSERT_TAIL(&info.lma_groups, group, link);
-    TAILQ_INIT(&bss_groups);    /* For sanity */
+    TAILQ_INSERT_TAIL(&info.lma_groups, group, link);
+    TAILQ_INIT(&bss_groups); /* For sanity */
 
     /* Assign a LMA start address to every section.
      * Also assign VMA=LMA unless otherwise specified.
@@ -1260,7 +1258,7 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     start = yasm_intnum_copy(info.origin);
     last = yasm_intnum_copy(info.origin);
     vdelta = yasm_intnum_create_uint(0);
-    TAILQ_FOREACH(lma_group, &info.lma_groups, link) {
+    TAILQ_FOREACH (lma_group, &info.lma_groups, link) {
         if (lma_group->bsd->istart)
             yasm_intnum_set(start, lma_group->bsd->istart);
         group_assign_start_recurse(lma_group, start, last, vdelta,
@@ -1278,21 +1276,23 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     if (yasm_object_sections_traverse(object, &info, bin_vma_create_group)) {
         yasm_intnum_destroy(start);
         bin_objfmt_cleanup(&info);
-        return;     /* error detected */
+        return; /* error detected */
     }
 
     /* Look at each group with vfollows specified, and find the section
      * that group is supposed to follow.
      */
-    TAILQ_FOREACH_SAFE(vma_group, &info.vma_groups, link, group_temp) {
+    TAILQ_FOREACH_SAFE(vma_group, &info.vma_groups, link, group_temp)
+    {
         if (vma_group->bsd->vfollows) {
             bin_group *found;
             /* Need to find group containing section this section follows. */
-            found = find_group_by_name(&info.vma_groups,
-                                       vma_group->bsd->vfollows);
+            found =
+                find_group_by_name(&info.vma_groups, vma_group->bsd->vfollows);
             if (!found) {
                 yasm_error_set(YASM_ERROR_VALUE,
-                               N_("section `%s' vfollows an invalid or unknown section `%s'"),
+                               N_("section `%s' vfollows an invalid or unknown "
+                                  "section `%s'"),
                                yasm_section_get_name(vma_group->section),
                                vma_group->bsd->vfollows);
                 yasm_errwarn_propagate(errwarns, 0);
@@ -1305,10 +1305,11 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
             if (vma_group->section == found->section ||
                 find_group_by_section(&vma_group->follow_groups,
                                       found->section)) {
-                yasm_error_set(YASM_ERROR_VALUE,
-                               N_("vfollows loop between section `%s' and section `%s'"),
-                               yasm_section_get_name(vma_group->section),
-                               yasm_section_get_name(found->section));
+                yasm_error_set(
+                    YASM_ERROR_VALUE,
+                    N_("vfollows loop between section `%s' and section `%s'"),
+                    yasm_section_get_name(vma_group->section),
+                    yasm_section_get_name(found->section));
                 yasm_errwarn_propagate(errwarns, 0);
                 bin_objfmt_cleanup(&info);
                 return;
@@ -1329,7 +1330,7 @@ bin_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
      *     No      Yes    -     vfollows loop (above)
      *    Yes      -      -     bin_lma_create_group()
      */
-    TAILQ_FOREACH(vma_group, &info.vma_groups, link) {
+    TAILQ_FOREACH (vma_group, &info.vma_groups, link) {
         yasm_intnum_set(start, vma_group->bsd->ivstart);
         group_assign_vstart_recurse(vma_group, start, errwarns);
     }
@@ -1373,7 +1374,7 @@ define_section_symbol(yasm_symtab *symtab, yasm_section *sect,
 {
     yasm_symrec *sym;
     bin_symrec_data *bsymd = yasm_xmalloc(sizeof(bin_symrec_data));
-    char *symname = yasm_xmalloc(8+strlen(sectname)+strlen(suffix)+1);
+    char *symname = yasm_xmalloc(8 + strlen(sectname) + strlen(suffix) + 1);
 
     strcpy(symname, "section.");
     strcat(symname, sectname);
@@ -1408,8 +1409,8 @@ bin_objfmt_init_new_section(yasm_section *sect, unsigned long line)
     data->length = NULL;
     yasm_section_add_data(sect, &bin_section_data_cb, data);
 
-    define_section_symbol(object->symtab, sect, sectname, ".start",
-                          SSYM_START, line);
+    define_section_symbol(object->symtab, sect, sectname, ".start", SSYM_START,
+                          line);
     define_section_symbol(object->symtab, sect, sectname, ".vstart",
                           SSYM_VSTART, line);
     define_section_symbol(object->symtab, sect, sectname, ".length",
@@ -1521,16 +1522,18 @@ bin_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     flags_override = yasm_dir_helper(object, vp, line, help, NELEMS(help),
                                      &data, yasm_dir_helper_valparam_warn);
     if (flags_override < 0)
-        return NULL;    /* error occurred */
+        return NULL; /* error occurred */
 
     if (data.start && data.follows) {
-        yasm_error_set(YASM_ERROR_GENERAL,
+        yasm_error_set(
+            YASM_ERROR_GENERAL,
             N_("cannot combine `start' and `follows' section attributes"));
         return NULL;
     }
 
     if (data.vstart && data.vfollows) {
-        yasm_error_set(YASM_ERROR_GENERAL,
+        yasm_error_set(
+            YASM_ERROR_GENERAL,
             N_("cannot combine `vstart' and `vfollows' section attributes"));
         return NULL;
     }
@@ -1632,8 +1635,7 @@ dir_map_filename(void *obj, yasm_valparam *vp, unsigned long line, void *data)
 
     filename = yasm_vp_string(vp);
     if (!filename) {
-        yasm_error_set(YASM_ERROR_SYNTAX,
-                       N_("unexpected expression in [map]"));
+        yasm_error_set(YASM_ERROR_SYNTAX, N_("unexpected expression in [map]"));
         return -1;
     }
     mdata->filename = yasm__xstrdup(filename);
@@ -1654,7 +1656,7 @@ bin_objfmt_dir_map(yasm_object *object,
     static const yasm_dir_help help[] = {
         { "all", 0, yasm_dir_helper_flag_or,
           offsetof(struct bin_dir_map_data, flags),
-          MAP_BRIEF|MAP_SECTIONS|MAP_SYMBOLS },
+          MAP_BRIEF | MAP_SECTIONS | MAP_SYMBOLS },
         { "brief", 0, yasm_dir_helper_flag_or,
           offsetof(struct bin_dir_map_data, flags), MAP_BRIEF },
         { "sections", 0, yasm_dir_helper_flag_or,
@@ -1668,9 +1670,10 @@ bin_objfmt_dir_map(yasm_object *object,
     data.flags = objfmt_bin->map_flags | MAP_NONE;
     data.filename = objfmt_bin->map_filename;
 
-    if (valparams && yasm_dir_helper(object, yasm_vps_first(valparams), line, help,
-                                     NELEMS(help), &data, dir_map_filename) < 0)
-        return;     /* error occurred */
+    if (valparams &&
+        yasm_dir_helper(object, yasm_vps_first(valparams), line, help,
+                        NELEMS(help), &data, dir_map_filename) < 0)
+        return; /* error occurred */
 
     objfmt_bin->map_flags = data.flags;
     objfmt_bin->map_filename = data.filename;
@@ -1765,32 +1768,30 @@ bin_symrec_data_print(void *data, FILE *f, int indent_level)
             yasm_section_get_name(bsymd->section));
     fprintf(f, "%*swhich=", indent_level, "");
     switch (bsymd->which) {
-        case SSYM_START: fprintf(f, "START"); break;
-        case SSYM_VSTART: fprintf(f, "VSTART"); break;
-        case SSYM_LENGTH: fprintf(f, "LENGTH"); break;
+        case SSYM_START:
+            fprintf(f, "START");
+            break;
+        case SSYM_VSTART:
+            fprintf(f, "VSTART");
+            break;
+        case SSYM_LENGTH:
+            fprintf(f, "LENGTH");
+            break;
     }
     fprintf(f, "\n");
 }
 
-
 /* Define valid debug formats to use with this object format */
-static const char *bin_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *bin_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 static const yasm_directive bin_objfmt_directives[] = {
-    { "org",    "nasm", bin_objfmt_dir_org,     YASM_DIR_ARG_REQUIRED },
-    { "map",    "nasm", bin_objfmt_dir_map,     YASM_DIR_ANY },
+    { "org", "nasm", bin_objfmt_dir_org, YASM_DIR_ARG_REQUIRED },
+    { "map", "nasm", bin_objfmt_dir_map, YASM_DIR_ANY },
     { NULL, NULL, NULL, 0 }
 };
 
-static const char *bin_nasm_stdmac[] = {
-    "%imacro org 1+.nolist",
-    "[org %1]",
-    "%endmacro",
-    NULL
-};
+static const char *bin_nasm_stdmac[] = { "%imacro org 1+.nolist", "[org %1]",
+                                         "%endmacro", NULL };
 
 static const yasm_stdmac bin_objfmt_stdmacs[] = {
     { "nasm", "nasm", bin_nasm_stdmac },
@@ -1799,24 +1800,22 @@ static const yasm_stdmac bin_objfmt_stdmacs[] = {
 };
 
 /* Define objfmt structure -- see objfmt.h for details */
-yasm_objfmt_module yasm_bin_LTX_objfmt = {
-    "Flat format binary",
-    "bin",
-    NULL,
-    16,
-    0,
-    bin_objfmt_dbgfmt_keywords,
-    "null",
-    bin_objfmt_directives,
-    bin_objfmt_stdmacs,
-    bin_objfmt_create,
-    bin_objfmt_output,
-    bin_objfmt_destroy,
-    bin_objfmt_add_default_section,
-    bin_objfmt_init_new_section,
-    bin_objfmt_section_switch,
-    bin_objfmt_get_special_sym
-};
+yasm_objfmt_module yasm_bin_LTX_objfmt = { "Flat format binary",
+                                           "bin",
+                                           NULL,
+                                           16,
+                                           0,
+                                           bin_objfmt_dbgfmt_keywords,
+                                           "null",
+                                           bin_objfmt_directives,
+                                           bin_objfmt_stdmacs,
+                                           bin_objfmt_create,
+                                           bin_objfmt_output,
+                                           bin_objfmt_destroy,
+                                           bin_objfmt_add_default_section,
+                                           bin_objfmt_init_new_section,
+                                           bin_objfmt_section_switch,
+                                           bin_objfmt_get_special_sym };
 
 #define EXE_HEADER_SIZE 0x200
 
@@ -1826,13 +1825,14 @@ yasm_objfmt_module yasm_dosexe_LTX_objfmt;
 static yasm_objfmt *
 dosexe_objfmt_create(yasm_object *object)
 {
-    yasm_objfmt_bin *objfmt_bin = (yasm_objfmt_bin *) bin_objfmt_create(object);
+    yasm_objfmt_bin *objfmt_bin = (yasm_objfmt_bin *)bin_objfmt_create(object);
     objfmt_bin->objfmt.module = &yasm_dosexe_LTX_objfmt;
     return (yasm_objfmt *)objfmt_bin;
 }
 
 static unsigned long
-get_sym(yasm_object *object, const char *name) {
+get_sym(yasm_object *object, const char *name)
+{
     yasm_symrec *symrec = yasm_symtab_get(object->symtab, name);
     yasm_bytecode *prevbc;
     if (!symrec)
@@ -1844,7 +1844,7 @@ get_sym(yasm_object *object, const char *name) {
 
 static void
 dosexe_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
-                  yasm_errwarns *errwarns)
+                     yasm_errwarns *errwarns)
 {
     unsigned long tot_size, size, bss_size;
     unsigned long start, bss;
@@ -1926,7 +1926,7 @@ dosexe_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     start = get_sym(object, "start");
     if (!start) {
         yasm_error_set(YASM_ERROR_GENERAL,
-                N_("%s: could not find symbol `start'"));
+                       N_("%s: could not find symbol `start'"));
         return;
     }
     c = start & 0xff;
@@ -1951,23 +1951,20 @@ dosexe_objfmt_output(yasm_object *object, FILE *f, /*@unused@*/ int all_syms,
     fwrite(&c, 1, 1, f);
 }
 
-
 /* Define objfmt structure -- see objfmt.h for details */
-yasm_objfmt_module yasm_dosexe_LTX_objfmt = {
-    "DOS .EXE format binary",
-    "dosexe",
-    "exe",
-    16,
-    0,
-    bin_objfmt_dbgfmt_keywords,
-    "null",
-    bin_objfmt_directives,
-    bin_objfmt_stdmacs,
-    dosexe_objfmt_create,
-    dosexe_objfmt_output,
-    bin_objfmt_destroy,
-    bin_objfmt_add_default_section,
-    bin_objfmt_init_new_section,
-    bin_objfmt_section_switch,
-    bin_objfmt_get_special_sym
-};
+yasm_objfmt_module yasm_dosexe_LTX_objfmt = { "DOS .EXE format binary",
+                                              "dosexe",
+                                              "exe",
+                                              16,
+                                              0,
+                                              bin_objfmt_dbgfmt_keywords,
+                                              "null",
+                                              bin_objfmt_directives,
+                                              bin_objfmt_stdmacs,
+                                              dosexe_objfmt_create,
+                                              dosexe_objfmt_output,
+                                              bin_objfmt_destroy,
+                                              bin_objfmt_add_default_section,
+                                              bin_objfmt_init_new_section,
+                                              bin_objfmt_section_switch,
+                                              bin_objfmt_get_special_sym };

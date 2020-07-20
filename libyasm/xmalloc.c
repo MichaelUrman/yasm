@@ -29,7 +29,6 @@
 #include "coretype.h"
 #include "errwarn.h"
 
-
 #ifdef WITH_DMALLOC
 #undef yasm_xmalloc
 #undef yasm_xcalloc
@@ -39,25 +38,27 @@
 
 static /*@only@*/ /*@out@*/ void *def_xmalloc(size_t size);
 static /*@only@*/ void *def_xcalloc(size_t nelem, size_t elsize);
-static /*@only@*/ void *def_xrealloc
-    (/*@only@*/ /*@out@*/ /*@returned@*/ /*@null@*/ void *oldmem, size_t size)
+static /*@only@*/ void *
+def_xrealloc(/*@only@*/ /*@out@*/ /*@returned@*/ /*@null@*/ void *oldmem,
+             size_t size)
     /*@modifies oldmem@*/;
 static void def_xfree(/*@only@*/ /*@out@*/ /*@null@*/ void *p)
     /*@modifies p@*/;
 
 /* storage for global function pointers */
 YASM_LIB_DECL
-/*@only@*/ /*@out@*/ void * (*yasm_xmalloc) (size_t size) = def_xmalloc;
+/*@only@*/ /*@out@*/ void *(*yasm_xmalloc)(size_t size) = def_xmalloc;
 YASM_LIB_DECL
-/*@only@*/ void * (*yasm_xcalloc) (size_t nelem, size_t elsize) = def_xcalloc;
+/*@only@*/ void *(*yasm_xcalloc)(size_t nelem, size_t elsize) = def_xcalloc;
 YASM_LIB_DECL
-/*@only@*/ void * (*yasm_xrealloc)
-    (/*@only@*/ /*@out@*/ /*@returned@*/ /*@null@*/ void *oldmem, size_t size)
-    /*@modifies oldmem@*/ = def_xrealloc;
+/*@only@*/ void *(*yasm_xrealloc)(
+    /*@only@*/ /*@out@*/ /*@returned@*/ /*@null@*/ void *oldmem, size_t size)
+    /*@modifies oldmem@*/
+    = def_xrealloc;
 YASM_LIB_DECL
-void (*yasm_xfree) (/*@only@*/ /*@out@*/ /*@null@*/ void *p)
-    /*@modifies p@*/ = def_xfree;
-
+void (*yasm_xfree)(/*@only@*/ /*@out@*/ /*@null@*/ void *p)
+    /*@modifies p@*/
+    = def_xfree;
 
 static void *
 def_xmalloc(size_t size)

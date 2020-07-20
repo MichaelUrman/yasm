@@ -1,8 +1,8 @@
 /*
- * Mac OS X ABI Mach-O File Format 
+ * Mac OS X ABI Mach-O File Format
  *
  *  Copyright (C) 2007 Henryk Richter, built upon xdf objfmt (C) Peter Johnson
- *   
+ *
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@
 
   1) section placement
      Mach-O requires BSS sections to be placed last in object files. This
-     has to be done manually. 
+     has to be done manually.
      Example:
 
       section .text
@@ -52,17 +52,16 @@
        does not. Therefore code like
         lea rbx,[_foo]  ;48 8d 1c 25 00 00 00 00
         mov rcx,[_bar]  ;48 8b 0c 25 00 00 00 00
-       with a 32 bit address field cannot be relocated into an address >= 0x100000000 (OSX actually
-       uses that). 
-       
-       Actually, the only register where a 64 bit displacement is allowed in x86-64, is rax
-       as in the example 1).
+       with a 32 bit address field cannot be relocated into an address >=
+  0x100000000 (OSX actually uses that).
 
-       A plausible workaround is either classic PIC (like in C), which is in turn
-       not implemented in this object format. The recommended was is PC relative 
-       code (called RIP-relative in x86-64). So instead of the lines above, just write:
-        lea rbx,[_foo wrt rip]
-        mov rcx,[_bar wrt rip]
+       Actually, the only register where a 64 bit displacement is allowed in
+  x86-64, is rax as in the example 1).
+
+       A plausible workaround is either classic PIC (like in C), which is in
+  turn not implemented in this object format. The recommended was is PC relative
+       code (called RIP-relative in x86-64). So instead of the lines above, just
+  write: lea rbx,[_foo wrt rip] mov rcx,[_bar wrt rip]
 
   2.3) section/data alignment
        Normally, you specify sections with a specific alignment
@@ -77,7 +76,7 @@
        section .data align=16
         _foo dw 32,32,32,32,32,32,32,32
 
-       FIXME: perform that operation implicitly! 
+       FIXME: perform that operation implicitly!
 
   2.4) cross section symbol differences unsupported in current implementation
        [extern foo]
@@ -96,108 +95,115 @@
 
 /* MACH-O DEFINES */
 /* Mach-O in-file header structure sizes (32 BIT, see below for 64 bit defs) */
-#define MACHO_HEADER_SIZE       28
-#define MACHO_SEGCMD_SIZE       56
-#define MACHO_SECTCMD_SIZE      68
-#define MACHO_SYMCMD_SIZE       24
-#define MACHO_NLIST_SIZE        12
-#define MACHO_RELINFO_SIZE      8
+#define MACHO_HEADER_SIZE 28
+#define MACHO_SEGCMD_SIZE 56
+#define MACHO_SECTCMD_SIZE 68
+#define MACHO_SYMCMD_SIZE 24
+#define MACHO_NLIST_SIZE 12
+#define MACHO_RELINFO_SIZE 8
 
 /* 64 bit sizes */
-#define MACHO_HEADER64_SIZE     32
-#define MACHO_SEGCMD64_SIZE     72
-#define MACHO_SECTCMD64_SIZE    80
-#define MACHO_NLIST64_SIZE      16
-#define MACHO_RELINFO64_SIZE    8
-
+#define MACHO_HEADER64_SIZE 32
+#define MACHO_SEGCMD64_SIZE 72
+#define MACHO_SECTCMD64_SIZE 80
+#define MACHO_NLIST64_SIZE 16
+#define MACHO_RELINFO64_SIZE 8
 
 /* Mach-O file header values */
-#define MH_MAGIC                0xfeedface
-#define MH_MAGIC_64             0xfeedfacf
+#define MH_MAGIC 0xfeedface
+#define MH_MAGIC_64 0xfeedfacf
 
 /* CPU machine type */
-#define CPU_TYPE_I386           7       /* x86 platform */
-#define CPU_TYPE_X86_64         (CPU_TYPE_I386|CPU_ARCH_ABI64)
-#define CPU_ARCH_ABI64          0x01000000      /* 64 bit ABI */
+#define CPU_TYPE_I386 7 /* x86 platform */
+#define CPU_TYPE_X86_64 (CPU_TYPE_I386 | CPU_ARCH_ABI64)
+#define CPU_ARCH_ABI64 0x01000000 /* 64 bit ABI */
 
 /* CPU machine subtype, e.g. processor */
-#define CPU_SUBTYPE_I386_ALL    3       /* all-x86 compatible */
-#define CPU_SUBTYPE_X86_64_ALL  CPU_SUBTYPE_I386_ALL
-#define CPU_SUBTYPE_386         3
-#define CPU_SUBTYPE_486         4
-#define CPU_SUBTYPE_486SX       (4 + 128)
-#define CPU_SUBTYPE_586         5
+#define CPU_SUBTYPE_I386_ALL 3 /* all-x86 compatible */
+#define CPU_SUBTYPE_X86_64_ALL CPU_SUBTYPE_I386_ALL
+#define CPU_SUBTYPE_386 3
+#define CPU_SUBTYPE_486 4
+#define CPU_SUBTYPE_486SX (4 + 128)
+#define CPU_SUBTYPE_586 5
 #define CPU_SUBTYPE_INTEL(f, m) ((f) + ((m) << 4))
-#define CPU_SUBTYPE_PENT        CPU_SUBTYPE_INTEL(5, 0)
-#define CPU_SUBTYPE_PENTPRO     CPU_SUBTYPE_INTEL(6, 1)
-#define CPU_SUBTYPE_PENTII_M3   CPU_SUBTYPE_INTEL(6, 3)
-#define CPU_SUBTYPE_PENTII_M5   CPU_SUBTYPE_INTEL(6, 5)
-#define CPU_SUBTYPE_PENTIUM_4   CPU_SUBTYPE_INTEL(10, 0)
+#define CPU_SUBTYPE_PENT CPU_SUBTYPE_INTEL(5, 0)
+#define CPU_SUBTYPE_PENTPRO CPU_SUBTYPE_INTEL(6, 1)
+#define CPU_SUBTYPE_PENTII_M3 CPU_SUBTYPE_INTEL(6, 3)
+#define CPU_SUBTYPE_PENTII_M5 CPU_SUBTYPE_INTEL(6, 5)
+#define CPU_SUBTYPE_PENTIUM_4 CPU_SUBTYPE_INTEL(10, 0)
 
-#define CPU_SUBTYPE_INTEL_FAMILY(x)     ((x) & 15)
-#define CPU_SUBTYPE_INTEL_FAMILY_MAX    15
+#define CPU_SUBTYPE_INTEL_FAMILY(x) ((x)&15)
+#define CPU_SUBTYPE_INTEL_FAMILY_MAX 15
 
-#define CPU_SUBTYPE_INTEL_MODEL(x)      ((x) >> 4)
-#define CPU_SUBTYPE_INTEL_MODEL_ALL     0
+#define CPU_SUBTYPE_INTEL_MODEL(x) ((x) >> 4)
+#define CPU_SUBTYPE_INTEL_MODEL_ALL 0
 
-#define MH_OBJECT               0x1     /* object file */
+#define MH_OBJECT 0x1 /* object file */
 
-#define LC_SEGMENT              0x1     /* segment load command */
-#define LC_SYMTAB               0x2     /* symbol table load command */
-#define LC_SEGMENT_64           0x19    /* segment load command */
+#define LC_SEGMENT 0x1     /* segment load command */
+#define LC_SYMTAB 0x2      /* symbol table load command */
+#define LC_SEGMENT_64 0x19 /* segment load command */
 
-
-#define VM_PROT_NONE            0x00
-#define VM_PROT_READ            0x01
-#define VM_PROT_WRITE           0x02
-#define VM_PROT_EXECUTE         0x04
+#define VM_PROT_NONE 0x00
+#define VM_PROT_READ 0x01
+#define VM_PROT_WRITE 0x02
+#define VM_PROT_EXECUTE 0x04
 
 #define VM_PROT_DEFAULT (VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE)
-#define VM_PROT_ALL     (VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE)
+#define VM_PROT_ALL (VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE)
 
-#define SECTION_TYPE        0x000000ff  /* section type mask */
-#define SECTION_ATTRIBUTES  0xffffff00UL/* section attributes mask */
+#define SECTION_TYPE 0x000000ff         /* section type mask */
+#define SECTION_ATTRIBUTES 0xffffff00UL /* section attributes mask */
 
-#define S_REGULAR           0x0         /* standard section */
-#define S_ZEROFILL          0x1         /* zerofill, in-memory only */
-#define S_CSTRING_LITERALS  0x2         /* literal C strings */
-#define S_4BYTE_LITERALS    0x3         /* only 4-byte literals */
-#define S_8BYTE_LITERALS    0x4         /* only 8-byte literals */
-#define S_LITERAL_POINTERS  0x5         /* only pointers to literals */
-#define S_NON_LAZY_SYMBOL_POINTERS  0x6 /* only non-lazy symbol pointers */
-#define S_LAZY_SYMBOL_POINTERS      0x7 /* only lazy symbol pointers */
-#define S_SYMBOL_STUBS      0x8         /* only symbol stubs; byte size of
-                                         * stub in the reserved2 field */
-#define S_MOD_INIT_FUNC_POINTERS    0x9 /* only function pointers for init */
-#define S_MOD_TERM_FUNC_POINTERS    0xa /* only function pointers for term */
-#define S_COALESCED         0xb         /* symbols that are to be coalesced */
-#define S_GB_ZEROFILL       0xc         /* >4GB zero fill on demand section */
-#define S_INTERPOSING       0xd         /* only pairs of function pointers for
-                                         * interposing */
-#define S_16BYTE_LITERALS   0xe         /* only 16 byte literals */
+#define S_REGULAR 0x0                  /* standard section */
+#define S_ZEROFILL 0x1                 /* zerofill, in-memory only */
+#define S_CSTRING_LITERALS 0x2         /* literal C strings */
+#define S_4BYTE_LITERALS 0x3           /* only 4-byte literals */
+#define S_8BYTE_LITERALS 0x4           /* only 8-byte literals */
+#define S_LITERAL_POINTERS 0x5         /* only pointers to literals */
+#define S_NON_LAZY_SYMBOL_POINTERS 0x6 /* only non-lazy symbol pointers */
+#define S_LAZY_SYMBOL_POINTERS 0x7     /* only lazy symbol pointers */
+#define S_SYMBOL_STUBS                                                         \
+    0x8                              /* only symbol stubs; byte size of        \
+                                      * stub in the reserved2 field */
+#define S_MOD_INIT_FUNC_POINTERS 0x9 /* only function pointers for init */
+#define S_MOD_TERM_FUNC_POINTERS 0xa /* only function pointers for term */
+#define S_COALESCED 0xb              /* symbols that are to be coalesced */
+#define S_GB_ZEROFILL 0xc            /* >4GB zero fill on demand section */
+#define S_INTERPOSING                                                          \
+    0xd                       /* only pairs of function pointers for           \
+                               * interposing */
+#define S_16BYTE_LITERALS 0xe /* only 16 byte literals */
 
-#define S_ATTR_DEBUG             0x02000000     /* a debug section */
-#define SECTION_ATTRIBUTES_SYS   0x00ffff00     /* system setable attributes */
-#define S_ATTR_SOME_INSTRUCTIONS 0x00000400     /* section contains some
-                                                 * machine instructions */
-#define S_ATTR_EXT_RELOC         0x00000200     /* section has external
-                                                 * relocation entries */
-#define S_ATTR_LOC_RELOC         0x00000100     /* section has local
-                                                 * relocation entries */
+#define S_ATTR_DEBUG 0x02000000           /* a debug section */
+#define SECTION_ATTRIBUTES_SYS 0x00ffff00 /* system setable attributes */
+#define S_ATTR_SOME_INSTRUCTIONS                                               \
+    0x00000400 /* section contains some                                        \
+                * machine instructions */
+#define S_ATTR_EXT_RELOC                                                       \
+    0x00000200 /* section has external                                         \
+                * relocation entries */
+#define S_ATTR_LOC_RELOC                                                       \
+    0x00000100 /* section has local                                            \
+                * relocation entries */
 
-#define SECTION_ATTRIBUTES_USR   0xff000000UL   /* User setable attributes */
-#define S_ATTR_PURE_INSTRUCTIONS 0x80000000UL   /* only true machine insns */
-#define S_ATTR_NO_TOC            0x40000000UL   /* coalesced symbols that are
-                                                 * not to be in a ranlib table
-                                                 * of contents */
-#define S_ATTR_STRIP_STATIC_SYMS 0x20000000UL   /* ok to strip static symbols
-                                                 * in this section in files
-                                                 * with the MH_DYLDLINK flag */
-#define S_ATTR_NO_DEAD_STRIP     0x10000000UL   /* no dead stripping */
-#define S_ATTR_LIVE_SUPPORT      0x08000000UL   /* blocks are live if they
-                                                 * reference live blocks */
-#define S_ATTR_SELF_MODIFYING_CODE 0x04000000UL /* Used with i386 code stubs
-                                                 * written on by dyld */
+#define SECTION_ATTRIBUTES_USR 0xff000000UL   /* User setable attributes */
+#define S_ATTR_PURE_INSTRUCTIONS 0x80000000UL /* only true machine insns */
+#define S_ATTR_NO_TOC                                                          \
+    0x40000000UL /* coalesced symbols that are                                 \
+                  * not to be in a ranlib table                                \
+                  * of contents */
+#define S_ATTR_STRIP_STATIC_SYMS                                               \
+    0x20000000UL                          /* ok to strip static symbols        \
+                                           * in this section in files          \
+                                           * with the MH_DYLDLINK flag */
+#define S_ATTR_NO_DEAD_STRIP 0x10000000UL /* no dead stripping */
+#define S_ATTR_LIVE_SUPPORT                                                    \
+    0x08000000UL /* blocks are live if they                                    \
+                  * reference live blocks */
+#define S_ATTR_SELF_MODIFYING_CODE                                             \
+    0x04000000UL /* Used with i386 code stubs                                  \
+                  * written on by dyld */
 
 /* macho references symbols in different ways whether they are linked at
  * runtime (LAZY, read library functions) or at link time (NON_LAZY, mostly
@@ -207,31 +213,28 @@
  * __import sections as well as the dsymtab command
  */
 #define REFERENCE_FLAG_UNDEFINED_NON_LAZY 0x0
-#define REFERENCE_FLAG_UNDEFINED_LAZY     0x1
+#define REFERENCE_FLAG_UNDEFINED_LAZY 0x1
 
-#define align(x, y) \
-    (((x) + (y) - 1) & ~((y) - 1))      /* align x to multiple of y */
+#define align(x, y) (((x) + (y)-1) & ~((y)-1)) /* align x to multiple of y */
 
-#define align32(x) \
-    align(x, 4)                 /* align x to 32 bit boundary */
+#define align32(x) align(x, 4) /* align x to 32 bit boundary */
 
-#define macho_MAGIC     0x87654322
+#define macho_MAGIC 0x87654322
 
 /* Symbol table type field bit masks */
-#define N_STAB  0xe0            /* mask indicating stab entry */
-#define N_PEXT  0x10            /* private external bit */
-#define N_TYPE  0x0e            /* mask for all the type bits */
-#define N_EXT   0x01            /* external (global) bit */
+#define N_STAB 0xe0 /* mask indicating stab entry */
+#define N_PEXT 0x10 /* private external bit */
+#define N_TYPE 0x0e /* mask for all the type bits */
+#define N_EXT 0x01  /* external (global) bit */
 
 /* Symbol table type field values */
-#define N_UNDF  0x00            /* undefined */
-#define N_ABS   0x02            /* absolute address */
-#define N_SECT  0x0e            /* symbol is defined in a section */
+#define N_UNDF 0x00 /* undefined */
+#define N_ABS 0x02  /* absolute address */
+#define N_SECT 0x0e /* symbol is defined in a section */
 
-#define NO_SECT 0               /* no section for symbol in nlist */
+#define NO_SECT 0 /* no section for symbol in nlist */
 
-#define REGULAR_OUTBUF_SIZE     1024
-
+#define REGULAR_OUTBUF_SIZE 1024
 
 typedef struct macho_reloc {
     yasm_reloc reloc;
@@ -240,55 +243,53 @@ typedef struct macho_reloc {
     int ext;
     enum reloc_type_x86_64 {
         /* x86 relocations */
-        GENERIC_RELOC_VANILLA = 0,      /* generic relocation */
-        GENERIC_RELOC_PAIR = 1,         /* Only follows a GENERIC_RELOC_SECTDIFF */
+        GENERIC_RELOC_VANILLA = 0, /* generic relocation */
+        GENERIC_RELOC_PAIR = 1,    /* Only follows a GENERIC_RELOC_SECTDIFF */
         GENERIC_RELOC_SECTDIFF = 2,
-        GENERIC_RELOC_PB_LA_PTR = 3,    /* prebound lazy pointer */
+        GENERIC_RELOC_PB_LA_PTR = 3, /* prebound lazy pointer */
         GENERIC_RELOC_LOCAL_SECTDIFF = 4,
 
         /* x86-64 relocations */
-        X86_64_RELOC_UNSIGNED = 0,      /* for absolute addresses */
-        X86_64_RELOC_SIGNED = 1,        /* for signed 32-bit displacement */
-        X86_64_RELOC_BRANCH = 2,        /* a CALL/JMP insn with 32-bit disp */
-        X86_64_RELOC_GOT_LOAD = 3,      /* a MOVQ load of a GOT entry */
-        X86_64_RELOC_GOT = 4,           /* other GOT references */
-        X86_64_RELOC_SUBTRACTOR = 5,    /* must be followed by a X86_64_RELOC_UNSIGNED */
-        X86_64_RELOC_SIGNED_1 = 6,      /* signed 32-bit disp, -1 addend */
-        X86_64_RELOC_SIGNED_2 = 7,      /* signed 32-bit disp, -2 addend */
-        X86_64_RELOC_SIGNED_4 = 8       /* signed 32-bit disp, -4 addend */
+        X86_64_RELOC_UNSIGNED = 0, /* for absolute addresses */
+        X86_64_RELOC_SIGNED = 1,   /* for signed 32-bit displacement */
+        X86_64_RELOC_BRANCH = 2,   /* a CALL/JMP insn with 32-bit disp */
+        X86_64_RELOC_GOT_LOAD = 3, /* a MOVQ load of a GOT entry */
+        X86_64_RELOC_GOT = 4,      /* other GOT references */
+        X86_64_RELOC_SUBTRACTOR =
+            5, /* must be followed by a X86_64_RELOC_UNSIGNED */
+        X86_64_RELOC_SIGNED_1 = 6, /* signed 32-bit disp, -1 addend */
+        X86_64_RELOC_SIGNED_2 = 7, /* signed 32-bit disp, -2 addend */
+        X86_64_RELOC_SIGNED_4 = 8  /* signed 32-bit disp, -4 addend */
     } type;
 } macho_reloc;
 
 typedef struct macho_section_data {
     /*@dependent@*/ yasm_symrec *sym; /* symbol created for this section */
-    long scnum;                 /* section number (0=first section) */
-    /*@only@*/ char *segname;   /* segment name in file */
-    /*@only@*/ char *sectname;  /* section name in file */
-    unsigned long flags;        /* S_* flags */
-    unsigned long size;         /* size of raw data (section data) in bytes */
-    unsigned long offset;       /* offset in raw data within file in bytes */
-    unsigned long vmoff;        /* memory offset */
-    unsigned long nreloc;       /* number of relocation entries */
-    unsigned int extreloc;      /* external relocations present (0/1) */
+    long scnum;                       /* section number (0=first section) */
+    /*@only@*/ char *segname;         /* segment name in file */
+    /*@only@*/ char *sectname;        /* section name in file */
+    unsigned long flags;              /* S_* flags */
+    unsigned long size;    /* size of raw data (section data) in bytes */
+    unsigned long offset;  /* offset in raw data within file in bytes */
+    unsigned long vmoff;   /* memory offset */
+    unsigned long nreloc;  /* number of relocation entries */
+    unsigned int extreloc; /* external relocations present (0/1) */
 } macho_section_data;
 
-
 typedef struct macho_symrec_data {
-    unsigned long index;        /* index in output order */
-    yasm_intnum *value;         /* valid after writing symtable to file */
-    unsigned long length;       /* length + 1 (plus auto underscore) */
+    unsigned long index;  /* index in output order */
+    yasm_intnum *value;   /* valid after writing symtable to file */
+    unsigned long length; /* length + 1 (plus auto underscore) */
 } macho_symrec_data;
 
-
 typedef struct yasm_objfmt_macho {
-    yasm_objfmt_base objfmt;    /* base structure */
+    yasm_objfmt_base objfmt; /* base structure */
 
-    long parse_scnum;           /* sect numbering in parser */
-    int bits;                   /* 32 / 64 */
+    long parse_scnum; /* sect numbering in parser */
+    int bits;         /* 32 / 64 */
 
-    yasm_symrec *gotpcrel_sym;  /* ..gotpcrel */
+    yasm_symrec *gotpcrel_sym; /* ..gotpcrel */
 } yasm_objfmt_macho;
-
 
 typedef struct macho_objfmt_output_info {
     yasm_object *object;
@@ -299,38 +300,35 @@ typedef struct macho_objfmt_output_info {
     yasm_section *sect;
     /*@dependent@ */ macho_section_data *msd;
 
-    unsigned int is_64;         /* write object in 64 bit mode */
+    unsigned int is_64; /* write object in 64 bit mode */
 
     /* vmsize and filesize available after traversing section count routine */
-    unsigned long vmsize;       /* raw size of all sections (including BSS) */
-    unsigned long filesize;     /* size of sections in file (excluding BSS) */
-    unsigned long offset;       /* offset within file */
+    unsigned long vmsize;   /* raw size of all sections (including BSS) */
+    unsigned long filesize; /* size of sections in file (excluding BSS) */
+    unsigned long offset;   /* offset within file */
 
     /* forward offset tracking */
-    unsigned long rel_base;     /* first relocation in file */
-    unsigned long s_reloff;     /* in-file offset to relocations */
+    unsigned long rel_base; /* first relocation in file */
+    unsigned long s_reloff; /* in-file offset to relocations */
 
-    unsigned long indx;         /* current symbol size in bytes (name length+1) */
-    unsigned long symindex;     /* current symbol index in output order */
-    int all_syms;               /* outputting all symbols? */
-    unsigned long strlength;    /* length of all strings */
+    unsigned long indx;      /* current symbol size in bytes (name length+1) */
+    unsigned long symindex;  /* current symbol index in output order */
+    int all_syms;            /* outputting all symbols? */
+    unsigned long strlength; /* length of all strings */
 } macho_objfmt_output_info;
-
 
 static void macho_section_data_destroy(/*@only@*/ void *d);
 static void macho_section_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback macho_section_data_cb = {
-    macho_section_data_destroy,
-    macho_section_data_print
+    macho_section_data_destroy, macho_section_data_print
 };
 
 static void macho_symrec_data_destroy(/*@only@*/ void *d);
 static void macho_symrec_data_print(void *data, FILE *f, int indent_level);
 
 static const yasm_assoc_data_callback macho_symrec_data_cb = {
-    macho_symrec_data_destroy,
-    macho_symrec_data_print
+    macho_symrec_data_destroy, macho_symrec_data_print
 };
 
 yasm_objfmt_module yasm_macho_LTX_objfmt;
@@ -356,9 +354,9 @@ macho_objfmt_create_common(yasm_object *object, yasm_objfmt_module *module,
         (bits_pref == 0 || bits_pref == 32)) {
         objfmt_macho->bits = 32;
         objfmt_macho->gotpcrel_sym = NULL;
-    } else if (yasm__strcasecmp(yasm_arch_get_machine(object->arch),
-                              "amd64") == 0 &&
-             (bits_pref == 0 || bits_pref == 64)) {
+    } else if (yasm__strcasecmp(yasm_arch_get_machine(object->arch), "amd64") ==
+                   0 &&
+               (bits_pref == 0 || bits_pref == 64)) {
         objfmt_macho->bits = 64;
         /* FIXME: misuse of NULL bytecode */
         objfmt_macho->gotpcrel_sym =
@@ -368,7 +366,7 @@ macho_objfmt_create_common(yasm_object *object, yasm_objfmt_module *module,
         return NULL;
     }
 
-    objfmt_macho->parse_scnum = 0;      /* section numbering starts at 0 */
+    objfmt_macho->parse_scnum = 0; /* section numbering starts at 0 */
     return (yasm_objfmt *)objfmt_macho;
 }
 
@@ -436,7 +434,8 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
     }
 
     if (value->section_rel) {
-        yasm_error_set(YASM_ERROR_TOO_COMPLEX,
+        yasm_error_set(
+            YASM_ERROR_TOO_COMPLEX,
             N_("macho: relocation too complex for current implementation"));
         return 1;
     }
@@ -490,8 +489,7 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
             reloc->type = X86_64_RELOC_GOT;
             value->wrt = NULL;
         } else if (value->wrt) {
-            yasm_error_set(YASM_ERROR_TOO_COMPLEX,
-                           N_("macho: invalid WRT"));
+            yasm_error_set(YASM_ERROR_TOO_COMPLEX, N_("macho: invalid WRT"));
             yasm_xfree(reloc);
             return 1;
         }
@@ -505,7 +503,7 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
                 intn_minus = bc->offset;
             } else {
                 /* Add in the offset plus value size to end up with 0. */
-                intn_plus = offset+destsize;
+                intn_plus = offset + destsize;
                 if (reloc->type == X86_64_RELOC_GOT) {
                     /* XXX: This is a hack */
                     if (offset >= 2 && buf[-2] == 0x8B)
@@ -517,8 +515,11 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
             }
         } else if (info->is_64) {
             if (valsize == 32) {
-                yasm_error_set(YASM_ERROR_NOT_CONSTANT,
-                    N_("macho: sorry, cannot apply 32 bit absolute relocations in 64 bit mode, consider \"[_symbol wrt rip]\" for mem access, \"qword\" and \"dq _foo\" for pointers."));
+                yasm_error_set(
+                    YASM_ERROR_NOT_CONSTANT,
+                    N_("macho: sorry, cannot apply 32 bit absolute relocations "
+                       "in 64 bit mode, consider \"[_symbol wrt rip]\" for mem "
+                       "access, \"qword\" and \"dq _foo\" for pointers."));
                 return 1;
             }
             reloc->type = X86_64_RELOC_UNSIGNED;
@@ -530,7 +531,7 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
 
         if ((vis & YASM_SYM_EXTERN) || (vis & YASM_SYM_COMMON)) {
             reloc->ext = 1;
-            info->msd->extreloc = 1;    /* section has external relocations */
+            info->msd->extreloc = 1; /* section has external relocations */
         } else if (!info->is_64) {
             /*@dependent@*/ /*@null@*/ yasm_bytecode *sym_precbc;
 
@@ -545,14 +546,15 @@ macho_objfmt_output_value(yasm_value *value, unsigned char *buf,
         }
 
         info->msd->nreloc++;
-        /*printf("reloc %s type %d ",yasm_symrec_get_name(reloc->reloc.sym),reloc->type);*/
+        /*printf("reloc %s type %d
+         * ",yasm_symrec_get_name(reloc->reloc.sym),reloc->type);*/
         yasm_section_add_reloc(info->sect, (yasm_reloc *)reloc, yasm_xfree);
     }
 
     if (intn_minus <= intn_plus)
-        intn = yasm_intnum_create_uint(intn_plus-intn_minus);
+        intn = yasm_intnum_create_uint(intn_plus - intn_minus);
     else {
-        intn = yasm_intnum_create_uint(intn_minus-intn_plus);
+        intn = yasm_intnum_create_uint(intn_minus - intn_plus);
         yasm_intnum_calc(intn, YASM_EXPR_NEG, NULL);
     }
 
@@ -611,7 +613,7 @@ macho_objfmt_output_bytecode(yasm_bytecode *bc, /*@null@*/ void *d)
         fwrite(info->buf, left, 1, info->f);
     } else {
         /* Output buf (or bigbuf if non-NULL) to file */
-        fwrite(bigbuf ? bigbuf : info->buf, (size_t) size, 1, info->f);
+        fwrite(bigbuf ? bigbuf : info->buf, (size_t)size, 1, info->f);
     }
 
     /* If bigbuf was allocated, free it */
@@ -624,9 +626,8 @@ macho_objfmt_output_bytecode(yasm_bytecode *bc, /*@null@*/ void *d)
 static int
 macho_objfmt_output_section(yasm_section *sect, /*@null@ */ void *d)
 {
-    /*@null@ */ macho_objfmt_output_info *info =
-        (macho_objfmt_output_info *) d;
-    /*@dependent@ *//*@null@ */ macho_section_data *msd;
+    /*@null@ */ macho_objfmt_output_info *info = (macho_objfmt_output_info *)d;
+    /*@dependent@ */ /*@null@ */ macho_section_data *msd;
 
     assert(info != NULL);
     msd = yasm_section_get_data(sect, &macho_section_data_cb);
@@ -657,7 +658,7 @@ macho_objfmt_output_relocs(yasm_section *sect, /*@null@*/ void *d)
 
         xsymd = yasm_symrec_get_data(reloc->reloc.sym, &macho_symrec_data_cb);
         yasm_intnum_get_sized(reloc->reloc.addr, localbuf, 4, 32, 0, 0, 0);
-        localbuf += 4;          /* address of relocation */
+        localbuf += 4; /* address of relocation */
 
         if (reloc->ext)
             symnum = xsymd->index;
@@ -669,14 +670,14 @@ macho_objfmt_output_relocs(yasm_section *sect, /*@null@*/ void *d)
             if (yasm_symrec_get_label(reloc->reloc.sym, &precbc) &&
                 (dsect = yasm_bc_get_section(precbc)) &&
                 (msd = yasm_section_get_data(dsect, &macho_section_data_cb)))
-                symnum = msd->scnum+1;
+                symnum = msd->scnum + 1;
         }
         YASM_WRITE_32_L(localbuf,
                         (symnum & 0x00ffffff) |
-                        (((unsigned long)reloc->pcrel & 1) << 24) |
-                        (((unsigned long)reloc->length & 3) << 25) |
-                        (((unsigned long)reloc->ext & 1) << 27) |
-                        (((unsigned long)reloc->type & 0xf) << 28));
+                            (((unsigned long)reloc->pcrel & 1) << 24) |
+                            (((unsigned long)reloc->length & 3) << 25) |
+                            (((unsigned long)reloc->ext & 1) << 27) |
+                            (((unsigned long)reloc->type & 0xf) << 28));
         fwrite(info->buf, 8, 1, info->f);
         reloc = (macho_reloc *)yasm_section_reloc_next((yasm_reloc *)reloc);
     }
@@ -719,7 +720,7 @@ macho_objfmt_is_section_label(yasm_symrec *sym)
             msd = yasm_section_get_data(sect, &macho_section_data_cb);
             if (msd) {
                 if (msd->sym == sym)
-                    return 1;   /* don't store section names */
+                    return 1; /* don't store section names */
             }
         }
     }
@@ -746,12 +747,12 @@ macho_objfmt_output_secthead(yasm_section *sect, /*@null@*/ void *d)
     strncpy((char *)localbuf, msd->segname, 16);
     localbuf += 16;
     /* section address, size depend on 32/64 bit mode */
-    YASM_WRITE_32_L(localbuf, msd->vmoff);      /* address in memory */
+    YASM_WRITE_32_L(localbuf, msd->vmoff); /* address in memory */
     if (info->is_64)
-        YASM_WRITE_32_L(localbuf, 0);   /* 64-bit mode: upper 32 bits = 0 */
-    YASM_WRITE_32_L(localbuf, msd->size);       /* size in memory */
+        YASM_WRITE_32_L(localbuf, 0);     /* 64-bit mode: upper 32 bits = 0 */
+    YASM_WRITE_32_L(localbuf, msd->size); /* size in memory */
     if (info->is_64)
-        YASM_WRITE_32_L(localbuf, 0);   /* 64-bit mode: upper 32 bits = 0 */
+        YASM_WRITE_32_L(localbuf, 0); /* 64-bit mode: upper 32 bits = 0 */
 
     /* offset,align,reloff,nreloc,flags,reserved1,reserved2 are 32 bit */
     if ((msd->flags & SECTION_TYPE) != S_ZEROFILL) {
@@ -763,23 +764,23 @@ macho_objfmt_output_secthead(yasm_section *sect, /*@null@*/ void *d)
                 msd->flags |= S_ATTR_EXT_RELOC;
             YASM_WRITE_32_L(localbuf,
                             align32((long)(info->rel_base + info->s_reloff)));
-            YASM_WRITE_32_L(localbuf, msd->nreloc);     /* nreloc */
+            YASM_WRITE_32_L(localbuf, msd->nreloc); /* nreloc */
         } else {
             YASM_WRITE_32_L(localbuf, 0);
             YASM_WRITE_32_L(localbuf, 0);
         }
 
-        info->s_reloff += msd->nreloc * MACHO_RELINFO_SIZE;     /* nreloc */
+        info->s_reloff += msd->nreloc * MACHO_RELINFO_SIZE; /* nreloc */
     } else {
-        YASM_WRITE_32_L(localbuf, 0);   /* these are zero in BSS */
+        YASM_WRITE_32_L(localbuf, 0); /* these are zero in BSS */
         YASM_WRITE_32_L(localbuf, 0);
         YASM_WRITE_32_L(localbuf, 0);
         YASM_WRITE_32_L(localbuf, 0);
     }
 
-    YASM_WRITE_32_L(localbuf, msd->flags);      /* flags */
-    YASM_WRITE_32_L(localbuf, 0);       /* reserved 1 */
-    YASM_WRITE_32_L(localbuf, 0);       /* reserved 2 */
+    YASM_WRITE_32_L(localbuf, msd->flags); /* flags */
+    YASM_WRITE_32_L(localbuf, 0);          /* reserved 1 */
+    YASM_WRITE_32_L(localbuf, 0);          /* reserved 2 */
 
     if (info->is_64)
         fwrite(info->buf, MACHO_SECTCMD64_SIZE, 1, info->f);
@@ -788,7 +789,6 @@ macho_objfmt_output_secthead(yasm_section *sect, /*@null@*/ void *d)
 
     return 0;
 }
-
 
 static int
 macho_objfmt_count_sym(yasm_symrec *sym, /*@null@*/ void *d)
@@ -823,7 +823,6 @@ macho_objfmt_count_sym(yasm_symrec *sym, /*@null@*/ void *d)
     return 0;
 }
 
-
 static int
 macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
 {
@@ -837,7 +836,7 @@ macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
         const yasm_expr *equ_val;
         const yasm_intnum *intn;
         unsigned long value = 0;
-        long scnum = -3;        /* -3 = debugging symbol */
+        long scnum = -3; /* -3 = debugging symbol */
         /*@dependent@*/ /*@null@*/ yasm_section *sect;
         /*@dependent@*/ /*@null@*/ yasm_bytecode *precbc;
         unsigned char *localbuf;
@@ -889,7 +888,8 @@ macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
             intn = yasm_expr_get_intnum(&equ_val_copy, 1);
             if (!intn) {
                 if (vis & YASM_SYM_GLOBAL) {
-                    yasm_error_set(YASM_ERROR_NOT_CONSTANT,
+                    yasm_error_set(
+                        YASM_ERROR_NOT_CONSTANT,
                         N_("global EQU value not an integer expression"));
                     yasm_errwarn_propagate(info->errwarns, equ_val->line);
                 }
@@ -898,26 +898,29 @@ macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
             yasm_expr_destroy(equ_val_copy);
             yasm_intnum_set_uint(val, value);
             n_type = N_ABS;
-            scnum = -2;         /* -2 = absolute symbol */
+            scnum = -2; /* -2 = absolute symbol */
         }
 
         if (vis & YASM_SYM_EXTERN) {
             n_type = N_EXT;
             scnum = -1;
-            /*n_desc = REFERENCE_FLAG_UNDEFINED_LAZY;   * FIXME: see definition of REFERENCE_FLAG_* above */
+            /*n_desc = REFERENCE_FLAG_UNDEFINED_LAZY;   * FIXME: see definition
+             * of REFERENCE_FLAG_* above */
         } else if (vis & YASM_SYM_COMMON) {
             yasm_expr **csize = yasm_symrec_get_common_size(sym);
             n_type = N_UNDF | N_EXT;
             if (csize) {
                 intn = yasm_expr_get_intnum(csize, 1);
                 if (!intn) {
-                    yasm_error_set(YASM_ERROR_NOT_CONSTANT,
-                                   N_("COMMON data size not an integer expression"));
+                    yasm_error_set(
+                        YASM_ERROR_NOT_CONSTANT,
+                        N_("COMMON data size not an integer expression"));
                     yasm_errwarn_propagate(info->errwarns, (*csize)->line);
                 } else
                     yasm_intnum_set_uint(val, yasm_intnum_get_uint(intn));
             }
-            /*printf("common symbol %s val %lu\n", name, yasm_intnum_get_uint(val));*/
+            /*printf("common symbol %s val %lu\n", name,
+             * yasm_intnum_get_uint(val));*/
         } else if (vis & YASM_SYM_GLOBAL) {
             yasm_valparamhead *valparams =
                 yasm_symrec_get_objext_valparams(sym);
@@ -934,20 +937,24 @@ macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
                       offsetof(struct macho_global_data, flag), N_PEXT },
                 };
                 yasm_dir_helper(sym, yasm_vps_first(valparams),
-                                yasm_symrec_get_decl_line(sym), help, NELEMS(help),
-                                &data, yasm_dir_helper_valparam_warn);
+                                yasm_symrec_get_decl_line(sym), help,
+                                NELEMS(help), &data,
+                                yasm_dir_helper_valparam_warn);
             }
 
             n_type |= N_EXT | data.flag;
         }
 
         localbuf = info->buf;
-        YASM_WRITE_32_L(localbuf, info->indx);  /* offset in string table */
-        YASM_WRITE_8(localbuf, n_type); /* type of symbol entry */
+        YASM_WRITE_32_L(localbuf, info->indx); /* offset in string table */
+        YASM_WRITE_8(localbuf, n_type);        /* type of symbol entry */
         n_sect = (scnum >= 0) ? scnum + 1 : NO_SECT;
-        YASM_WRITE_8(localbuf, n_sect); /* referring section where symbol is found */
-        YASM_WRITE_16_L(localbuf, n_desc);      /* extra description */
-        yasm_intnum_get_sized(val, localbuf, long_int_bytes, ((long_int_bytes) << 3), 0, 0, 0); /* value/argument */
+        YASM_WRITE_8(localbuf,
+                     n_sect); /* referring section where symbol is found */
+        YASM_WRITE_16_L(localbuf, n_desc); /* extra description */
+        yasm_intnum_get_sized(val, localbuf, long_int_bytes,
+                              ((long_int_bytes) << 3), 0, 0,
+                              0); /* value/argument */
         localbuf += long_int_bytes;
         if (symd)
             symd->value = val;
@@ -961,7 +968,6 @@ macho_objfmt_output_symtable(yasm_symrec *sym, /*@null@*/ void *d)
 
     return 0;
 }
-
 
 static int
 macho_objfmt_output_str(yasm_symrec *sym, /*@null@*/ void *d)
@@ -988,9 +994,8 @@ macho_objfmt_output_str(yasm_symrec *sym, /*@null@*/ void *d)
 static int
 macho_objfmt_calc_sectsize(yasm_section *sect, /*@null@ */ void *d)
 {
-    /*@null@ */ macho_objfmt_output_info *info =
-        (macho_objfmt_output_info *) d;
-    /*@dependent@ *//*@null@ */ macho_section_data *msd;
+    /*@null@ */ macho_objfmt_output_info *info = (macho_objfmt_output_info *)d;
+    /*@dependent@ */ /*@null@ */ macho_section_data *msd;
     unsigned long align;
 
     assert(info != NULL);
@@ -1059,20 +1064,18 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     info.is_64 = (objfmt_macho->bits == 32) ? 0 : 1;
     if (info.is_64) {
         /* this works only when SYMBOLS and SECTIONS present */
-        headsize =
-            MACHO_HEADER64_SIZE + MACHO_SEGCMD64_SIZE +
-            (MACHO_SECTCMD64_SIZE * (objfmt_macho->parse_scnum)) +
-            MACHO_SYMCMD_SIZE;
+        headsize = MACHO_HEADER64_SIZE + MACHO_SEGCMD64_SIZE +
+                   (MACHO_SECTCMD64_SIZE * (objfmt_macho->parse_scnum)) +
+                   MACHO_SYMCMD_SIZE;
         macho_segcmd = LC_SEGMENT_64;
         macho_segcmdsize = MACHO_SEGCMD64_SIZE;
         macho_sectcmdsize = MACHO_SECTCMD64_SIZE;
         macho_nlistsize = MACHO_NLIST64_SIZE;
         long_int_bytes = 8;
     } else {
-        headsize =
-            MACHO_HEADER_SIZE + MACHO_SEGCMD_SIZE +
-            (MACHO_SECTCMD_SIZE * (objfmt_macho->parse_scnum)) +
-            MACHO_SYMCMD_SIZE;
+        headsize = MACHO_HEADER_SIZE + MACHO_SEGCMD_SIZE +
+                   (MACHO_SECTCMD_SIZE * (objfmt_macho->parse_scnum)) +
+                   MACHO_SYMCMD_SIZE;
         macho_segcmd = LC_SEGMENT;
         macho_segcmdsize = MACHO_SEGCMD_SIZE;
         macho_sectcmdsize = MACHO_SECTCMD_SIZE;
@@ -1083,7 +1086,7 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     /* Get number of symbols */
     info.symindex = 0;
     info.indx = 0;
-    info.strlength = 1;         /* string table starts with a zero byte */
+    info.strlength = 1; /* string table starts with a zero byte */
     info.all_syms = all_syms || info.is_64;
     /*info.all_syms = 1;                * force all syms into symbol table */
     yasm_symtab_traverse(object->symtab, &info, macho_objfmt_count_sym);
@@ -1124,12 +1127,12 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
         /* i386 64-bit ABI */
         YASM_WRITE_32_L(localbuf, CPU_ARCH_ABI64 | CPU_TYPE_I386);
     } else {
-        YASM_WRITE_32_L(localbuf, MH_MAGIC);    /* magic number */
-        YASM_WRITE_32_L(localbuf, CPU_TYPE_I386);       /* i386 32-bit ABI */
+        YASM_WRITE_32_L(localbuf, MH_MAGIC);      /* magic number */
+        YASM_WRITE_32_L(localbuf, CPU_TYPE_I386); /* i386 32-bit ABI */
     }
     /* i386 all cpu subtype compatible */
     YASM_WRITE_32_L(localbuf, CPU_SUBTYPE_I386_ALL);
-    YASM_WRITE_32_L(localbuf, MH_OBJECT);       /* MACH file type */
+    YASM_WRITE_32_L(localbuf, MH_OBJECT); /* MACH file type */
 
     /* calculate number of commands and their size, put to stream */
     head_ncmds = 0;
@@ -1146,9 +1149,9 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
 
     YASM_WRITE_32_L(localbuf, head_ncmds);
     YASM_WRITE_32_L(localbuf, head_sizeofcmds);
-    YASM_WRITE_32_L(localbuf, 0);       /* no flags (yet) */
+    YASM_WRITE_32_L(localbuf, 0); /* no flags (yet) */
     if (info.is_64) {
-        YASM_WRITE_32_L(localbuf, 0);   /* reserved in 64 bit */
+        YASM_WRITE_32_L(localbuf, 0); /* reserved in 64 bit */
         fileoffset = MACHO_HEADER64_SIZE + head_sizeofcmds;
     } else {
         /* initial offset to first section */
@@ -1156,11 +1159,10 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     }
 
     /* --------------- write segment header command ---------------- */
-    YASM_WRITE_32_L(localbuf, macho_segcmd);    /* command LC_SEGMENT */
+    YASM_WRITE_32_L(localbuf, macho_segcmd); /* command LC_SEGMENT */
     /* size of load command including section load commands */
-    YASM_WRITE_32_L(localbuf,
-                    macho_segcmdsize +
-                    macho_sectcmdsize * objfmt_macho->parse_scnum);
+    YASM_WRITE_32_L(localbuf, macho_segcmdsize + macho_sectcmdsize *
+                                                     objfmt_macho->parse_scnum);
     /* in an MH_OBJECT file all sections are in one unnamed (name all zeros)
      * segment (16x0)
      */
@@ -1170,11 +1172,11 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     YASM_WRITE_32_L(localbuf, 0);
 
     /* in-memory offset, in-memory size */
-    yasm_intnum_set_uint(val, 0);       /* offset in memory (vmaddr) */
+    yasm_intnum_set_uint(val, 0); /* offset in memory (vmaddr) */
     yasm_intnum_get_sized(val, localbuf, long_int_bytes,
                           ((long_int_bytes) << 3), 0, 0, 0);
     localbuf += long_int_bytes;
-    yasm_intnum_set_uint(val, info.vmsize);     /* size in memory (vmsize) */
+    yasm_intnum_set_uint(val, info.vmsize); /* size in memory (vmsize) */
     yasm_intnum_get_sized(val, localbuf, long_int_bytes,
                           ((long_int_bytes) << 3), 0, 0, 0);
     localbuf += long_int_bytes;
@@ -1183,7 +1185,7 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     yasm_intnum_get_sized(val, localbuf, long_int_bytes,
                           ((long_int_bytes) << 3), 0, 0, 0);
     localbuf += long_int_bytes;
-    yasm_intnum_set_uint(val, info.filesize);   /* overall size in file */
+    yasm_intnum_set_uint(val, info.filesize); /* overall size in file */
     yasm_intnum_get_sized(val, localbuf, long_int_bytes,
                           ((long_int_bytes) << 3), 0, 0, 0);
     localbuf += long_int_bytes;
@@ -1192,28 +1194,28 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     YASM_WRITE_32_L(localbuf, VM_PROT_DEFAULT); /* VM protection, initial */
     /* number of sections */
     YASM_WRITE_32_L(localbuf, objfmt_macho->parse_scnum);
-    YASM_WRITE_32_L(localbuf, 0);       /* no flags */
+    YASM_WRITE_32_L(localbuf, 0); /* no flags */
 
     /* write MACH-O header and segment command to outfile */
-    fwrite(info.buf, (size_t) (localbuf - info.buf), 1, f);
+    fwrite(info.buf, (size_t)(localbuf - info.buf), 1, f);
 
     /* next: section headers */
     /* offset to relocs for first section */
     info.rel_base = align32((long)fileoff_sections);
-    info.s_reloff = 0;          /* offset for relocs of following sections */
+    info.s_reloff = 0; /* offset for relocs of following sections */
     yasm_object_sections_traverse(object, &info, macho_objfmt_output_secthead);
 
     localbuf = info.buf;
     /* write out symbol command */
-    YASM_WRITE_32_L(localbuf, LC_SYMTAB);       /* cmd == LC_SYMTAB */
+    YASM_WRITE_32_L(localbuf, LC_SYMTAB); /* cmd == LC_SYMTAB */
     YASM_WRITE_32_L(localbuf, MACHO_SYMCMD_SIZE);
     /* symbol table offset */
     YASM_WRITE_32_L(localbuf, info.rel_base + info.s_reloff);
-    YASM_WRITE_32_L(localbuf, symtab_count);    /* number of symbols */
+    YASM_WRITE_32_L(localbuf, symtab_count); /* number of symbols */
 
     YASM_WRITE_32_L(localbuf, macho_nlistsize * symtab_count + info.rel_base +
-                    info.s_reloff);     /* string table offset */
-    YASM_WRITE_32_L(localbuf, info.strlength);  /* string table size */
+                                  info.s_reloff); /* string table offset */
+    YASM_WRITE_32_L(localbuf, info.strlength);    /* string table size */
     /* write symbol command */
     fwrite(info.buf, (size_t)(localbuf - info.buf), 1, f);
 
@@ -1236,7 +1238,7 @@ macho_objfmt_output(yasm_object *object, FILE *f, int all_syms,
     yasm_object_sections_traverse(object, &info, macho_objfmt_output_relocs);
 
     /* symbol table (NLIST) */
-    info.indx = 1;              /* restart symbol table indices */
+    info.indx = 1; /* restart symbol table indices */
     yasm_symtab_traverse(object->symtab, &info, macho_objfmt_output_symtable);
 
     /* symbol strings */
@@ -1325,62 +1327,58 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
         unsigned long flags;
         unsigned long align;
     } section_name_translation[] = {
-        {".text",           "__TEXT", "__text", S_ATTR_PURE_INSTRUCTIONS, 0},
-        {".const",          "__TEXT", "__const",        S_REGULAR, 0},
-        {".static_const",   "__TEXT", "__static_const", S_REGULAR, 0},
-        {".cstring",        "__TEXT", "__cstring",      S_CSTRING_LITERALS, 0},
-        {".literal4",       "__TEXT", "__literal4",     S_4BYTE_LITERALS, 4},
-        {".literal8",       "__TEXT", "__literal8",     S_8BYTE_LITERALS, 8},
-        {".literal16",      "__TEXT", "__literal16",    S_16BYTE_LITERALS, 16},
-        {".constructor",    "__TEXT", "__constructor",  S_REGULAR, 0},
-        {".destructor",     "__TEXT", "__destructor",   S_REGULAR, 0},
-        {".fvmlib_init0",   "__TEXT", "__fvmlib_init0", S_REGULAR, 0},
-        {".fvmlib_init1",   "__TEXT", "__fvmlib_init1", S_REGULAR, 0},
-        {".mod_init_func",  "__DATA", "__mod_init_func",
-            S_MOD_INIT_FUNC_POINTERS, 4},
-        {".mod_term_func",  "__DATA", "__mod_term_func",
-            S_MOD_TERM_FUNC_POINTERS, 4},
-        {".dyld",           "__DATA", "__dyld",         S_REGULAR, 0},
-        {".data",           "__DATA", "__data",         S_REGULAR, 0},
-        {".static_data",    "__DATA", "__static_data",  S_REGULAR, 0},
-        {".const_data",     "__DATA", "__const",        S_REGULAR, 0},
-        {".rodata",         "__DATA", "__const",        S_REGULAR, 0},
-        {".bss",            "__DATA", "__bss",          S_ZEROFILL, 0},
-        {".objc_class_names",   "__TEXT", "__cstring",  S_CSTRING_LITERALS, 0},
-        {".objc_meth_var_types","__TEXT", "__cstring",  S_CSTRING_LITERALS, 0},
-        {".objc_meth_var_names","__TEXT", "__cstring",  S_CSTRING_LITERALS, 0},
-        {".objc_selector_strs", "__OBJC", "__selector_strs",
-            S_CSTRING_LITERALS, 0},
-        {".objc_class",         "__OBJC", "__class",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_meta_class",    "__OBJC", "__meta_class",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_string_object", "__OBJC", "__string_object",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_protocol",      "__OBJC", "__protocol",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_cat_cls_meth",  "__OBJC", "__cat_cls_meth",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_cat_inst_meth", "__OBJC", "__cat_inst_meth",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_cls_meth",      "__OBJC", "__cls_meth",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_inst_meth",     "__OBJC", "__inst_meth",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_message_refs",  "__OBJC", "__message_refs",
-            S_LITERAL_POINTERS|S_ATTR_NO_DEAD_STRIP, 4},
-        {".objc_cls_refs",      "__OBJC", "__cls_refs",
-            S_LITERAL_POINTERS|S_ATTR_NO_DEAD_STRIP, 4},
-        {".objc_module_info",   "__OBJC", "__module_info",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_symbols",       "__OBJC", "__symbols",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_category",      "__OBJC", "__category",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_class_vars",    "__OBJC", "__class_vars",
-            S_ATTR_NO_DEAD_STRIP, 0},
-        {".objc_instance_vars", "__OBJC", "__instance_vars",
-            S_ATTR_NO_DEAD_STRIP, 0}
+        { ".text", "__TEXT", "__text", S_ATTR_PURE_INSTRUCTIONS, 0 },
+        { ".const", "__TEXT", "__const", S_REGULAR, 0 },
+        { ".static_const", "__TEXT", "__static_const", S_REGULAR, 0 },
+        { ".cstring", "__TEXT", "__cstring", S_CSTRING_LITERALS, 0 },
+        { ".literal4", "__TEXT", "__literal4", S_4BYTE_LITERALS, 4 },
+        { ".literal8", "__TEXT", "__literal8", S_8BYTE_LITERALS, 8 },
+        { ".literal16", "__TEXT", "__literal16", S_16BYTE_LITERALS, 16 },
+        { ".constructor", "__TEXT", "__constructor", S_REGULAR, 0 },
+        { ".destructor", "__TEXT", "__destructor", S_REGULAR, 0 },
+        { ".fvmlib_init0", "__TEXT", "__fvmlib_init0", S_REGULAR, 0 },
+        { ".fvmlib_init1", "__TEXT", "__fvmlib_init1", S_REGULAR, 0 },
+        { ".mod_init_func", "__DATA", "__mod_init_func",
+          S_MOD_INIT_FUNC_POINTERS, 4 },
+        { ".mod_term_func", "__DATA", "__mod_term_func",
+          S_MOD_TERM_FUNC_POINTERS, 4 },
+        { ".dyld", "__DATA", "__dyld", S_REGULAR, 0 },
+        { ".data", "__DATA", "__data", S_REGULAR, 0 },
+        { ".static_data", "__DATA", "__static_data", S_REGULAR, 0 },
+        { ".const_data", "__DATA", "__const", S_REGULAR, 0 },
+        { ".rodata", "__DATA", "__const", S_REGULAR, 0 },
+        { ".bss", "__DATA", "__bss", S_ZEROFILL, 0 },
+        { ".objc_class_names", "__TEXT", "__cstring", S_CSTRING_LITERALS, 0 },
+        { ".objc_meth_var_types", "__TEXT", "__cstring", S_CSTRING_LITERALS,
+          0 },
+        { ".objc_meth_var_names", "__TEXT", "__cstring", S_CSTRING_LITERALS,
+          0 },
+        { ".objc_selector_strs", "__OBJC", "__selector_strs",
+          S_CSTRING_LITERALS, 0 },
+        { ".objc_class", "__OBJC", "__class", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_meta_class", "__OBJC", "__meta_class", S_ATTR_NO_DEAD_STRIP,
+          0 },
+        { ".objc_string_object", "__OBJC", "__string_object",
+          S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_protocol", "__OBJC", "__protocol", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_cat_cls_meth", "__OBJC", "__cat_cls_meth",
+          S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_cat_inst_meth", "__OBJC", "__cat_inst_meth",
+          S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_cls_meth", "__OBJC", "__cls_meth", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_inst_meth", "__OBJC", "__inst_meth", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_message_refs", "__OBJC", "__message_refs",
+          S_LITERAL_POINTERS | S_ATTR_NO_DEAD_STRIP, 4 },
+        { ".objc_cls_refs", "__OBJC", "__cls_refs",
+          S_LITERAL_POINTERS | S_ATTR_NO_DEAD_STRIP, 4 },
+        { ".objc_module_info", "__OBJC", "__module_info", S_ATTR_NO_DEAD_STRIP,
+          0 },
+        { ".objc_symbols", "__OBJC", "__symbols", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_category", "__OBJC", "__category", S_ATTR_NO_DEAD_STRIP, 0 },
+        { ".objc_class_vars", "__OBJC", "__class_vars", S_ATTR_NO_DEAD_STRIP,
+          0 },
+        { ".objc_instance_vars", "__OBJC", "__instance_vars",
+          S_ATTR_NO_DEAD_STRIP, 0 }
     };
 
     struct macho_section_switch_data {
@@ -1405,7 +1403,7 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     vp = yasm_vps_next(vp);
 
     /* translate .text,.data,.bss to __text,__data,__bss... */
-    for (i=0; i<NELEMS(section_name_translation); i++) {
+    for (i = 0; i < NELEMS(section_name_translation); i++) {
         if (yasm__strcasecmp(sectname, section_name_translation[i].in) == 0)
             break;
     }
@@ -1415,11 +1413,13 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
         if (vp && !vp->val && (s = yasm_vp_string(vp))) {
             /* Treat as SEGNAME, SECTNAME */
             if (strlen(sectname) > 16)
-                yasm_warn_set(YASM_WARN_GENERAL,
+                yasm_warn_set(
+                    YASM_WARN_GENERAL,
                     N_("segment name is too long, max 16 chars; truncating"));
             data.f_segname = yasm__xstrndup(sectname, 16);
             if (strlen(s) > 16)
-                yasm_warn_set(YASM_WARN_GENERAL,
+                yasm_warn_set(
+                    YASM_WARN_GENERAL,
                     N_("section name is too long, max 16 chars; truncating"));
             f_sectname = yasm__xstrndup(s, 16);
             flags = S_REGULAR;
@@ -1430,7 +1430,8 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
         } else {
             data.f_segname = NULL;
             if (strlen(sectname) > 16)
-                yasm_warn_set(YASM_WARN_GENERAL,
+                yasm_warn_set(
+                    YASM_WARN_GENERAL,
                     N_("section name is too long, max 16 chars; truncating"));
             f_sectname = yasm__xstrndup(sectname, 16);
             flags = S_ATTR_SOME_INSTRUCTIONS;
@@ -1446,7 +1447,7 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     flags_override = yasm_dir_helper(object, vp, line, help, NELEMS(help),
                                      &data, yasm_dir_helper_valparam_warn);
     if (flags_override < 0)
-        return NULL;    /* error occurred */
+        return NULL; /* error occurred */
 
     if (data.align_intn) {
         align = yasm_intnum_get_uint(data.align_intn);
@@ -1462,7 +1463,8 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
 
         /* Check to see if alignment is supported size */
         if (align > 16384) {
-            yasm_error_set(YASM_ERROR_VALUE,
+            yasm_error_set(
+                YASM_ERROR_VALUE,
                 N_("macho implementation does not support alignments > 16384"));
             return NULL;
         }
@@ -1475,8 +1477,8 @@ macho_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     }
 
     /* Build a unique sectname from f_segname and f_sectname. */
-    realname = yasm_xmalloc(strlen("LC_SEGMENT") + 1 + strlen(data.f_segname) + 1 +
-                            strlen(f_sectname) + 1);
+    realname = yasm_xmalloc(strlen("LC_SEGMENT") + 1 + strlen(data.f_segname) +
+                            1 + strlen(f_sectname) + 1);
     sprintf(realname, "LC_SEGMENT.%s.%s", data.f_segname, f_sectname);
     retval = yasm_object_get_general(object, realname, align, 1, resonly,
                                      &isnew, line);
@@ -1514,7 +1516,7 @@ macho_objfmt_get_special_sym(yasm_object *object, const char *name,
 static void
 macho_section_data_destroy(void *data)
 {
-    macho_section_data *msd = (macho_section_data *) data;
+    macho_section_data *msd = (macho_section_data *)data;
     yasm_xfree(msd->segname);
     yasm_xfree(msd->sectname);
     yasm_xfree(data);
@@ -1523,7 +1525,7 @@ macho_section_data_destroy(void *data)
 static void
 macho_section_data_print(void *data, FILE *f, int indent_level)
 {
-    macho_section_data *msd = (macho_section_data *) data;
+    macho_section_data *msd = (macho_section_data *)data;
 
     fprintf(f, "%*ssym=\n", indent_level, "");
     yasm_symrec_print(msd->sym, f, indent_level + 1);
@@ -1554,32 +1556,26 @@ macho_symrec_data_print(void *data, FILE *f, int indent_level)
         fprintf(f, "nil\n");
 }
 
-
 /* Define valid debug formats to use with this object format */
-static const char *macho_objfmt_dbgfmt_keywords[] = {
-    "null",
-    NULL
-};
+static const char *macho_objfmt_dbgfmt_keywords[] = { "null", NULL };
 
 /* Define objfmt structure -- see objfmt.h for details */
-yasm_objfmt_module yasm_macho_LTX_objfmt = {
-    "Mac OS X ABI Mach-O File Format",
-    "macho",
-    "o",
-    32,
-    0,
-    macho_objfmt_dbgfmt_keywords,
-    "null",
-    NULL,   /* no directives */
-    NULL,   /* no standard macros */
-    macho_objfmt_create,
-    macho_objfmt_output,
-    macho_objfmt_destroy,
-    macho_objfmt_add_default_section,
-    macho_objfmt_init_new_section,
-    macho_objfmt_section_switch,
-    macho_objfmt_get_special_sym
-};
+yasm_objfmt_module yasm_macho_LTX_objfmt = { "Mac OS X ABI Mach-O File Format",
+                                             "macho",
+                                             "o",
+                                             32,
+                                             0,
+                                             macho_objfmt_dbgfmt_keywords,
+                                             "null",
+                                             NULL, /* no directives */
+                                             NULL, /* no standard macros */
+                                             macho_objfmt_create,
+                                             macho_objfmt_output,
+                                             macho_objfmt_destroy,
+                                             macho_objfmt_add_default_section,
+                                             macho_objfmt_init_new_section,
+                                             macho_objfmt_section_switch,
+                                             macho_objfmt_get_special_sym };
 
 yasm_objfmt_module yasm_macho32_LTX_objfmt = {
     "Mac OS X ABI Mach-O File Format (32-bit)",
@@ -1589,8 +1585,8 @@ yasm_objfmt_module yasm_macho32_LTX_objfmt = {
     0,
     macho_objfmt_dbgfmt_keywords,
     "null",
-    NULL,   /* no directives */
-    NULL,   /* no standard macros */
+    NULL, /* no directives */
+    NULL, /* no standard macros */
     macho32_objfmt_create,
     macho_objfmt_output,
     macho_objfmt_destroy,
@@ -1608,8 +1604,8 @@ yasm_objfmt_module yasm_macho64_LTX_objfmt = {
     0,
     macho_objfmt_dbgfmt_keywords,
     "null",
-    NULL,   /* no directives */
-    NULL,   /* no standard macros */
+    NULL, /* no directives */
+    NULL, /* no standard macros */
     macho64_objfmt_create,
     macho_objfmt_output,
     macho_objfmt_destroy,

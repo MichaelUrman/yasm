@@ -30,9 +30,7 @@
 
 #include "lc3barch.h"
 
-
 yasm_arch_module yasm_lc3b_LTX_arch;
-
 
 static /*@only@*/ yasm_arch *
 lc3b_create(const char *machine, const char *parser,
@@ -86,33 +84,26 @@ lc3b_get_fill(const yasm_arch *arch)
 {
     /* NOP pattern is all 0's per LC-3b Assembler 3.50 output */
     static const unsigned char *fill[16] = {
-        NULL,           /* unused */
-        NULL,           /* 1 - illegal; all opcodes are 2 bytes long */
-        (const unsigned char *)
-        "\x00\x00",                     /* 4 */
-        NULL,                           /* 3 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00",             /* 4 */
-        NULL,                           /* 5 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00\x00\x00",     /* 6 */
-        NULL,                           /* 7 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00\x00\x00"      /* 8 */
-        "\x00\x00",
-        NULL,                           /* 9 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00\x00\x00"      /* 10 */
-        "\x00\x00\x00\x00",
-        NULL,                           /* 11 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00\x00\x00"      /* 12 */
-        "\x00\x00\x00\x00\x00\x00",
-        NULL,                           /* 13 - illegal */
-        (const unsigned char *)
-        "\x00\x00\x00\x00\x00\x00"      /* 14 */
-        "\x00\x00\x00\x00\x00\x00\x00\x00",
-        NULL                            /* 15 - illegal */
+        NULL, /* unused */
+        NULL, /* 1 - illegal; all opcodes are 2 bytes long */
+        (const unsigned char *)"\x00\x00",                 /* 4 */
+        NULL,                                              /* 3 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00",         /* 4 */
+        NULL,                                              /* 5 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00\x00\x00", /* 6 */
+        NULL,                                              /* 7 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00\x00\x00"  /* 8 */
+                               "\x00\x00",
+        NULL,                                             /* 9 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00\x00\x00" /* 10 */
+                               "\x00\x00\x00\x00",
+        NULL,                                             /* 11 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00\x00\x00" /* 12 */
+                               "\x00\x00\x00\x00\x00\x00",
+        NULL,                                             /* 13 - illegal */
+        (const unsigned char *)"\x00\x00\x00\x00\x00\x00" /* 14 */
+                               "\x00\x00\x00\x00\x00\x00\x00\x00",
+        NULL /* 15 - illegal */
     };
     return fill;
 }
@@ -134,7 +125,7 @@ lc3b_reggroup_get_reg(/*@unused@*/ yasm_arch *arch,
 static void
 lc3b_reg_print(/*@unused@*/ yasm_arch *arch, uintptr_t reg, FILE *f)
 {
-    fprintf(f, "r%u", (unsigned int)(reg&7));
+    fprintf(f, "r%u", (unsigned int)(reg & 7));
 }
 
 static int
@@ -173,40 +164,36 @@ static void
 lc3b_ea_print(const yasm_effaddr *ea, FILE *f, int indent_level)
 {
     fprintf(f, "%*sDisp:\n", indent_level, "");
-    yasm_value_print(&ea->disp, f, indent_level+1);
+    yasm_value_print(&ea->disp, f, indent_level + 1);
 }
 
 /* Define lc3b machines -- see arch.h for details */
-static yasm_arch_machine lc3b_machines[] = {
-    { "LC-3b", "lc3b" },
-    { NULL, NULL }
-};
+static yasm_arch_machine lc3b_machines[] = { { "LC-3b", "lc3b" },
+                                             { NULL, NULL } };
 
 /* Define arch structure -- see arch.h for details */
-yasm_arch_module yasm_lc3b_LTX_arch = {
-    "LC-3b",
-    "lc3b",
-    NULL,
-    lc3b_create,
-    lc3b_destroy,
-    lc3b_get_machine,
-    lc3b_get_address_size,
-    lc3b_set_var,
-    yasm_lc3b__parse_check_insnprefix,
-    yasm_lc3b__parse_check_regtmod,
-    lc3b_get_fill,
-    lc3b_floatnum_tobytes,
-    yasm_lc3b__intnum_tobytes,
-    lc3b_get_reg_size,
-    lc3b_reggroup_get_reg,
-    lc3b_reg_print,
-    NULL,       /*yasm_lc3b__segreg_print*/
-    lc3b_ea_create_expr,
-    yasm_lc3b__ea_destroy,
-    lc3b_ea_print,
-    yasm_lc3b__create_empty_insn,
-    lc3b_machines,
-    "lc3b",
-    16,
-    2
-};
+yasm_arch_module yasm_lc3b_LTX_arch = { "LC-3b",
+                                        "lc3b",
+                                        NULL,
+                                        lc3b_create,
+                                        lc3b_destroy,
+                                        lc3b_get_machine,
+                                        lc3b_get_address_size,
+                                        lc3b_set_var,
+                                        yasm_lc3b__parse_check_insnprefix,
+                                        yasm_lc3b__parse_check_regtmod,
+                                        lc3b_get_fill,
+                                        lc3b_floatnum_tobytes,
+                                        yasm_lc3b__intnum_tobytes,
+                                        lc3b_get_reg_size,
+                                        lc3b_reggroup_get_reg,
+                                        lc3b_reg_print,
+                                        NULL, /*yasm_lc3b__segreg_print*/
+                                        lc3b_ea_create_expr,
+                                        yasm_lc3b__ea_destroy,
+                                        lc3b_ea_print,
+                                        yasm_lc3b__create_empty_insn,
+                                        lc3b_machines,
+                                        "lc3b",
+                                        16,
+                                        2 };

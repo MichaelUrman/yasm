@@ -48,25 +48,25 @@ typedef struct Test_Entry {
 
 static Test_Entry tests[] = {
     /* Unsigned values */
-    {0, 0, "0", 1, (const unsigned char *)"\x00"},
-    {0, 0, "2", 1, (const unsigned char *)"\x02"},
-    {0, 0, "7F", 1, (const unsigned char *)"\x7F"},
-    {0, 0, "80", 2, (const unsigned char *)"\x80\x01"},
-    {0, 0, "81", 2, (const unsigned char *)"\x81\x01"},
-    {0, 0, "82", 2, (const unsigned char *)"\x82\x01"},
-    {0, 0, "3239", 2, (const unsigned char *)"\xB9\x64"},
+    { 0, 0, "0", 1, (const unsigned char *)"\x00" },
+    { 0, 0, "2", 1, (const unsigned char *)"\x02" },
+    { 0, 0, "7F", 1, (const unsigned char *)"\x7F" },
+    { 0, 0, "80", 2, (const unsigned char *)"\x80\x01" },
+    { 0, 0, "81", 2, (const unsigned char *)"\x81\x01" },
+    { 0, 0, "82", 2, (const unsigned char *)"\x82\x01" },
+    { 0, 0, "3239", 2, (const unsigned char *)"\xB9\x64" },
     /* Signed zero value */
-    {1, 0, "0", 1, (const unsigned char *)"\x00"},
+    { 1, 0, "0", 1, (const unsigned char *)"\x00" },
     /* Signed positive values */
-    {1, 0, "2", 1, (const unsigned char *)"\x02"},
-    {1, 0, "7F", 2, (const unsigned char *)"\xFF\x00"},
-    {1, 0, "80", 2, (const unsigned char *)"\x80\x01"},
-    {1, 0, "81", 2, (const unsigned char *)"\x81\x01"},
+    { 1, 0, "2", 1, (const unsigned char *)"\x02" },
+    { 1, 0, "7F", 2, (const unsigned char *)"\xFF\x00" },
+    { 1, 0, "80", 2, (const unsigned char *)"\x80\x01" },
+    { 1, 0, "81", 2, (const unsigned char *)"\x81\x01" },
     /* Signed negative values */
-    {1, 1, "2", 1, (const unsigned char *)"\x7E"},
-    {1, 1, "7F", 2, (const unsigned char *)"\x81\x7F"},
-    {1, 1, "80", 2, (const unsigned char *)"\x80\x7F"},
-    {1, 1, "81", 2, (const unsigned char *)"\xFF\x7E"},
+    { 1, 1, "2", 1, (const unsigned char *)"\x7E" },
+    { 1, 1, "7F", 2, (const unsigned char *)"\x81\x7F" },
+    { 1, 1, "80", 2, (const unsigned char *)"\x80\x7F" },
+    { 1, 1, "81", 2, (const unsigned char *)"\xFF\x7E" },
 };
 
 static char failed[1000];
@@ -89,32 +89,33 @@ run_output_test(Test_Entry *test)
     size = yasm_intnum_size_leb128(intn, test->sign);
     if (size != test->outsize) {
         yasm_intnum_destroy(intn);
-        sprintf(failmsg, "%ssigned %s%s size() bad size: expected %lu, got %lu!",
-                test->sign?"":"un", test->negate?"-":"", test->input,
+        sprintf(failmsg,
+                "%ssigned %s%s size() bad size: expected %lu, got %lu!",
+                test->sign ? "" : "un", test->negate ? "-" : "", test->input,
                 test->outsize, size);
         return 1;
     }
 
-    for (i=0; i<sizeof(out); i++)
+    for (i = 0; i < sizeof(out); i++)
         out[i] = 0xFF;
     size = yasm_intnum_get_leb128(intn, out, test->sign);
     if (size != test->outsize) {
         yasm_intnum_destroy(intn);
         sprintf(failmsg, "%ssigned %s%s get() bad size: expected %lu, got %lu!",
-                test->sign?"":"un", test->negate?"-":"", test->input,
+                test->sign ? "" : "un", test->negate ? "-" : "", test->input,
                 test->outsize, size);
         return 1;
     }
 
     bad = 0;
-    for (i=0; i<test->outsize && !bad; i++) {
+    for (i = 0; i < test->outsize && !bad; i++) {
         if (out[i] != test->result[i])
             bad = 1;
     }
     if (bad) {
         yasm_intnum_destroy(intn);
         sprintf(failmsg, "%ssigned %s%s get() bad output!",
-                test->sign?"":"un", test->negate?"-":"", test->input);
+                test->sign ? "" : "un", test->negate ? "-" : "", test->input);
         return 1;
     }
 
@@ -139,8 +140,9 @@ run_input_test(Test_Entry *test)
     if (size != test->outsize) {
         yasm_intnum_destroy(testn);
         yasm_intnum_destroy(intn);
-        sprintf(failmsg, "%ssigned %s%s create() bad size: expected %lu, got %lu!",
-                test->sign?"":"un", test->negate?"-":"", test->input,
+        sprintf(failmsg,
+                "%ssigned %s%s create() bad size: expected %lu, got %lu!",
+                test->sign ? "" : "un", test->negate ? "-" : "", test->input,
                 test->outsize, size);
         return 1;
     }
@@ -150,7 +152,7 @@ run_input_test(Test_Entry *test)
         yasm_intnum_destroy(testn);
         yasm_intnum_destroy(intn);
         sprintf(failmsg, "%ssigned %s%s create() bad output!",
-                test->sign?"":"un", test->negate?"-":"", test->input);
+                test->sign ? "" : "un", test->negate ? "-" : "", test->input);
         return 1;
     }
 
@@ -163,7 +165,7 @@ int
 main(void)
 {
     int nf = 0;
-    int numtests = sizeof(tests)/sizeof(Test_Entry);
+    int numtests = sizeof(tests) / sizeof(Test_Entry);
     int i;
 
     if (BitVector_Boot() != ErrCode_Ok)
@@ -172,18 +174,18 @@ main(void)
 
     failed[0] = '\0';
     printf("Test leb128_test: ");
-    for (i=0; i<numtests; i++) {
+    for (i = 0; i < numtests; i++) {
         int fail;
 
         fail = run_output_test(&tests[i]);
-        printf("%c", fail>0 ? 'F':'.');
+        printf("%c", fail > 0 ? 'F' : '.');
         fflush(stdout);
         if (fail)
             sprintf(failed, "%s ** F: %s\n", failed, failmsg);
         nf += fail;
 
         fail = run_input_test(&tests[i]);
-        printf("%c", fail>0 ? 'F':'.');
+        printf("%c", fail > 0 ? 'F' : '.');
         fflush(stdout);
         if (fail)
             sprintf(failed, "%s ** F: %s\n", failed, failmsg);
@@ -192,8 +194,7 @@ main(void)
 
     yasm_intnum_cleanup();
 
-    printf(" +%d-%d/%d %d%%\n%s",
-           numtests*2-nf, nf, numtests*2, 100*(numtests*2-nf)/(numtests*2),
-           failed);
+    printf(" +%d-%d/%d %d%%\n%s", numtests * 2 - nf, nf, numtests * 2,
+           100 * (numtests * 2 - nf) / (numtests * 2), failed);
     return (nf == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

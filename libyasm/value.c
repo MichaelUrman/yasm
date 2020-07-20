@@ -42,7 +42,6 @@
 
 #include "arch.h"
 
-
 void
 yasm_value_initialize(/*@out@*/ yasm_value *value,
                       /*@null@*/ /*@kept@*/ yasm_expr *e, unsigned int size)
@@ -129,7 +128,7 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
     /*@dependent@*/ yasm_section *sect;
     /*@dependent@*/ /*@null@*/ yasm_bytecode *precbc;
 
-    unsigned long shamt;    /* for SHR */
+    unsigned long shamt; /* for SHR */
 
     /* Yes, this has a maximum upper bound on 32 terms, based on an
      * "insane number of terms" (and ease of implementation) WAG.
@@ -140,7 +139,7 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
      * This is a bitmask to keep things small, as this is a recursive
      * routine and we don't want to eat up stack space.
      */
-    unsigned long used;     /* for ADD */
+    unsigned long used; /* for ADD */
 
     /* Thanks to this running after a simplify, we don't need to iterate
      * down through IDENTs or handle SUB.
@@ -163,11 +162,12 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
              */
             if (e->numterms > 32)
                 yasm__fatal(N_("expression on line %d has too many add terms;"
-                               " internal limit of 32"), e->line);
+                               " internal limit of 32"),
+                            e->line);
 
             used = 0;
 
-            for (i=0; i<e->numterms; i++) {
+            for (i = 0; i < e->numterms; i++) {
                 int j;
                 yasm_expr *sube;
                 yasm_intnum *intn;
@@ -213,12 +213,11 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                 /* Look for the same symrec term; even if both are external,
                  * they should cancel out.
                  */
-                for (j=0; j<e->numterms; j++) {
-                    if (e->terms[j].type == YASM_EXPR_SYM
-                        && e->terms[j].data.sym == sym
-                        && (used & (1<<j)) == 0) {
+                for (j = 0; j < e->numterms; j++) {
+                    if (e->terms[j].type == YASM_EXPR_SYM &&
+                        e->terms[j].data.sym == sym && (used & (1 << j)) == 0) {
                         /* Mark as used */
-                        used |= 1<<j;
+                        used |= 1 << j;
 
                         /* Replace both symrec portions with 0 */
                         yasm_expr_destroy(sube);
@@ -227,7 +226,7 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                         e->terms[j].type = YASM_EXPR_INT;
                         e->terms[j].data.intn = yasm_intnum_create_uint(0);
 
-                        break;  /* stop looking */
+                        break; /* stop looking */
                     }
                 }
                 if (j != e->numterms)
@@ -242,16 +241,14 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                 sect2 = yasm_bc_get_section(precbc);
 
                 /* Now look for a unused symrec term in the same segment */
-                for (j=0; j<e->numterms; j++) {
-                    if (e->terms[j].type == YASM_EXPR_SYM
-                        && yasm_symrec_get_label(e->terms[j].data.sym,
-                                                 &precbc2)
-                        && (sect = yasm_bc_get_section(precbc2))
-                        && sect == sect2
-                        && (used & (1<<j)) == 0) {
+                for (j = 0; j < e->numterms; j++) {
+                    if (e->terms[j].type == YASM_EXPR_SYM &&
+                        yasm_symrec_get_label(e->terms[j].data.sym, &precbc2) &&
+                        (sect = yasm_bc_get_section(precbc2)) &&
+                        sect == sect2 && (used & (1 << j)) == 0) {
                         /* Mark as used */
-                        used |= 1<<j;
-                        break;  /* stop looking */
+                        used |= 1 << j;
+                        break; /* stop looking */
                     }
                 }
 
@@ -269,17 +266,17 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                  * Don't do this if we've already become curpos-relative.
                  * The unmatched symrec will be caught below.
                  */
-                if (j == e->numterms && !value->curpos_rel
-                    && (yasm_symrec_is_curpos(sym)
-                        || (expr_precbc
-                            && sect2 == yasm_bc_get_section(expr_precbc)))) {
-                    for (j=0; j<e->numterms; j++) {
-                        if (e->terms[j].type == YASM_EXPR_SYM
-                            && !yasm_symrec_get_equ(e->terms[j].data.sym)
-                            && !yasm_symrec_is_special(e->terms[j].data.sym)
-                            && (used & (1<<j)) == 0) {
+                if (j == e->numterms && !value->curpos_rel &&
+                    (yasm_symrec_is_curpos(sym) ||
+                     (expr_precbc &&
+                      sect2 == yasm_bc_get_section(expr_precbc)))) {
+                    for (j = 0; j < e->numterms; j++) {
+                        if (e->terms[j].type == YASM_EXPR_SYM &&
+                            !yasm_symrec_get_equ(e->terms[j].data.sym) &&
+                            !yasm_symrec_is_special(e->terms[j].data.sym) &&
+                            (used & (1 << j)) == 0) {
                             /* Mark as used */
-                            used |= 1<<j;
+                            used |= 1 << j;
                             /* Mark value as curpos-relative */
                             if (value->rel || ssym_not_ok)
                                 return 1;
@@ -300,25 +297,24 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                                     yasm_section_get_object(sect2);
                                 yasm_symtab *symtab = object->symtab;
                                 e->terms[j].data.sym =
-                                    yasm_symtab_define_curpos
-                                    (symtab, ".", expr_precbc, e->line);
+                                    yasm_symtab_define_curpos(
+                                        symtab, ".", expr_precbc, e->line);
                             }
-                            break;      /* stop looking */
+                            break; /* stop looking */
                         }
                     }
                 }
 
-
                 if (j == e->numterms)
-                    return 1;   /* We didn't find a match! */
+                    return 1; /* We didn't find a match! */
             }
 
             /* Look for unmatched symrecs.  If we've already found one or
              * we don't WANT to find one, error out.
              */
-            for (i=0; i<e->numterms; i++) {
-                if (e->terms[i].type == YASM_EXPR_SYM
-                    && (used & (1<<i)) == 0) {
+            for (i = 0; i < e->numterms; i++) {
+                if (e->terms[i].type == YASM_EXPR_SYM &&
+                    (used & (1 << i)) == 0) {
                     if (value->rel || ssym_not_ok)
                         return 1;
                     value->rel = e->terms[i].data.sym;
@@ -345,10 +341,10 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
 
             /* RHS must be a positive integer */
             if (e->terms[1].type != YASM_EXPR_INT)
-                return 1;       /* can't shift sym by non-constant integer */
+                return 1; /* can't shift sym by non-constant integer */
             shamt = yasm_intnum_get_uint(e->terms[1].data.intn);
             if ((shamt + value->rshift) > YASM_VALUE_RSHIFT_MAX)
-                return 1;       /* total shift would be too large */
+                return 1; /* total shift would be too large */
 
             /* Update value */
             value->rshift += shamt;
@@ -369,11 +365,11 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                 return 1;
 
             if (value->seg_of)
-                return 1;       /* multiple SEG not legal */
+                return 1; /* multiple SEG not legal */
             value->seg_of = 1;
 
             if (value->rel || ssym_not_ok)
-                return 1;       /* got a relative portion somewhere else? */
+                return 1; /* got a relative portion somewhere else? */
             value->rel = e->terms[0].data.sym;
 
             /* replace with ident'ed 0 */
@@ -399,7 +395,7 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                     e->numterms = 1;
                     break;
                 case YASM_EXPR_REG:
-                    break;  /* ignore */
+                    break; /* ignore */
                 default:
                     return 1;
             }
@@ -419,20 +415,19 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
                     return value_finalize_scan(value, e->terms[0].data.expn,
                                                expr_precbc, ssym_not_ok);
                 default:
-                    break;  /* ignore */
+                    break; /* ignore */
             }
 
             break;
         default:
             /* Single symrec not allowed anywhere */
-            for (i=0; i<e->numterms; i++) {
+            for (i = 0; i < e->numterms; i++) {
                 switch (e->terms[i].type) {
                     case YASM_EXPR_SYM:
                         return 1;
                     case YASM_EXPR_EXPR:
                         /* recurse */
-                        return value_finalize_scan(value,
-                                                   e->terms[i].data.expn,
+                        return value_finalize_scan(value, e->terms[i].data.expn,
                                                    expr_precbc, 1);
                     default:
                         break;
@@ -445,8 +440,8 @@ value_finalize_scan(yasm_value *value, yasm_expr *e,
 }
 
 int
-yasm_value_finalize_expr(yasm_value *value, yasm_expr *e,
-                         yasm_bytecode *precbc, unsigned int size)
+yasm_value_finalize_expr(yasm_value *value, yasm_expr *e, yasm_bytecode *precbc,
+                         unsigned int size)
 {
     if (!e) {
         yasm_value_initialize(value, NULL, size);
@@ -483,18 +478,18 @@ yasm_value_finalize(yasm_value *value, yasm_bytecode *precbc)
         yasm_intnum_destroy(mask_tmp);
 
         /* Walk terms and delete matching masks */
-        for (term=value->abs->numterms-1; term>=0; term--) {
+        for (term = value->abs->numterms - 1; term >= 0; term--) {
             if (value->abs->terms[term].type == YASM_EXPR_INT &&
-                yasm_intnum_compare(value->abs->terms[term].data.intn,
-                                    mask) == 0) {
+                yasm_intnum_compare(value->abs->terms[term].data.intn, mask) ==
+                    0) {
                 /* Delete the intnum */
                 yasm_intnum_destroy(value->abs->terms[term].data.intn);
 
                 /* Slide everything to its right over by 1 */
-                if (term != value->abs->numterms-1) /* if it wasn't last.. */
+                if (term != value->abs->numterms - 1) /* if it wasn't last.. */
                     memmove(&value->abs->terms[term],
-                            &value->abs->terms[term+1],
-                            (value->abs->numterms-1-term)*
+                            &value->abs->terms[term + 1],
+                            (value->abs->numterms - 1 - term) *
                                 sizeof(yasm_expr__item));
 
                 /* Update numterms */
@@ -528,8 +523,8 @@ yasm_value_finalize(yasm_value *value, yasm_bytecode *precbc)
                 return 0;
             case YASM_EXPR_EXPR:
                 /* Bring up lower values. */
-                while (value->abs->op == YASM_EXPR_IDENT
-                       && value->abs->terms[0].type == YASM_EXPR_EXPR) {
+                while (value->abs->op == YASM_EXPR_IDENT &&
+                       value->abs->terms[0].type == YASM_EXPR_EXPR) {
                     yasm_expr *sube = value->abs->terms[0].data.expn;
                     yasm_xfree(value->abs);
                     value->abs = sube;
@@ -546,9 +541,9 @@ yasm_value_finalize(yasm_value *value, yasm_bytecode *precbc)
     value->abs = yasm_expr__level_tree(value->abs, 1, 1, 0, 0, NULL, NULL);
 
     /* Simplify 0 in abs to NULL */
-    if (value->abs->op == YASM_EXPR_IDENT
-        && value->abs->terms[0].type == YASM_EXPR_INT
-        && yasm_intnum_is_zero(value->abs->terms[0].data.intn)) {
+    if (value->abs->op == YASM_EXPR_IDENT &&
+        value->abs->terms[0].type == YASM_EXPR_INT &&
+        yasm_intnum_is_zero(value->abs->terms[0].data.intn)) {
         yasm_expr_destroy(value->abs);
         value->abs = NULL;
     }
@@ -579,15 +574,15 @@ yasm_value_get_intnum(yasm_value *value, yasm_bytecode *bc, int calc_bc_dist)
         unsigned long dist;
 
         if (!bc)
-            return NULL;    /* Can't calculate relative value */
+            return NULL; /* Can't calculate relative value */
 
         sym_local = yasm_symrec_get_label(value->rel, &rel_prevbc);
         if (value->wrt || value->seg_of || value->section_rel || !sym_local)
-            return NULL;    /* we can't handle SEG, WRT, or external symbols */
+            return NULL; /* we can't handle SEG, WRT, or external symbols */
         if (rel_prevbc->section != bc->section)
-            return NULL;    /* not in this section */
+            return NULL; /* not in this section */
         if (!value->curpos_rel)
-            return NULL;    /* not PC-relative */
+            return NULL; /* not PC-relative */
 
         /* Calculate value relative to current assembly position */
         dist = yasm_bc_next_offset(rel_prevbc);
@@ -613,7 +608,7 @@ yasm_value_get_intnum(yasm_value *value, yasm_bytecode *bc, int calc_bc_dist)
 
     if (intn)
         return yasm_intnum_copy(intn);
-    
+
     /* No absolute or relative portions: output 0 */
     return yasm_intnum_create_uint(0);
 }
@@ -634,8 +629,8 @@ yasm_value_output_basic(yasm_value *value, /*@out@*/ unsigned char *buf,
 
     if (value->abs) {
         /* Handle floating point expressions */
-        if (!value->rel && value->abs->op == YASM_EXPR_IDENT
-            && value->abs->terms[0].type == YASM_EXPR_FLOAT) {
+        if (!value->rel && value->abs->op == YASM_EXPR_IDENT &&
+            value->abs->terms[0].type == YASM_EXPR_FLOAT) {
             if (yasm_arch_floatnum_tobytes(arch, value->abs->terms[0].data.flt,
                                            buf, destsize, valsize, 0, warn))
                 return -1;
@@ -685,11 +680,11 @@ yasm_value_output_basic(yasm_value *value, /*@out@*/ unsigned char *buf,
 
         sym_local = yasm_symrec_get_label(value->rel, &rel_prevbc);
         if (value->wrt || value->seg_of || value->section_rel || !sym_local)
-            return 0;       /* we can't handle SEG, WRT, or external symbols */
+            return 0; /* we can't handle SEG, WRT, or external symbols */
         if (rel_prevbc->section != bc->section)
-            return 0;       /* not in this section */
+            return 0; /* not in this section */
         if (!value->curpos_rel)
-            return 0;       /* not PC-relative */
+            return 0; /* not PC-relative */
 
         /* Calculate value relative to current assembly position */
         dist = yasm_bc_next_offset(rel_prevbc);
@@ -718,9 +713,9 @@ yasm_value_output_basic(yasm_value *value, /*@out@*/ unsigned char *buf,
         return retval;
     }
 
-    if (value->seg_of || value->rshift || value->curpos_rel || value->ip_rel
-        || value->section_rel)
-        return 0;   /* We can't handle this with just an absolute */
+    if (value->seg_of || value->rshift || value->curpos_rel || value->ip_rel ||
+        value->section_rel)
+        return 0; /* We can't handle this with just an absolute */
 
     if (intn) {
         /* Output just absolute portion */
@@ -748,8 +743,7 @@ yasm_value_print(const yasm_value *value, FILE *f, int indent_level)
     fprintf(f, "\n");
     if (value->rel) {
         fprintf(f, "%*sRelative to=%s%s\n", indent_level, "",
-                value->seg_of ? "SEG " : "",
-                yasm_symrec_get_name(value->rel));
+                value->seg_of ? "SEG " : "", yasm_symrec_get_name(value->rel));
         if (value->wrt)
             fprintf(f, "%*s(With respect to=%s)\n", indent_level, "",
                     yasm_symrec_get_name(value->wrt));
@@ -757,8 +751,7 @@ yasm_value_print(const yasm_value *value, FILE *f, int indent_level)
             fprintf(f, "%*s(Right shifted by=%u)\n", indent_level, "",
                     value->rshift);
         if (value->curpos_rel)
-            fprintf(f, "%*s(Relative to current position)\n", indent_level,
-                    "");
+            fprintf(f, "%*s(Relative to current position)\n", indent_level, "");
         if (value->ip_rel)
             fprintf(f, "%*s(IP-relative)\n", indent_level, "");
         if (value->jump_target)

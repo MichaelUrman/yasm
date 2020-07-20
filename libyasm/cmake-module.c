@@ -28,13 +28,12 @@
 
 #include <libyasm.h>
 
-
 typedef struct loaded_module {
-    const char *keyword;            /* module keyword */
-    void *data;                     /* associated data */
+    const char *keyword; /* module keyword */
+    void *data;          /* associated data */
 } loaded_module;
 
-static HAMT *loaded_modules[] = {NULL, NULL, NULL, NULL, NULL, NULL};
+static HAMT *loaded_modules[] = { NULL, NULL, NULL, NULL, NULL, NULL };
 
 static void
 load_module_destroy(/*@only@*/ void *data)
@@ -66,7 +65,7 @@ yasm_register_module(yasm_module_type type, const char *keyword, void *data)
 
 typedef struct {
     yasm_module_type type;
-    void (*printfunc) (const char *name, const char *keyword);
+    void (*printfunc)(const char *name, const char *keyword);
 } list_one_data;
 
 static int
@@ -111,7 +110,7 @@ yasm_list_one_module(void *node, void *d)
 
 void
 yasm_list_modules(yasm_module_type type,
-                  void (*printfunc) (const char *name, const char *keyword))
+                  void (*printfunc)(const char *name, const char *keyword))
 {
     list_one_data data;
 
